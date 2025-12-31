@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import cors from 'cors';
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import productRoute from "./routes/productRoutes.js";
 
 const app = express();
 app.use(bodyParser.json());
@@ -13,6 +14,7 @@ app.get('/',(req,res)=>{
     res.json({message: 'Server API running'});
 });
 app.use('/admin',adminRoutes);
+app.use('/products',productRoute);
 app.use('/',userRoutes);
 app.use((req,res,next)=>{
     res.status(404).json({message: 'Endpoint not found'});

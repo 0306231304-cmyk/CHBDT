@@ -1,0 +1,51 @@
+import {hash, compare} from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import userModel from '../models/userModel.js';
+import productModel from '../models/productModel.js';
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
+const PASSWORD_HASH_ROUNDS = parseInt(process.env.PASSWORD_HASH_ROUNDS) || 10;
+
+export default class productController{
+    static async products(req,res){
+        try{
+            const products = await productModel.allproduct();
+
+            return res.status(200).json({
+                succeeded: true,
+                message: "Lấy danh sách sản phẩm thành công",
+                products: products
+            });
+        }catch(error){
+            return res.status(500).json({
+                succeeded: true,
+                message: error.message
+            })
+        }
+    }
+    
+    static async searchProduct(req,res){
+        try{
+            const {q} = req.query;
+            if (!q || q.trim() === '') {
+                return res.status(400).json({ 
+                    succeeded: false, 
+                    message: "Vui lòng nhập từ khóa tìm kiếm" 
+                });
+            }
+            const product = await productModel.findProductByName(q);
+            if(!product) return res.status(404).json({succeeded: false, message: "Sản phẩm không tồn tại"});
+            return res.status(200).json({
+                succeeded: true,
+                count: product.length,
+                product: product
+            });
+        }catch(error){
+            return res.status(500).json({ 
+                succeeded: false, 
+                message: error.message 
+            });
+        }
+    }
+}

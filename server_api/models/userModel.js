@@ -6,7 +6,7 @@ export default class userModel{
             const [rows] = inculdeDeleted?
             await execute("SELECT * FROM users"):
             await execute("SELECT * FROM users WHERE deleted_at IS NULL");
-            return rows[0]??null;
+            return rows;
         }
         catch (error){
             throw new Error("Database query failed: " + error.message);

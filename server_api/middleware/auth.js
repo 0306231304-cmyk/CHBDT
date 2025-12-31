@@ -10,11 +10,11 @@ export default async function auth(req,res,next) {
         return res.status(401).json({message: 'Authorization required'});
     }
     const token = authHeader.split(' ')[1];
-
+    
     if(await userModel.isTokenRevoked(token)){
         return res.status(401).json({message: 'Invalid or expired token'});
     }
-
+    
     const {id} = verify(token, JWT_SECRET);
     if(!id)return res.status(401).json({message: 'Invalid or expired token'});
     const user = await userModel.findById(id);

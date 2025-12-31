@@ -9,22 +9,22 @@ const PASSWORD_HASH_ROUNDS = parseInt(process.env.PASSWORD_HASH_ROUNDS) || 10;
 export default class userController{
     static async generateToken(user){
         return jwt.sign(
-            {id: user.CustomerID},
+            {id: user.id},
             JWT_SECRET,
             {expiresIn: JWT_EXPIRES_IN}
         );
     }
     static async login(req,res){
         const {email , password} = req.body;
-
-        if(!email || !password) return res.status(400).json({succeeded: false, message: "Username and password required"});
+        if(!email || !password) return res.status(400).json({succeeded: false, message: "Thiếu Email hoặc Mật khẩu"});
 
         const user = await userModel.findByUsername(email);
-        if(!user) return res.status(401).json({succeeded: false, message: 'Invalid credentials'});
-        const isMatch = await compare(password, user.Password);
-        if(!isMatch) return res.status(401).json({succeeded: false, message: "Invalid credentials"});
+        console.log(user);
+        if(!user) return res.status(401).json({succeeded: false, message: 'Không tìm thấy Email'});
+        const isMatch = await compare(password, user.password);
+        if(!isMatch) return res.status(401).json({succeeded: false, message: "Sai mật khẩu"});
         const token = await userController.generateToken(user);
-        res.status(200).json({succeeded: true, token: token})
+        return res.status(200).json({succeeded: true, token: token})
     }
 
     static validatePassword(password){
@@ -44,10 +44,8 @@ export default class userController{
         return true;
     }
     static async register(req, res) {
-        // 1. Đổi username thành email để khớp với Postman
         const { email, password, fullName, phoneNumber, address } = req.body;
 
-        // 2. Sửa logic kiểm tra null (Dùng || thay vì ?? như code cũ)
         if (!email || !password || !fullName || !phoneNumber || !address) {
             return res.status(400).json({
                 succeeded: false, 
@@ -55,27 +53,23 @@ export default class userController{
             });
         }
 
-        // 3. Truyền 'email' vào hàm tìm kiếm (thay vì username)
         const existingUser = await userModel.findByUsername(email);
         if (existingUser) {
             return res.status(409).json({
                 succeeded: false, 
-                message: 'Email already registered'
+                message: 'Email đã tồn tại'
             });
         }
 
-        // 4. Kiểm tra mật khẩu
         if (!userController.validatePassword(password)) {
             return res.status(400).json({
                 succeeded: false, 
-                message: 'Password weak: 8-100 chars, must include A-Z, a-z, 0-9, special char'
+                message: 'Mật khẩu yếu: 8-100 ký tự, phải bao gồm A-Z, a-z, 0-9, ký tự đặc biệt'
             });
         }
 
         const hashedPassword = await hash(password, PASSWORD_HASH_ROUNDS);
 
-        // 5. QUAN TRỌNG: Map biến 'email' vào thuộc tính 'Email' của Model
-        // userModel.create yêu cầu object có key là 'Email'
         const newId = await userModel.create({
             Fullname: fullName,
             Email: email, 
@@ -86,8 +80,7 @@ export default class userController{
 
         if (!newId) throw new Error('User creation failed');
         
-        // Trả về kết quả
-        res.status(201).json({
+        return res.status(201).json({
             succeeded: true, 
             user: { id: newId, email }
         });
@@ -101,7 +94,7 @@ export default class userController{
         if(!exp) return res.status(400).json({succeeded: false,message: 'Invalid token'});
         const result = await userModel.revokeToken(token,exp);
         if(!result) throw new Error('Token revocation failed');
-        res.status(200).json({succeeded: true, message: 'Logged out'})
+        return res.status(200).json({succeeded: true, message: 'Logged out'})
     }
 
     static async profile(req,res){
@@ -109,18 +102,40 @@ export default class userController{
         if(!id) return res.status(401).json({succeeded: false ,message: "Unauthorized"});
         const user = await userModel.findById(id);
         if(!user) return res.status(404).json({succeeded: false, message: "User not found"});
-        res.status(200).json({succeeded: true, user: {...user,password: ''}});
+        return res.status(200).json({succeeded: true, user: {...user,password: ''}});
     }
+
     static async adminLogin(req,res){
         const { email , password} = req.body;
 
-        if(!email || !password) return res.status(400).json({succeeded: false, message: "Username and password required"});
+        if(!email || !password) return res.status(400).json({succeeded: false, message: "Thiếu Email hoặc Mật khẩu"});
 
         const user = await userModel.findByUsername(email);
-        if(!user || user.is_admin !== 1) return res.status(401).json({succeeded: false, message: 'Invalid credentials'});
+        console.log(user);
+        if(!user) return res.status(401).json({succeeded: false, message: 'Không tìm thấy Email'});
+        if(user.is_admin !== 1) return res.status(401).json({succeeded: false, message: 'Không phải admin'});
         const isMatch = await compare(password, user.password);
-        if(!isMatch) return res.status(401).json({succeeded: false, message: "Invalid credentials"});
+        if(!isMatch) return res.status(401).json({succeeded: false, message: "Sai mật khẩu"});
         const token = await userController.generateToken(user);
-        res.status(200).json({succeeded: true, token: token})
+        return res.status(200).json({succeeded: true, token: token})
     }
+    static async users(req,res){
+        try{
+            const users = await userModel.all();
+
+            const safeUsers = users.map(user=> {const {password, ... rest} = user; return rest});
+
+            return res.status(200).json({
+                succeeded: true,
+                message: "Lấy danh sách thành công",
+                data: safeUsers
+            });
+        }catch(error){
+            return res.status(500).json({
+                succeeded: false,
+                message: error.message
+            });
+        }
+    }
+    
 }

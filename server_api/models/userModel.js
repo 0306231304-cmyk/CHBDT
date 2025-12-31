@@ -4,8 +4,8 @@ export default class userModel{
     static async all(inculdeDeleted = false){
         try{
             const [rows] = inculdeDeleted?
-            await execute("SELECT * FROM customers"):
-            await execute("SELECT * FROM customers WHERE DeletedAt IS NULL");
+            await execute("SELECT * FROM users"):
+            await execute("SELECT * FROM users WHERE deleted_at IS NULL");
             return rows[0]??null;
         }
         catch (error){
@@ -16,8 +16,8 @@ export default class userModel{
     static async findById(id,inculdeDeleted= false){
         try{
             const [rows] = inculdeDeleted?
-            await execute("SELECT * FROM customers WHERE CustomerID = ? LIMIT 1",[id]):
-            await execute("SELECT * FROM customers WHERE CustomerID = ? AND DeletedAt IS NULL LIMIT 1",[id]);
+            await execute("SELECT * FROM users WHERE id = ? LIMIT 1",[id]):
+            await execute("SELECT * FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1",[id]);
             return rows[0]??null;
         }
         catch (error){
@@ -28,8 +28,8 @@ export default class userModel{
     static async findByUsername(Email, inculdeDeleted = false){
         try{
             const [rows] = inculdeDeleted?
-            await execute("SELECT * FROM customers WHERE Email = ? LIMIT 1",[Email]):
-            await execute("SELECT * FROM customers WHERE Email = ? AND DeletedAt IS NULL LIMIT 1",[Email]);
+            await execute("SELECT * FROM users WHERE email = ? LIMIT 1",[Email]):
+            await execute("SELECT * FROM users WHERE email = ? AND deleted_at IS NULL LIMIT 1",[Email]);
             return rows[0]??null;
         }
         catch (error){
@@ -38,8 +38,8 @@ export default class userModel{
     }
     static async create({Fullname = '', hashedPassword,Email, Address = '', PhoneNumber = '', is_admin = false}){
         try{
-            const [result] = await execute('INSERT INTO `customers`(`FullName`, `PhoneNumber`, `Email`, `Address`, `is_admin`, `Password`) VALUES (?,?,?,?,?,?)',
-                [Fullname,PhoneNumber,Email,Address,is_admin?1:0,hashedPassword]
+            const [result] = await execute('INSERT INTO `users`(`fullname`, `email`, `password`, `phone_number`, `address`, `is_admin`) VALUES (?,?,?,?,?,?)',
+                [Fullname,Email,hashedPassword,PhoneNumber,Address,is_admin?1:0]
             );
             return result.affectedRows > 0 ? result.insertId : null;
         }catch(error){

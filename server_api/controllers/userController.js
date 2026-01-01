@@ -79,7 +79,7 @@ export default class userController{
         });
 
         if (!newId) throw new Error('User creation failed');
-        
+        await cartModel.createCartForUser(userId);
         return res.status(201).json({
             succeeded: true, 
             user: { id: newId, email }

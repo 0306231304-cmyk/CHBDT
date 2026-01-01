@@ -1,6 +1,3 @@
-import {hash, compare} from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import userModel from '../models/userModel.js';
 import productModel from '../models/productModel.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -46,6 +43,20 @@ export default class productController{
                 succeeded: false, 
                 message: error.message 
             });
+        }
+    }
+
+    static async detailProduct(req,res){
+        try{
+            const {id} = req.params;
+            console.log(id);
+            if(!id) return res.status(400).json({succeeded: false,message: "ID sản phẩm không được để trống"});
+            const product = await productModel.findProductById(id);
+            if(!product) return res.status(404).json({succeeded: false,message: "ID sản phẩm không tồn tại"});
+            return res.status(200).json({succeeded: true,message: "Lấy chi tiết sản phẩm thành công", product: product});
+        }
+        catch(error){
+            return res.status(500).json({succeeded: false,message: error.message});
         }
     }
 }

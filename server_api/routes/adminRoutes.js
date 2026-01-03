@@ -10,7 +10,7 @@ adminAuthRoutes.use(auth,admin);
 //Auth
 adminRoutes.post('/login', userController.adminLogin);
 adminAuthRoutes.post('/logout', userController.logout);
-adminAuthRoutes.get('/users',userController.users);
+adminAuthRoutes.get('/users',userController.getAllUsers);
 
 adminRoutes.use('/',adminAuthRoutes);
 export default adminRoutes;

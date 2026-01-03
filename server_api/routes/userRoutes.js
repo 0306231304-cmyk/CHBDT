@@ -11,6 +11,7 @@ userRoutes.post('/register',userController.register);
 userRoutes.post('/login',userController.login);
 authRoutes.post('/logout',userController.logout);
 authRoutes.get('/profile',userController.profile);
+authRoutes.put('/updateprofile',userController.updateUser);
 
 userRoutes.use('/',authRoutes);
 export default userRoutes;

@@ -119,7 +119,7 @@ export default class userController{
         const token = await userController.generateToken(user);
         return res.status(200).json({succeeded: true, token: token})
     }
-    static async users(req,res){
+    static async getAllUsers(req,res){
         try{
             const users = await userModel.all();
 
@@ -138,4 +138,23 @@ export default class userController{
         }
     }
     
+    static async updateUser(req,res){
+        try{
+            const id = req.userid;
+
+            const {fullName,phoneNumber,address} = req.body;
+            console.log("DEBUG:",id,fullName,phoneNumber,address);
+            if(!fullName || !phoneNumber || !address) return res.status(400).json({succeeded: false, message: "Thiếu thông tin"});
+            const update = await userModel.updateUser(id,fullName,phoneNumber,address);
+            if(!update) return res.status(404).json({succeeded: false, message:"Không thể thay đổi thông tin người dùng"});
+            return res.status(200).json({succeeded: true,message: "Đổi thông tin thành công"});
+        }
+        catch(error){
+            return res.status(500).json({
+                succeeded: false,
+                message: error.message
+            });
+        }
+
+    }
 }

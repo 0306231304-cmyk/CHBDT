@@ -17,6 +17,7 @@ app.get('/',(req,res)=>{
 app.use('/admin',adminRoutes);
 app.use('/products',productRoute);
 app.use('/cart', cartRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/',userRoutes);
 app.use((req,res,next)=>{
     res.status(404).json({message: 'Endpoint not found'});

@@ -55,12 +55,24 @@ export default class userModel{
             throw new Error("Database query failed: " + error.message);
         }
     }
+
     static async isTokenRevoked(token){
         try{
             const [rows] = await execute('SELECT id FROM revoked_tokens WHERE token = ? LIMIT 1',[token]);
             return rows.length > 0;
         }catch(error){
             throw new Error("Database query failed: " + error.message);
+        }
+    }
+
+    static async updateUser(id,fullname,phone_number,address){
+        try{
+            const [rows] = await execute('UPDATE users SET fullname = ?, phone_number = ?, address = ? WHERE id = ?',
+                [fullname,phone_number,address,id]);
+            return rows.affectedRows > 0;
+        }
+        catch(error){
+            throw new Error("Lỗi update user: "+error.message);
         }
     }
 }

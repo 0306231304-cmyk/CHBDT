@@ -1,0 +1,18 @@
+product:
+    tìm kiếm
+    lấy danh sách sản phẩm
+    chi tiết sản phẩm
+    Thay đổi thông tin user
+người dùng:
+    đăng nhập
+    đăng ký
+    đăng xuất
+admin:
+    đăng nhập
+    đăng xuất
+giỏ hàng:
+    Thêm
+    Xóa
+    Sửa
+    xem
+

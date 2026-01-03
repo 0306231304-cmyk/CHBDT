@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../Resources/app_colors.dart';
 import 'Widgets/custom_button.dart';
 import 'Widgets/custom_textfield.dart';
-import '../Controller/auth_controller.dart';
+//import '../Controller/auth_controller.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -21,7 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passController = TextEditingController();
   final _confirmPassController = TextEditingController();
   // Khởi tạo AuthController
-  final AuthController _authController = AuthController(); 
+  //final AuthController _authController = AuthController(); 
   bool _isLoading = false; // Biến để hiện vòng xoay loading
 
   @override
@@ -46,12 +46,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() => _isLoading = true);
 
     // 3. Gọi API qua Controller
-    await _authController.register(
+    /*await _authController.register(
       context, 
       _nameController.text, 
       _emailController.text, 
       _passController.text
-    );
+    );*/
 
     // 4. Tắt loading
     setState(() => _isLoading = false);

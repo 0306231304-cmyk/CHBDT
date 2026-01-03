@@ -6,6 +6,8 @@ import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import productRoute from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger.js';
 
 const app = express();
 app.use(bodyParser.json());

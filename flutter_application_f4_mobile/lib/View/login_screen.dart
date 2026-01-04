@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../Resources/app_colors.dart';
-import 'Widgets/custom_button.dart';
-import 'Widgets/custom_textfield.dart';
+import 'Widget/custom_button.dart';
+import 'Widget/custom_textfield.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {

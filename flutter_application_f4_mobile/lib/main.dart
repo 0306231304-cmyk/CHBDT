@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_f4_mobile/View/profile_screen.dart';
 import 'View/login_screen.dart';
 
 void main() {

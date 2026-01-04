@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../resources/app_colors.dart';
-import 'widgets/custom_button.dart';
-import 'widgets/custom_textfield.dart';
+import 'Widget/custom_button.dart';
+import 'Widget/custom_textfield.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({Key? key}) : super(key: key);

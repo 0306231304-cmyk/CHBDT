@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../Resources/app_colors.dart';
-import 'Widgets/custom_button.dart';
-import 'Widgets/custom_textfield.dart';
+import 'Widget/custom_button.dart';
+import 'Widget/custom_textfield.dart';
 import 'signup_screen.dart';
+import '../Controller/auth_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -14,8 +15,11 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
+  final AuthController _authController = AuthController();
+  
+  bool _isLoading = false;
 
-  void _handleLogin() {
+  void _handleLogin() async {
     String email = _emailController.text.trim();
     String pass = _passController.text.trim();
 
@@ -27,16 +31,13 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // 2. Kiểm tra giả lập (Để test Navigator)
-    if (email == "admin" && pass == "123") {
-       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Đăng nhập Admin thành công!")),
-      );
-    } else {
-      // Đăng nhập thành công giả
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Đăng nhập thành công!")),
-      );
+    setState(() => _isLoading = true); // Bật loading
+
+    // 2. Gọi API Đăng nhập
+    await _authController.login(context, email, pass);
+
+    if (mounted) {
+      setState(() => _isLoading = false); // Tắt loading khi xong
     }
   }
 
@@ -84,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const Text("Chưa có tài khoản? ", style: TextStyle(color: Colors.grey)),
                       GestureDetector(
                         onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SignUpScreen()));
+                           Navigator.push(context, MaterialPageRoute(builder: (_) => const SignUpScreen()));
                         },
                         child: const Text("Đăng ký", style: TextStyle(color: AppColors.primaryOrange, fontWeight: FontWeight.bold)),
                       )
@@ -106,9 +107,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 10),
 
+                  // Nút Đăng nhập có hiệu ứng loading
                   CustomButton(
-                    text: "Đăng Nhập",
-                    onPressed: _handleLogin,
+                    text: _isLoading ? "Đang xử lý..." : "Đăng Nhập",
+                    onPressed: _isLoading ? () {} : _handleLogin,
                   ),
                 ],
               ),

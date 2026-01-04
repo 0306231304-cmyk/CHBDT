@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../Resources/app_colors.dart';
-import 'Widgets/custom_button.dart';
-import 'Widgets/custom_textfield.dart';
-//import '../Controller/auth_controller.dart';
+import 'Widget/custom_button.dart';
+import 'Widget/custom_textfield.dart';
+import '../Controller/auth_controller.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -20,9 +20,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _addressController = TextEditingController(); 
   final _passController = TextEditingController();
   final _confirmPassController = TextEditingController();
-  // Khởi tạo AuthController
-  //final AuthController _authController = AuthController(); 
-  bool _isLoading = false; // Biến để hiện vòng xoay loading
+  final AuthController _authController = AuthController(); 
+  bool _isLoading = false; 
 
   @override
   void dispose() {
@@ -39,22 +38,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _handleRegister() async{
     // 1. Kiểm tra rỗng
     if (_nameController.text.isEmpty || _emailController.text.isEmpty || _passController.text.isEmpty) {
-       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng nhập đủ thông tin")));
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng nhập tên, email và mật khẩu")));
        return;
     }
-    // 2. Bắt đầu loading
+
+    // 2. Kiểm tra mật khẩu khớp nhau
+    if (_passController.text != _confirmPassController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Mật khẩu xác nhận không khớp"), backgroundColor: Colors.red));
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     // 3. Gọi API qua Controller
-    /*await _authController.register(
+    await _authController.register(
       context, 
-      _nameController.text, 
-      _emailController.text, 
-      _passController.text
-    );*/
+      email: _emailController.text.trim(),
+      password: _passController.text,
+      fullname: _nameController.text.trim(),
+      phone: _phoneController.text.trim(),
+      address: _addressController.text.trim(),
+      // dob: _dobController.text (Database chưa hỗ trợ nên chưa gửi)
+    );
 
-    // 4. Tắt loading
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -111,10 +120,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     CustomTextField(label: "Xác nhận mật khẩu", hint: "*******", controller: _confirmPassController, isPassword: true),
 
                     const SizedBox(height: 20),
+                    
+                    // Nút Đăng ký có hiệu ứng loading
                     CustomButton(
-        text: _isLoading ? "Đang xử lý..." : "Đăng ký", // Đổi chữ khi đang chạy
-        onPressed: _isLoading ? () {} : _handleRegister,  // Khóa nút khi đang chạy
-      ),
+                      text: _isLoading ? "Đang xử lý..." : "Đăng ký", 
+                      onPressed: _isLoading ? () {} : _handleRegister,
+                    ),
                     const SizedBox(height: 30),
                   ],
                 ),

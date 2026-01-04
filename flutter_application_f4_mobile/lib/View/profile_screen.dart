@@ -4,7 +4,7 @@ import 'login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
 import 'my_orders_screen.dart'; 
-import 'widgets/profile_menu_item.dart';
+import 'Widget/profile_menu_item.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);

@@ -262,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.white,
       elevation: 0,
       title: const Text(
-        "Xin chào",
+        "F4 MOBILE",
         style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
       ),
       actions: [

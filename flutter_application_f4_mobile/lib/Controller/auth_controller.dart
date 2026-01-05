@@ -70,7 +70,7 @@ Future<bool> login(BuildContext context, String email, String password) async {
       print("Login Status: ${response.statusCode}");
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['succeeded'] == true) {
-        String token = data['token']; // Hoặc data['user']['token'] tùy API trả về
+        String token = data['token'];
         
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_token', token);

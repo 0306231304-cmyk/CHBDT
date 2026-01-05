@@ -100,12 +100,6 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     
                     ProfileMenuItem(
-                      icon: Icons.location_on_outlined, 
-                      text: "Địa chỉ của tôi", 
-                      onTap: () {}
-                    ),
-                    
-                    ProfileMenuItem(
                       icon: Icons.card_giftcard, 
                       text: "Đơn hàng của tôi", 
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyOrdersScreen())),

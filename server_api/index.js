@@ -8,6 +8,7 @@ import productRoute from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger.js';
+import orderRoutes from "./routes/orderRoutes.js";
 
 const app = express();
 app.use(bodyParser.json());
@@ -19,6 +20,7 @@ app.get('/',(req,res)=>{
 app.use('/admin',adminRoutes);
 app.use('/products',productRoute);
 app.use('/cart', cartRoutes);
+app.use('/orders',orderRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/',userRoutes);
 app.use((req,res,next)=>{

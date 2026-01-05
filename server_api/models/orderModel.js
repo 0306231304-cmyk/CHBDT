@@ -1,4 +1,4 @@
-import { execute } from "../config/db.js";
+import { beginTransaction, commitTransaction, rollbackTransaction, execute } from "../config/db.js";
 
 export default class orderModel{
     static async checkout(userId, shippingData) {
@@ -9,7 +9,7 @@ export default class orderModel{
             // --- BƯỚC A: Lấy dữ liệu giỏ hàng & Check kho ---
             // Lưu ý: Dùng conn.query thay vì execute
             const [cartItems] = await conn.query(
-                `SELECT ci.*, pv.price, pv.inventory, pv.product_id 
+                `SELECT ci.*, pv.price, pv.storage, pv.product_id 
                  FROM cart_items ci
                  JOIN product_variants pv ON ci.product_variant_id = pv.id
                  WHERE ci.cart_id = (SELECT id FROM carts WHERE user_id = ?)`,
@@ -31,9 +31,9 @@ export default class orderModel{
 
             // --- BƯỚC B: Tạo đơn hàng (INSERT orders) ---
             const [orderResult] = await conn.query(
-                `INSERT INTO orders (user_id, full_name, phone_number, address, note, total_money, status, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())`,
-                [userId, shippingData.fullName, shippingData.phone, shippingData.address, shippingData.note, totalPrice]
+                `INSERT INTO orders (user_id, full_name, phone_number, shipping_address, total_money, status, note, created_at)
+                 VALUES (?, ?, ?, ?, ?, 'pending', ?, NOW())`,
+                [userId, shippingData.fullName, shippingData.phone, shippingData.address, totalPrice, shippingData.note]
             );
 
             const newOrderId = orderResult.insertId;
@@ -42,14 +42,14 @@ export default class orderModel{
             for (const item of cartItems) {
                 // C.1 Insert chi tiết
                 await conn.query(
-                    `INSERT INTO order_details (order_id, product_variant_id, price, quantity, total_price)
-                     VALUES (?, ?, ?, ?, ?)`,
-                    [newOrderId, item.product_variant_id, item.price, item.quantity, item.price * item.quantity]
+                    `INSERT INTO order_items (order_id, product_variant_id, price, quantity)
+                     VALUES (?, ?, ?, ?)`,
+                    [newOrderId, item.product_variant_id, item.price, item.quantity]
                 );
 
                 // C.2 Trừ kho (Dùng chính conn này để đảm bảo đồng bộ)
                 await conn.query(
-                    `UPDATE product_variants SET inventory = inventory - ? WHERE id = ?`,
+                    `UPDATE product_variants SET storage = storage - ? WHERE id = ?`,
                     [item.quantity, item.product_variant_id]
                 );
             }
@@ -67,6 +67,29 @@ export default class orderModel{
             // 3. Có lỗi -> Rollback (Hoàn tác & đóng kết nối)
             await rollbackTransaction(conn);
             throw error; // Ném lỗi ra để Controller bắt
+        }
+    }
+
+    static async orderStatus(order_ID){
+        try{
+            const [result] = await execute('SELECT status FROM orders WHERE id = ? LIMIT 1',[order_ID]);
+            return result[0] ?? null;
+        }catch(error){
+            throw new Error('Lỗi truy xuất trạn thái đơn hàng: '+ error.message);
+        }
+    }
+
+    //Duyệt đơn hàng
+    static async approveOrders(order_ID, status){
+        try{
+            const currentStatus = await this.orderStatus(order_ID);
+
+            if(currentStatus === 'cancelled') return currentStatus;
+            const [result] = await execute('UPDATE orders SET status = ? WHERE id = ?',[status,order_ID]);
+            return result.affectedRows > 0? true: false;
+        }
+        catch(error){
+            throw new Error('Lỗi duyệt đơn hàng: '+error.message);
         }
     }
 }

@@ -3,6 +3,7 @@ const adminRoutes = Router();
 import userController from "../controllers/userController.js";
 import auth from "../middleware/auth.js";
 import admin from "../middleware/admin.js";
+import orderController from "../controllers/orderController.js";
 /**
  * @swagger
  * tags:
@@ -108,6 +109,63 @@ adminAuthRoutes.post('/logout', userController.logout);
  *         description: Lỗi server
  */
 adminAuthRoutes.get('/users',userController.getAllUsers);
+
+/**
+ * @swagger
+ * /admin/approve-order/{orderId}:
+ *   patch:
+ *     summary: Admin thay đổi trạng thái đơn hàng
+ *     description: Admin cập nhật trạng thái đơn hàng (approved, cancelled, ...)
+ *     tags:
+ *       - Admin Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của đơn hàng cần duyệt
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - curStatus
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 description: Trạng thái mới của đơn hàng
+ *                 enum: ['pending','processing','shipping','delivered','cancelled']
+ *                 example: processing
+ *     responses:
+ *       200:
+ *         description: Duyệt đơn hàng thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Duyệt đơn hàng thành công
+ *       400:
+ *         description: Thiếu orderId hoặc trạng thái đơn hàng
+ *       401:
+ *         description: Chưa đăng nhập hoặc token không hợp lệ
+ *       409:
+ *         description: Đơn hàng đã bị hủy trước đó
+ *       500:
+ *         description: Lỗi server khi duyệt đơn hàng
+ */
+adminAuthRoutes.patch('/approve-order/:id',orderController.approveOrder);
 
 adminRoutes.use('/',adminAuthRoutes);
 export default adminRoutes;

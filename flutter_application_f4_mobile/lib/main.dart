@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_f4_mobile/View/Home/home_screen.dart';
 import 'View/login_screen.dart';
-
+import 'package:flutter_application_f4_mobile/View/shoppingcard_screen.dart'; 
+// Lưu ý: Thay đổi đường dẫn trên cho đúng với vị trí thực tế của file shoppingcard_screen.dart
 void main() {
   runApp(const MyApp());
 }
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         fontFamily: 'Roboto',
       ),
-      home: const HomeScreen(),
+      home:   ShoppingCardScreen(),
     );
   }
 }

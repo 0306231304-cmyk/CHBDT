@@ -12,7 +12,7 @@ export default class cartController{
 
             return res.status(200).json({ succeeded: true, message: "Đã thêm vào giỏ" });
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            return res.status(500).json({ succeeded: false, error: error.message });
         }
     }
 
@@ -39,7 +39,7 @@ export default class cartController{
             });
         } catch (error) {
             console.error("DEBUG: Lỗi xảy ra:", error);
-            return res.status(500).json({ error: error.message });
+            return res.status(500).json({ succeeded: false, error: error.message });
         }
     }
 
@@ -52,7 +52,7 @@ export default class cartController{
             await cartModel.removeItem(userId, variant_id);
             return res.status(200).json({ succeeded: true, message: "Đã xóa sản phẩm" });
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            return res.status(500).json({ succeeded: false, error: error.message });
         }
     }
     
@@ -65,7 +65,7 @@ export default class cartController{
             await cartModel.updateQuantity(userId, variant_id, parseInt(quantity));
             return res.status(200).json({ succeeded: true, message: "Đã cập nhật số lượng" });
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            return res.status(500).json({ succeeded: false, error: error.message });
         }
     }
 }

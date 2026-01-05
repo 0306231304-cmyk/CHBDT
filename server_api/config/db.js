@@ -11,6 +11,7 @@ const pool = createPool({
 export async function execute(query, params) {
     return await pool.execute(query, params);
 }
+
 export async function beginTransaction() {
     const connection = await pool.getConnection();
     await connection.beginTransaction();

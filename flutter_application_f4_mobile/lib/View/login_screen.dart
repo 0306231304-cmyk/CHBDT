@@ -4,6 +4,7 @@ import 'Widget/custom_button.dart';
 import 'Widget/custom_textfield.dart';
 import 'signup_screen.dart';
 import '../Controller/auth_controller.dart';
+import 'Home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -31,13 +32,21 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    setState(() => _isLoading = true); // Bật loading
+    setState(() => _isLoading = true);
 
     // 2. Gọi API Đăng nhập
-    await _authController.login(context, email, pass);
+    bool isSuccess = await _authController.login(context, email, pass);
 
     if (mounted) {
-      setState(() => _isLoading = false); // Tắt loading khi xong
+      setState(() => _isLoading = false);
+
+      // 3. Nếu thành công thì chuyển trang
+      if (isSuccess) {
+         Navigator.pushReplacement(
+           context, 
+           MaterialPageRoute(builder: (_) => const HomeScreen())
+         );
+      }
     }
   }
 

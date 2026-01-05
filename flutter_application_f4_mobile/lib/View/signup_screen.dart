@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../Resources/app_colors.dart';
-import 'Widgets/custom_button.dart';
-import 'Widgets/custom_textfield.dart';
+import 'Widget/custom_button.dart';
+import 'Widget/custom_textfield.dart';
+import '../Controller/auth_controller.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -19,6 +20,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _addressController = TextEditingController(); 
   final _passController = TextEditingController();
   final _confirmPassController = TextEditingController();
+  final AuthController _authController = AuthController(); 
+  bool _isLoading = false; 
 
   @override
   void dispose() {
@@ -32,33 +35,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void _handleRegister() {
+  void _handleRegister() async{
     // 1. Kiểm tra rỗng
-    if (_nameController.text.isEmpty || 
-        _emailController.text.isEmpty || 
-        _passController.text.isEmpty ||
-        _phoneController.text.isEmpty ||
-        _addressController.text.isEmpty) {
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Vui lòng điền đầy đủ thông tin!"), backgroundColor: Colors.red),
-        );
-        return;
+    if (_nameController.text.isEmpty || _emailController.text.isEmpty || _passController.text.isEmpty) {
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng nhập tên, email và mật khẩu")));
+       return;
     }
 
     // 2. Kiểm tra mật khẩu khớp nhau
     if (_passController.text != _confirmPassController.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Mật khẩu xác nhận không khớp!"), backgroundColor: Colors.red),
-        );
-        return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Mật khẩu xác nhận không khớp"), backgroundColor: Colors.red));
+      return;
     }
 
-    // 3. Thành công -> Quay về Login
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Đăng ký thành công! Hãy đăng nhập.")),
+    setState(() => _isLoading = true);
+
+    // 3. Gọi API qua Controller
+    await _authController.register(
+      context, 
+      email: _emailController.text.trim(),
+      password: _passController.text,
+      fullname: _nameController.text.trim(),
+      phone: _phoneController.text.trim(),
+      address: _addressController.text.trim(),
+      // dob: _dobController.text (Database chưa hỗ trợ nên chưa gửi)
     );
-    Navigator.pop(context); 
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -115,9 +120,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     CustomTextField(label: "Xác nhận mật khẩu", hint: "*******", controller: _confirmPassController, isPassword: true),
 
                     const SizedBox(height: 20),
+                    
+                    // Nút Đăng ký có hiệu ứng loading
                     CustomButton(
-                      text: "Đăng Ký",
-                      onPressed: _handleRegister,
+                      text: _isLoading ? "Đang xử lý..." : "Đăng ký", 
+                      onPressed: _isLoading ? () {} : _handleRegister,
                     ),
                     const SizedBox(height: 30),
                   ],

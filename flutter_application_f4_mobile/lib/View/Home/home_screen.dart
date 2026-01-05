@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../Product/product_detail_screen.dart';
 import '../Category/category_screen.dart';
+import '../login_screen.dart';
+import '../../Controller/auth_controller.dart';
+import '../profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   /* =======================
    * DATA SẢN PHẨM (CHUẨN HÓA)
    * ======================= */
+  final AuthController _authController = AuthController();
   final List<Map<String, dynamic>> products = [
     {
       "name": "Samsung A53",
@@ -267,12 +271,35 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       actions: [
         IconButton(
+          icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+            );
+          },
+        ),
+        IconButton(
           icon: const Icon(Icons.person_outline, color: Colors.black),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+            );
+          },
         ),
         IconButton(
           icon: const Icon(Icons.logout, color: Colors.black),
-          onPressed: () {},
+          onPressed: () async {
+            await _authController.logout(); 
+            if (context.mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
+              );
+            }
+          }
         ),
       ],
     );
@@ -463,10 +490,6 @@ Widget _buildProductCard(int index) {
   );
 }
 
-
-
-
-
   /* ======================= ADD / QTY ======================= */
   Widget _buildAddToCartBtn(int index) {
     return InkWell(
@@ -572,7 +595,6 @@ Widget _buildProductCard(int index) {
       }).toList(),
     );
   }
-
   
   /* ======================= SECTION TITLE =======================
    * - Luôn hiển thị mũi tên

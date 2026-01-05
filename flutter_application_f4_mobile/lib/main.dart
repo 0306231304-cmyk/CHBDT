@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_f4_mobile/View/Home/home_screen.dart';
 import 'View/login_screen.dart';
 
 void main() {
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         fontFamily: 'Roboto',
       ),
-      home: const LoginScreen(),
+      home: const HomeScreen(),
     );
   }
 }

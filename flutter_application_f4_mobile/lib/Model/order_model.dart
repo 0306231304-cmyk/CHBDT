@@ -3,7 +3,7 @@ class OrderItem {
   final String name;
   final String? variant;
   final int price;
-  int quantity; // Cho phép sửa để tăng giảm số lượng
+  int quantity;
   final String image;
 
   int get totalPrice => price * quantity;
@@ -19,12 +19,10 @@ class OrderItem {
 }
 
 class OrderModel {
-  // BỎ 'final' ở 4 dòng này để có thể cập nhật dữ liệu khi bấm nút Sửa
-  String receiverName; 
-  String phoneNumber;  
-  String address;      
-  String? note;        
-
+  String receiverName;
+  String phoneNumber;
+  String address;
+  String? note;
   final List<OrderItem> items;
   bool isTransferData;
   bool isExportInvoice;

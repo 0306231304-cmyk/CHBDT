@@ -18,6 +18,7 @@ class OrderItem {
   });
 }
 
+// 2. Model chính cho Đơn hàng
 class OrderModel {
   String receiverName;
   String phoneNumber;

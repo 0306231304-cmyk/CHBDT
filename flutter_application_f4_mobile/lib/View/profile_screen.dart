@@ -3,7 +3,7 @@ import '../../resources/app_colors.dart';
 import 'login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
-import 'my_orders_screen.dart'; 
+import 'order_history_screen.dart'; 
 import 'Widget/profile_menu_item.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -101,8 +101,8 @@ class ProfileScreen extends StatelessWidget {
                     
                     ProfileMenuItem(
                       icon: Icons.card_giftcard, 
-                      text: "Đơn hàng của tôi", 
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyOrdersScreen())),
+                      text: "Lịch sử đơn hàng", 
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrderHistoryScreen())),
                     ),
 
                     ProfileMenuItem(

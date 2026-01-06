@@ -11,7 +11,7 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  // Tạo controller có sẵn dữ liệu giả để giống như đang sửa thông tin
+  // Tạo controller có sẵn dữ liệu giả
   final _nameController = TextEditingController(text: "Lois Becket");
   final _emailController = TextEditingController(text: "Loisbecket@gmail.com");
   final _dobController = TextEditingController(text: "18/03/2024");

@@ -1,11 +1,12 @@
-// 1. Model cho từng sản phẩm trong đơn hàng
 class OrderItem {
   final String id;
   final String name;
   final String? variant;
   final int price;
-  int quantity;
+  int quantity; // Cho phép sửa để tăng giảm số lượng
   final String image;
+
+  int get totalPrice => price * quantity;
 
   OrderItem({
     required this.id,
@@ -15,38 +16,22 @@ class OrderItem {
     required this.quantity,
     required this.image,
   });
-
-  // Chuyển đổi dữ liệu từ Json nếu sau này bạn dùng API
-  factory OrderItem.fromJson(Map<String, dynamic> json) {
-    return OrderItem(
-      id: json['id'],
-      name: json['name'],
-      variant: json['variant'],
-      price: json['price'],
-      quantity: json['quantity'],
-      image: json['image'],
-    );
-  }
 }
 
 // 2. Model chính cho Đơn hàng
 class OrderModel {
-  // Thông tin người nhận
-  final String receiverName; // Người nhận: Liêm
-  final String phoneNumber;  // SĐT: 0366146741
-  final String address;      // No 46, Awolowo Road....
+  // BỎ 'final' ở 4 dòng này để có thể cập nhật dữ liệu khi bấm nút Sửa
+  String receiverName; 
+  String phoneNumber;  
+  String address;      
+  String? note;        
 
-  // Danh sách sản phẩm
   final List<OrderItem> items;
-
-  // Các tùy chọn bổ sung
-  final String? note;           // Ghi chú
-  final bool isTransferData;    // Chuyển dữ liệu
-  final bool isExportInvoice;   // Xuất hóa đơn
-  final bool isOtherRequest;    // Khác
-  
-  final String? promoCode;      // Mã giảm giá
-  final int totalAmount;        // Tổng tiền
+  bool isTransferData;
+  bool isExportInvoice;
+  bool isOtherRequest;
+  String? promoCode;
+  int totalAmount;
 
   OrderModel({
     required this.receiverName,

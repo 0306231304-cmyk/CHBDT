@@ -1,8 +1,8 @@
-// 1. Model cho từng sản phẩm trong đơn hàng (Khớp với Order list trong Figma)
+// 1. Model cho từng sản phẩm trong đơn hàng
 class OrderItem {
   final String id;
   final String name;
-  final String? variant; // Ví dụ: Màu tím oải hương
+  final String? variant;
   final int price;
   int quantity;
   final String image;
@@ -29,7 +29,7 @@ class OrderItem {
   }
 }
 
-// 2. Model chính cho Đơn hàng (Khớp với màn hình Thông tin đơn hàng)
+// 2. Model chính cho Đơn hàng
 class OrderModel {
   // Thông tin người nhận
   final String receiverName; // Người nhận: Liêm
@@ -39,7 +39,7 @@ class OrderModel {
   // Danh sách sản phẩm
   final List<OrderItem> items;
 
-  // Các tùy chọn bổ sung (Yêu cầu đặt biệt)
+  // Các tùy chọn bổ sung
   final String? note;           // Ghi chú
   final bool isTransferData;    // Chuyển dữ liệu
   final bool isExportInvoice;   // Xuất hóa đơn

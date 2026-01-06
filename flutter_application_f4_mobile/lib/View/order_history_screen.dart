@@ -1,34 +1,27 @@
 import 'package:flutter/material.dart';
 import '../../resources/app_colors.dart';
+import 'order_detail_screen.dart';
 
-class MyOrdersScreen extends StatefulWidget {
-  const MyOrdersScreen({super.key});
+class OrderHistoryScreen extends StatefulWidget {
+  const OrderHistoryScreen({super.key});
 
   @override
-  State<MyOrdersScreen> createState() => _MyOrdersScreenState();
+  State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
 }
 
-class _MyOrdersScreenState extends State<MyOrdersScreen> {
+class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   final List<String> _tabs = ["Tất cả", "Chờ xác nhận", "Đã hoàn thành", "Đã hủy"];
   int _selectedIndex = 0;
 
-  // --- 1. DỮ LIỆU GIẢ ---
+  // --- DỮ LIỆU GIẢ ---
   final List<Map<String, dynamic>> _allOrders = [
     {
       "id": "#OD001",
       "status": "Đã hoàn thành",
       "total": "35.000.000đ",
       "items": [
-        {
-          "name": "iPhone 13",
-          "price": "10.000.000đ",
-          "qty": 1,
-        },
-        {
-          "name": "MacBook Air M1",
-          "price": "25.000.000đ",
-          "qty": 1,
-        }
+        {"name": "iPhone 13", "price": "10.000.000đ", "qty": 1},
+        {"name": "MacBook Air M1", "price": "25.000.000đ", "qty": 1}
       ]
     },
     {
@@ -36,16 +29,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
       "status": "Chờ xác nhận",
       "total": "40.500.000đ",
       "items": [
-        {
-          "name": "iPhone 15 Pro Max",
-          "price": "30.000.000đ",
-          "qty": 1,
-        },
-        {
-          "name": "Ốp lưng MagSafe",
-          "price": "10.500.000đ",
-          "qty": 1,
-        }
+        {"name": "iPhone 15 Pro Max", "price": "30.000.000đ", "qty": 1},
+        {"name": "Ốp lưng MagSafe", "price": "10.500.000đ", "qty": 1}
       ]
     },
     {
@@ -53,11 +38,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
       "status": "Đã hủy",
       "total": "25.000.000đ",
       "items": [
-        {
-          "name": "Samsung S24 Ultra",
-          "price": "25.000.000đ",
-          "qty": 1,
-        }
+        {"name": "Samsung S24 Ultra", "price": "25.000.000đ", "qty": 1}
       ]
     },
   ];
@@ -71,10 +52,10 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundOrange,
+        backgroundColor: AppColors.primaryOrange,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         title: Container(
@@ -153,11 +134,10 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
     );
   }
 
-  // Widget hiển thị thẻ đơn hàng (Xử lý vòng lặp items)
   Widget _buildOrderCard(Map<String, dynamic> order) {
     Color statusColor;
     String status = order['status'];
-    List<dynamic> items = order['items']; // Lấy danh sách sản phẩm
+    List<dynamic> items = order['items'];
 
     switch (status) {
       case "Đã hoàn thành": statusColor = Colors.green; break;
@@ -166,117 +146,131 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
       default: statusColor = AppColors.primaryOrange;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OrderDetailScreen(
+              orderData: order,
+            ),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // 1. Trạng thái
-          Text(
-            status,
-            style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const Divider(),
-
-          // 2. VÒNG LẶP HIỂN THỊ CÁC SẢN PHẨM TRONG ĐƠN
-          ...items.map((item) {
-            return Column(
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // 1. Trạng thái và ID
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildSingleProductRow(item),
-                // Nếu không phải món cuối cùng thì thêm đường kẻ mờ
-                if (item != items.last) 
-                  Divider(color: Colors.grey.shade100, height: 20),
-              ],
-            );
-          }).toList(),
-
-          const SizedBox(height: 10),
-
-          // 3. Tổng tiền
-          RichText(
-            text: TextSpan(
-              text: "Tổng số tiền: ",
-              style: const TextStyle(color: Colors.black54),
-              children: [
-                TextSpan(
-                  text: order['total'],
-                  style: const TextStyle(color: AppColors.primaryOrange, fontSize: 16, fontWeight: FontWeight.bold),
+                Text(order['id'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  status,
+                  style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 12),
+            const Divider(),
 
-          // 4. Nút bấm
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (status == "Chờ xác nhận") ...[
-                OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            // 2. Sản phẩm
+            ...items.map((item) {
+              return Column(
+                children: [
+                  _buildSingleProductRow(item),
+                  if (item != items.last) Divider(color: Colors.grey.shade100, height: 20),
+                ],
+              );
+            }).toList(),
+
+            const SizedBox(height: 10),
+
+            // 3. Tổng tiền
+            RichText(
+              text: TextSpan(
+                text: "Tổng số tiền: ",
+                style: const TextStyle(color: Colors.black54),
+                children: [
+                  TextSpan(
+                    text: order['total'],
+                    style: const TextStyle(color: AppColors.primaryOrange, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  child: const Text("Hủy", style: TextStyle(color: Colors.red)),
-                ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // 4. Nút bấm
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (status == "Chờ xác nhận") ...[
+                  OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text("Hủy", style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+                if (status == "Đã hoàn thành") ...[
+                  OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.grey.shade300),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text("Xem đánh giá", style: TextStyle(color: Colors.grey)),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryOrange,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    child: const Text("Mua lại", style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+                if (status == "Đã hủy") ...[
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryOrange,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    child: const Text("Mua lại", style: TextStyle(color: Colors.white)),
+                  ),
+                ],
               ],
-              if (status == "Đã hoàn thành") ...[
-                OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey.shade300),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: const Text("Xem đánh giá", style: TextStyle(color: Colors.grey)),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryOrange,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    elevation: 0,
-                  ),
-                  child: const Text("Mua lại", style: TextStyle(color: Colors.white)),
-                ),
-              ],
-              if (status == "Đã hủy") ...[
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryOrange,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    elevation: 0,
-                  ),
-                  child: const Text("Mua lại", style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            ],
-          )
-        ],
+            )
+          ],
+        ),
       ),
     );
   }
 
-  // Hàm tách riêng để vẽ 1 dòng sản phẩm cho gọn
   Widget _buildSingleProductRow(Map<String, dynamic> item) {
     return Row(
       children: [
-        // Ảnh
         Container(
           width: 70,
           height: 70,
@@ -287,7 +281,6 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
           child: const Icon(Icons.phone_iphone, size: 40, color: Colors.grey),
         ),
         const SizedBox(width: 12),
-        // Thông tin
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

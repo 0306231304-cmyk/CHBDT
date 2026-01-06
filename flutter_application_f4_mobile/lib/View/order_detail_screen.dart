@@ -9,7 +9,6 @@ class OrderDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Bóc tách dữ liệu
     String status = orderData['status'];
     String total = orderData['total'];
     String id = orderData['id'];
@@ -22,19 +21,19 @@ class OrderDetailScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           "Thông tin đơn hàng",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // --- KHỐI 1: TRẠNG THÁI & ĐỊA CHỈ ---
+            // --- TRẠNG THÁI & ĐỊA CHỈ ---
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -89,7 +88,7 @@ class OrderDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // --- KHỐI 2: DANH SÁCH SẢN PHẨM ---
+            // --- DANH SÁCH SẢN PHẨM ---
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -185,7 +184,7 @@ class OrderDetailScreen extends StatelessWidget {
     }
   }
 
-  // Logic nút bấm
+  // 3. Logic nút bấm
   Widget _buildActionButtons(BuildContext context, String status) {
     // Trường hợp: Chờ xác nhận -> Cho phép Hủy
     if (status == "Chờ xác nhận") {

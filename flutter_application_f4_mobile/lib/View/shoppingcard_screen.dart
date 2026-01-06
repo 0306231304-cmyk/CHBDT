@@ -10,7 +10,7 @@ class ShoppingCardScreen extends StatefulWidget {
 }
 
 class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
-  // Dữ liệu giả mô phỏng theo hình Figma
+  // Dữ liệu giả
   final List<Map<String, dynamic>> _cartItems = [
     {"name": "iphone 13", "price": 10000000, "qty": 1, "image": "assets/iphone13.png"},
     {"name": "iphone 17", "price": 27740000, "qty": 3, "image": "assets/iphone17.png"},
@@ -121,7 +121,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Hình ảnh sản phẩm (Container xám nhạt như Figma)
+        // Hình ảnh sản phẩm
         Container(
           width: 80,
           height: 80,
@@ -158,7 +158,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                     "Giá ${_formatPrice(item['price'])}",
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
-                  // Bộ tăng giảm số lượng kiểu Figma
+                  // Bộ tăng giảm số lượng
                   Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.black87),

@@ -6,6 +6,7 @@ class OrderItem {
   final int price;
   int quantity;
   final String image;
+  int get totalPrice => price * quantity;
 
   OrderItem({
     required this.id,

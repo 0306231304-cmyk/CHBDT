@@ -4,6 +4,7 @@ import '../Category/category_screen.dart';
 import '../login_screen.dart';
 import '../../Controller/auth_controller.dart';
 import '../profile_screen.dart';
+import '../cart_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Map<String, dynamic>> products = [
     {
       "name": "Samsung A53",
-      "price": "12.000.000 VND",
+      "price": "12000000",
       "storage": "128GB",
       "img": "assets/images/anh6.png",
       // này là icon trái tim và chữ new -15%
@@ -64,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       "name": "Iphone 14 ProMax",
-      "price": "15.900.000 VND",
+      "price": "15900000",
       "storage": "1TB",
       "img": "assets/images/anh7.png",
       "tag": "NEW",
@@ -104,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       "name": "Huawei",
-      "price": "10.550.000 VND",
+      "price": "10550000",
       "storage": "256GB",
       "img": "assets/images/anh11.png",
       "tag": "",
@@ -142,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       "name": "Iphone 11",
-      "price": "10.990.000 VND",
+      "price": "10990000",
       "storage": "1TB",
       "img": "assets/images/anh9.png",
       "tag": "-15%",
@@ -180,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       "name": "SamSung A70",
-      "price": "10.000.000 VND",
+      "price": "10000000 VND",
       "storage": "256GB",
       "img": "assets/images/anh10.png",
       "tag": "-5%",

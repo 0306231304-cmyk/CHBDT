@@ -8,7 +8,7 @@ class ThanhToanOkScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundOrange, // Nền cam đồng bộ với app
+      backgroundColor: AppColors.backgroundOrange,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -45,7 +45,7 @@ class ThanhToanOkScreen extends StatelessWidget {
                       width: 150,
                       height: 150,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFD4F5E1), // Màu xanh nhạt bên ngoài
+                        color: const Color(0xFFD4F5E1),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -53,7 +53,7 @@ class ThanhToanOkScreen extends StatelessWidget {
                           width: 110,
                           height: 110,
                           decoration: const BoxDecoration(
-                            color: Color(0xFF4CD964), // Màu xanh lá đậm
+                            color: Color(0xFF4CD964),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -89,7 +89,7 @@ class ThanhToanOkScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 60),
 
-                    // Nút Xem lại đơn hàng (Màu đen)
+                    // Nút Xem lại đơn hàng
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(

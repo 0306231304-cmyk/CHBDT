@@ -1,23 +1,25 @@
-import app from "../index.js";
+import cartModel from "../models/cartModel.js";
+import couponModel from "../models/couponModel.js";
 import orderModel from "../models/orderModel.js";
-import userModel from "../models/userModel.js";
 
 export default class orderController{
     static async createOrder(req, res) {
         try {
-            const userId = req.userid; // Lấy từ Token
-            if(!userId) return res.status(401).json({succeeded: false, message: "Chưa đăng nhập"});
-            const { fullName, phone, address, note } = req.body;
+            const userId = req.userid; 
+            if (!userId) return res.status(401).json({ succeeded: false, message: "Chưa đăng nhập" });
+
+            // 1. Nhận dữ liệu (Chỉ nhận mã coupon, KHÔNG nhận giá tiền từ client gửi lên)
+            const { fullName, phone, address, city, note, coupon_code } = req.body;
 
             // Validate dữ liệu
-            if (!fullName || !phone || !address) {
-                return res.status(400).json({succeeded: false, message: "Thiếu thông tin giao hàng (tên, sđt, địa chỉ)" });
+            if (!fullName || !phone || !address || !city) {
+                return res.status(400).json({ succeeded: false, message: "Thiếu thông tin giao hàng (tên, sđt, địa chỉ, thành phố)" });
             }
 
-            const shippingData = { fullName, phone, address, note };
+            const shippingData = { fullName, phone, address, city, note };
 
-            // Gọi Model
-            const orderId = await orderModel.checkout(userId, shippingData);
+            // 2. Đẩy toàn bộ trách nhiệm tính tiền xuống Model (An toàn tuyệt đối)
+            const orderId = await orderModel.checkout(userId, shippingData, coupon_code);
 
             return res.status(201).json({
                 succeeded: true,
@@ -27,7 +29,8 @@ export default class orderController{
 
         } catch (error) {
             console.error("Checkout Error:", error);
-            return res.status(500).json({succeeded: false, message: error.message });
+            // Trả về lỗi 400 hoặc 500 tùy tình huống
+            return res.status(500).json({ succeeded: false, message: error.message });
         }
     }
 
@@ -53,6 +56,38 @@ export default class orderController{
                 succeeded: false,
                 message: "Lỗi thay đổi trạng thái đơn hàng: "+error.message
             });
+        }
+    }
+
+    static async getOrderDetail(req,res){
+        try{
+            const id = req.userid;
+            const {orderID} = req.params;
+            if(!id) return res.status(400).json({succeeded: false, message:"Bạn chưa đăng nhập"});
+            if(!orderID)return res.status(400).json({succeeded: false, message: 'Thiếu ID đơn hàng'});
+
+            const order = await orderModel.getOrderDetail(orderID);
+
+            return res.status(200).json({succeeded: true, message:"Lấy chi tiết hóa đơn thành công",
+                order: order
+            });
+
+        }
+        catch(error){
+            return res.status(500).json({
+                succeeded: false,
+                message:"Lỗi lấy chi tiết hóa đơn: "+ error.message
+            });
+        }
+    }
+    static async getOrders(req,res){
+        try{
+            const user_id = req.userid;
+            const orders = await orderModel.getListOrderByUserID(user_id);
+            return res.status(200).json({succeeded: true, message: "Lấy danh sách đơn hàng thành công", orders: orders});
+        }
+        catch(error){
+            return res.status(500).json({succeeded: false, message: "Lỗi lấy lịch sử đơn hàng của người dùng: " + error.message});
         }
     }
 }

@@ -28,7 +28,7 @@ export default class productController{
                 });
             }
             const product = await productModel.findProductByName(q);
-            if(!product) return res.status(404).json({succeeded: false, message: "Sản phẩm không tồn tại"});
+            if(!product || product.length === 0) return res.status(404).json({succeeded: false, message: "Sản phẩm không tồn tại"});
             return res.status(200).json({
                 succeeded: true,
                 count: product.length,

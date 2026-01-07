@@ -12,10 +12,11 @@ const productRoute = Router();
  * /products:
  *   get:
  *     summary: Lấy danh sách tất cả sản phẩm
- *     tags: [Products]
+ *     tags:
+ *       - Products
  *     responses:
  *       200:
- *         description: Lấy danh sách sản phẩm thành công
+ *         description: Thành công
  *         content:
  *           application/json:
  *             schema:
@@ -26,7 +27,6 @@ const productRoute = Router();
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Lấy danh sách sản phẩm thành công
  *                 products:
  *                   type: array
  *                   items:
@@ -34,15 +34,10 @@ const productRoute = Router();
  *                     properties:
  *                       id:
  *                         type: integer
- *                         example: 1
  *                       name:
  *                         type: string
- *                         example: iPhone 15
- *                       price:
- *                         type: number
- *                         example: 25000000
- *       500:
- *         description: Lỗi server
+ *                       image_url:
+ *                         type: string
  */
 productRoute.get('/',productController.products);
 /**
@@ -50,18 +45,19 @@ productRoute.get('/',productController.products);
  * /products/search:
  *   get:
  *     summary: Tìm kiếm sản phẩm theo tên
- *     tags: [Products]
+ *     tags:
+ *       - Products
  *     parameters:
  *       - in: query
  *         name: q
  *         required: true
  *         schema:
  *           type: string
- *         example: iphone
- *         description: Từ khóa tìm kiếm sản phẩm
+ *         description: Từ khóa tìm kiếm
+ *         example: "iPhone"
  *     responses:
  *       200:
- *         description: Tìm kiếm thành công
+ *         description: Tìm thấy sản phẩm
  *         content:
  *           application/json:
  *             schema:
@@ -72,35 +68,34 @@ productRoute.get('/',productController.products);
  *                   example: true
  *                 count:
  *                   type: integer
- *                   example: 2
- *                 product:
+ *                 products:
  *                   type: array
  *                   items:
  *                     type: object
  *       400:
- *         description: Không nhập từ khóa tìm kiếm
+ *         description: Chưa nhập từ khóa
  *       404:
- *         description: Sản phẩm không tồn tại
- *       500:
- *         description: Lỗi server
+ *         description: Không tìm thấy sản phẩm nào
  */
+
 productRoute.get('/search',productController.searchProduct);
 /**
  * @swagger
  * /products/{id}:
  *   get:
- *     summary: Lấy chi tiết sản phẩm theo ID
- *     tags: [Products]
+ *     summary: Xem chi tiết một sản phẩm (bao gồm các biến thể màu/RAM)
+ *     tags:
+ *       - Products
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: integer
- *         example: 1
+ *         description: ID của sản phẩm
  *     responses:
  *       200:
- *         description: Lấy chi tiết sản phẩm thành công
+ *         description: Lấy chi tiết thành công
  *         content:
  *           application/json:
  *             schema:
@@ -109,17 +104,20 @@ productRoute.get('/search',productController.searchProduct);
  *                 succeeded:
  *                   type: boolean
  *                   example: true
- *                 message:
- *                   type: string
- *                   example: Lấy chi tiết sản phẩm thành công
  *                 product:
  *                   type: object
- *       400:
- *         description: ID sản phẩm không hợp lệ
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     name:
+ *                       type: string
+ *                     variants:
+ *                       type: array
+ *                       description: Danh sách các phiên bản (màu, bộ nhớ)
+ *                       items:
+ *                         type: object
  *       404:
  *         description: Sản phẩm không tồn tại
- *       500:
- *         description: Lỗi server
  */
 productRoute.get('/:id', productController.detailProduct);
 

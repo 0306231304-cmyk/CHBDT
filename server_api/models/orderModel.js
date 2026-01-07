@@ -1,72 +1,142 @@
 import { beginTransaction, commitTransaction, rollbackTransaction, execute } from "../config/db.js";
+import couponModel from "./couponModel.js";
 
 export default class orderModel{
-    static async checkout(userId, shippingData) {
-        // 1. Khởi tạo transaction (Lấy kết nối riêng)
-        const conn = await beginTransaction();
+    // Helper: Lấy phí ship từ DB
+    static async getShippingFee(city) {
+        // Tìm chính xác hoặc tương đối
+        const [rows] = await execute('SELECT shipping_fee FROM shipping_rates WHERE province LIKE ?', [`%${city}%`]);
+        if (rows.length > 0) return parseFloat(rows[0].shipping_fee);
+        
+        // Nếu không tìm thấy, lấy giá mặc định (Khác)
+        const [defaultRow] = await execute("SELECT shipping_fee FROM shipping_rates WHERE province = 'Khác'");
+        return defaultRow.length > 0 ? parseFloat(defaultRow[0].shipping_fee) : 30000;
+    }
+
+    static async checkout(userId, shippingData, couponCode) {
+        const conn = await beginTransaction(); // Bắt đầu Transaction
 
         try {
-            // --- BƯỚC A: Lấy dữ liệu giỏ hàng & Check kho ---
-            // Lưu ý: Dùng conn.query thay vì execute
+            // =================================================
+            // BƯỚC 1: Lấy dữ liệu GIỎ HÀNG từ bảng CARTS
+            // =================================================
+            // Sửa lỗi: Lấy đúng cột stock_quantity
             const [cartItems] = await conn.query(
-                `SELECT ci.*, pv.price, pv.storage, pv.product_id 
-                 FROM cart_items ci
-                 JOIN product_variants pv ON ci.product_variant_id = pv.id
-                 WHERE ci.cart_id = (SELECT id FROM carts WHERE user_id = ?)`,
+                `SELECT c.product_variant_id, c.quantity, pv.price, pv.stock_quantity 
+                 FROM carts c
+                 JOIN product_variants pv ON c.product_variant_id = pv.id
+                 WHERE c.user_id = ? FOR UPDATE`, // FOR UPDATE để khóa dòng lại, tránh người khác mua tranh
                 [userId]
             );
 
-            if (cartItems.length === 0) {
-                throw new Error("Giỏ hàng trống!");
-            }
+            if (cartItems.length === 0) throw new Error("Giỏ hàng trống!");
 
-            let totalPrice = 0;
-            // Kiểm tra tồn kho và tính tổng tiền
+            // =================================================
+            // BƯỚC 2: Tính tổng tiền hàng & Check tồn kho
+            // =================================================
+            let provisionalTotal = 0; 
+
             for (const item of cartItems) {
-                if (item.quantity > item.inventory) {
-                    throw new Error(`Sản phẩm (ID: ${item.product_variant_id}) không đủ hàng. Chỉ còn ${item.inventory}.`);
+                if (item.quantity > item.stock_quantity) {
+                    throw new Error(`Sản phẩm (ID: ${item.product_variant_id}) không đủ hàng (chỉ còn ${item.stock_quantity})`);
                 }
-                totalPrice += item.price * item.quantity;
+                provisionalTotal += parseFloat(item.price) * item.quantity;
             }
 
-            // --- BƯỚC B: Tạo đơn hàng (INSERT orders) ---
-            const [orderResult] = await conn.query(
-                `INSERT INTO orders (user_id, full_name, phone_number, shipping_address, total_money, status, note, created_at)
-                 VALUES (?, ?, ?, ?, ?, 'pending', ?, NOW())`,
-                [userId, shippingData.fullName, shippingData.phone, shippingData.address, totalPrice, shippingData.note]
-            );
+            // =================================================
+            // BƯỚC 3: Tính phí Ship & Coupon (Tính lại từ đầu để bảo mật)
+            // =================================================
+            
+            // 3.1 Phí Ship
+            const shippingFee = await this.getShippingFee(shippingData.city);
 
+            // 3.2 Coupon
+            let discountAmount = 0;
+            let couponId = null;
+
+            if (couponCode) {
+                const coupon = await couponModel.getCouponByCode(couponCode);
+                
+                // Validate kỹ các điều kiện coupon
+                if (!coupon) throw new Error("Mã giảm giá không tồn tại");
+                if (!coupon.is_active) throw new Error("Mã giảm giá đang bị khóa");
+                if (coupon.usage_limit > 0 && coupon.used_count >= coupon.usage_limit) throw new Error("Mã giảm giá đã hết lượt dùng");
+                
+                const now = new Date();
+                if (coupon.end_date && new Date(coupon.end_date) < now) throw new Error("Mã giảm giá đã hết hạn");
+                if (provisionalTotal < parseFloat(coupon.min_order_value)) throw new Error(`Đơn hàng phải từ ${coupon.min_order_value} mới dùng được mã này`);
+
+                // Tính tiền giảm
+                if (coupon.discount_type === 'fixed') {
+                    discountAmount = parseFloat(coupon.discount_value);
+                } else {
+                    discountAmount = provisionalTotal * (parseFloat(coupon.discount_value) / 100);
+                    // Check trần giảm giá (max_discount_amount)
+                    if (coupon.max_discount_amount && discountAmount > parseFloat(coupon.max_discount_amount)) {
+                        discountAmount = parseFloat(coupon.max_discount_amount);
+                    }
+                }
+                couponId = coupon.id;
+            }
+
+            // 3.3 Tổng cuối
+            let finalTotal = provisionalTotal + shippingFee - discountAmount;
+            if (finalTotal < 0) finalTotal = 0;
+
+            // =================================================
+            // BƯỚC 4: Insert vào DB
+            // =================================================
+            
+            // 4.1 Tạo Order
+            const [orderResult] = await conn.query(
+                `INSERT INTO orders (user_id, full_name, phone_number, shipping_address, city, note, total_money, shipping_fee, coupon_id, status, created_at) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())`,
+                [
+                    userId, 
+                    shippingData.fullName, 
+                    shippingData.phone, 
+                    shippingData.address, 
+                    shippingData.city,
+                    shippingData.note, 
+                    finalTotal,
+                    shippingFee,
+                    couponId
+                ]
+            );
             const newOrderId = orderResult.insertId;
 
-            // --- BƯỚC C: Thêm chi tiết đơn & Trừ kho ---
+            // 4.2 Tạo Order Items & Trừ Kho
             for (const item of cartItems) {
-                // C.1 Insert chi tiết
+                // Lưu chi tiết đơn
                 await conn.query(
-                    `INSERT INTO order_items (order_id, product_variant_id, price, quantity)
-                     VALUES (?, ?, ?, ?)`,
-                    [newOrderId, item.product_variant_id, item.price, item.quantity]
+                    `INSERT INTO order_items (order_id, product_variant_id, quantity, price) VALUES (?, ?, ?, ?)`,
+                    [newOrderId, item.product_variant_id, item.quantity, item.price]
                 );
 
-                // C.2 Trừ kho (Dùng chính conn này để đảm bảo đồng bộ)
+                // Trừ kho ngay lập tức
                 await conn.query(
-                    `UPDATE product_variants SET storage = storage - ? WHERE id = ?`,
+                    `UPDATE product_variants SET stock_quantity = stock_quantity - ? WHERE id = ?`,
                     [item.quantity, item.product_variant_id]
                 );
             }
 
-            // --- BƯỚC D: Xóa giỏ hàng cũ ---
-            const cartId = cartItems[0].cart_id;
-            await conn.query("DELETE FROM cart_items WHERE cart_id = ?", [cartId]);
+            // 4.3 Tăng lượt dùng Coupon (nếu có)
+            if (couponId) {
+                await conn.query(`UPDATE coupons SET used_count = used_count + 1 WHERE id = ?`, [couponId]);
+            }
 
-            // 2. Mọi thứ OK -> Commit Transaction (Lưu thật & đóng kết nối)
+            // 4.4 Xóa giỏ hàng (Sửa lỗi: Xóa theo userId)
+            await conn.query("DELETE FROM carts WHERE user_id = ?", [userId]);
+
+            // =================================================
+            // HOÀN TẤT
+            // =================================================
             await commitTransaction(conn);
-
             return newOrderId;
 
         } catch (error) {
-            // 3. Có lỗi -> Rollback (Hoàn tác & đóng kết nối)
             await rollbackTransaction(conn);
-            throw error; // Ném lỗi ra để Controller bắt
+            throw error; 
         }
     }
 
@@ -90,6 +160,37 @@ export default class orderModel{
         }
         catch(error){
             throw new Error('Lỗi duyệt đơn hàng: '+error.message);
+        }
+    }
+
+    static async getOrderDetail(order_ID){
+        try{
+            const [orderDetail] = await execute(`
+                SELECT order_items.id as order_itemsID, orders.*, order_items.product_variant_id, order_items.quantity, order_items.price 
+                FROM orders, order_items 
+                WHERE orders.id = order_items.order_id AND orders.id = ?`, [order_ID]);
+            
+            if(orderDetail.length === 0) return[];
+            return orderDetail;
+        }
+        catch(error){
+            throw new Error('Lỗi lấy chi tiết đơn hàng: ' + error.message);
+        }
+    }
+
+    static async getListOrderByUserID(user_id){
+        try{
+            const [listOrder] = await execute(`
+                SELECT *
+                FROM orders
+                WHERE user_id = ?    
+            `, [user_id]);
+
+            if(listOrder.length === 0) return [];
+            return listOrder;
+        }
+        catch(error){
+            throw new Error('Lỗi lấy danh sách đơn hàng theo ID người dùng: ' + error.message);
         }
     }
 }

@@ -30,46 +30,155 @@ authOrderRoutes.use(auth);
  *               - fullName
  *               - phone
  *               - address
+ *               - city
  *             properties:
  *               fullName:
  *                 type: string
- *                 description: Họ tên người nhận
- *                 example: Nguyễn Văn A
+ *                 example: "Nguyễn Văn A"
  *               phone:
  *                 type: string
- *                 description: Số điện thoại người nhận
  *                 example: "0901234567"
  *               address:
  *                 type: string
- *                 description: Địa chỉ giao hàng
- *                 example: 123 Đường Nguyễn Huệ, Quận 1, TP.HCM
+ *                 description: Số nhà, tên đường
+ *                 example: "123 Đường ABC"
+ *               city:
+ *                 type: string
+ *                 description: Tên tỉnh/thành phố để tính phí ship
+ *                 example: "Hồ Chí Minh"
  *               note:
  *                 type: string
- *                 description: Ghi chú thêm (không bắt buộc)
- *                 example: Giao hàng vào giờ hành chính
+ *                 example: "Giao giờ hành chính"
+ *               coupon_code:
+ *                 type: string
+ *                 description: Mã giảm giá (nếu có)
+ *                 example: "GIAM20"
  *     responses:
  *       201:
  *         description: Đặt hàng thành công
+ *       400:
+ *         description: Thiếu thông tin hoặc mã giảm giá không hợp lệ/hết hạn
+ *       500:
+ *         description: Lỗi hết hàng hoặc lỗi server
+ */
+authOrderRoutes.post('/order', orderController.createOrder);
+
+/**
+ * @swagger
+ * /orders/order-history:
+ *   get:
+ *     summary: Lấy lịch sử mua hàng của người dùng
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lấy danh sách đơn hàng thành công
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
  *                 message:
  *                   type: string
- *                   example: Đặt hàng thành công
- *                 order_id:
- *                   type: integer
- *                   description: ID của đơn hàng vừa tạo
- *                   example: 15
- *       400:
- *         description: Thiếu thông tin giao hàng (Tên, SĐT, Địa chỉ)
+ *                   example: "Lấy danh sách đơn hàng thành công"
+ *                 orders:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 15
+ *                       total_price:
+ *                         type: number
+ *                         example: 25000000
+ *                       status:
+ *                         type: string
+ *                         example: "pending"
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
  *       401:
- *         description: Chưa đăng nhập (Token thiếu hoặc hết hạn)
+ *         description: Chưa đăng nhập
  *       500:
- *         description: Lỗi Server (Hết hàng tồn kho, lỗi DB...)
+ *         description: Lỗi server
  */
-authOrderRoutes.post('/order',orderController.createOrder);
+
+authOrderRoutes.get('/order-history',orderController.getOrders);
+
+/**
+ * @swagger
+ * /orders/{orderID}:
+ *   get:
+ *     summary: Lấy chi tiết đơn hàng theo ID
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orderID
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID của đơn hàng cần xem chi tiết
+ *         example: 15
+ *     responses:
+ *       200:
+ *         description: Lấy chi tiết đơn hàng thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Lấy chi tiết hóa đơn thành công"
+ *                 order:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 15
+ *                     user_id:
+ *                       type: integer
+ *                       example: 2
+ *                     status:
+ *                       type: string
+ *                       example: "shipping"
+ *                     items:
+ *                       type: array
+ *                       description: Danh sách sản phẩm trong đơn hàng
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           product_name:
+ *                             type: string
+ *                             example: "iPhone 15 Pro Max"
+ *                           quantity:
+ *                             type: integer
+ *                             example: 1
+ *                           price:
+ *                             type: number
+ *                             example: 34000000
+ *       400:
+ *         description: Thiếu ID đơn hàng hoặc ID không hợp lệ
+ *       401:
+ *         description: Chưa đăng nhập
+ *       404:
+ *         description: Không tìm thấy đơn hàng
+ *       500:
+ *         description: Lỗi server
+ */
+authOrderRoutes.get('/:orderID',orderController.getOrderDetail);
 
 
 orderRoutes.use('/',authOrderRoutes);

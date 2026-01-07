@@ -17,13 +17,14 @@ cartRoutes.use(auth);
  * @swagger
  * /cart:
  *   get:
- *     summary: Xem giỏ hàng
- *     tags: [Cart]
+ *     summary: Xem giỏ hàng hiện tại
+ *     tags:
+ *       - Cart
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lấy danh sách sản phẩm trong giỏ hàng thành công
+ *         description: Lấy danh sách thành công
  *         content:
  *           application/json:
  *             schema:
@@ -37,37 +38,34 @@ cartRoutes.use(auth);
  *                   items:
  *                     type: object
  *                     properties:
- *                       id:
+ *                       product_variant_id:
  *                         type: integer
- *                         example: 1
- *                       variant_id:
- *                         type: integer
- *                         example: 5
+ *                         example: 10
  *                       product_name:
  *                         type: string
- *                         example: "Áo thun nam"
+ *                         example: "iPhone 15 Pro Max"
  *                       color:
  *                         type: string
- *                         example: "Đen"
- *                       size:
+ *                         example: "Titan Tự nhiên"
+ *                       ram:
  *                         type: string
- *                         example: "M"
+ *                         example: "8GB"
+ *                       storage:
+ *                         type: string
+ *                         example: "256GB"
  *                       price:
  *                         type: number
- *                         format: float
- *                         example: 199000
+ *                         example: 29990000
  *                       quantity:
  *                         type: integer
  *                         example: 2
- *                       image:
+ *                       image_url:
  *                         type: string
- *                         example: "image_url.jpg"
+ *                         example: "https://example.com/image.jpg"
  *                 total_money:
  *                   type: number
- *                   format: float
- *                   example: 398000
- *       401:
- *         description: Chưa đăng nhập hoặc token không hợp lệ
+ *                   description: Tổng tiền tạm tính của cả giỏ
+ *                   example: 59980000
  *       500:
  *         description: Lỗi server
  */
@@ -78,7 +76,8 @@ cartRoutes.get('/', cartController.viewCart);
  * /cart/add:
  *   post:
  *     summary: Thêm sản phẩm vào giỏ hàng
- *     tags: [Cart]
+ *     tags:
+ *       - Cart
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -93,28 +92,17 @@ cartRoutes.get('/', cartController.viewCart);
  *             properties:
  *               variant_id:
  *                 type: integer
+ *                 description: ID của phiên bản sản phẩm (Product Variant ID)
  *                 example: 5
  *               quantity:
  *                 type: integer
+ *                 description: Số lượng muốn mua
  *                 example: 1
  *     responses:
  *       200:
- *         description: Thêm vào giỏ hàng thành công
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 succeeded:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Đã thêm vào giỏ"
+ *         description: Thêm thành công
  *       400:
- *         description: Thiếu thông tin variant_id hoặc quantity
- *       401:
- *         description: Chưa đăng nhập hoặc token không hợp lệ
+ *         description: Thiếu thông tin
  *       500:
  *         description: Lỗi server
  */

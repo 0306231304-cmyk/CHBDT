@@ -15,8 +15,9 @@ authRoutes.use(auth);
  * @swagger
  * /register:
  *   post:
- *     summary: Đăng ký tài khoản người dùng
- *     tags: [Users]
+ *     summary: Đăng ký tài khoản mới
+ *     tags:
+ *       - Users
  *     requestBody:
  *       required: true
  *       content:
@@ -32,34 +33,49 @@ authRoutes.use(auth);
  *             properties:
  *               email:
  *                 type: string
- *                 example: user@gmail.com
+ *                 format: email
+ *                 example: user@example.com
  *               password:
  *                 type: string
- *                 example: Abc@1234
+ *                 format: password
+ *                 example: Pass@1234
  *               fullName:
  *                 type: string
  *                 example: Nguyễn Văn A
  *               phoneNumber:
  *                 type: string
- *                 example: "0123456789"
+ *                 example: "0987654321"
  *               address:
  *                 type: string
- *                 example: Hà Nội
+ *                 example: "123 Đường ABC, Quận 1, TP.HCM"
  *     responses:
  *       201:
  *         description: Đăng ký thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Đăng ký thành công
+ *                 user_id:
+ *                   type: integer
+ *                   example: 10
  *       400:
- *         description: Dữ liệu không hợp lệ
- *       409:
- *         description: Email đã tồn tại
+ *         description: Thiếu thông tin hoặc Email đã tồn tại
  */
 userRoutes.post('/register',userController.register);
 /**
  * @swagger
  * /login:
  *   post:
- *     summary: Đăng nhập người dùng
- *     tags: [Users]
+ *     summary: Đăng nhập (User)
+ *     tags:
+ *       - Users
  *     requestBody:
  *       required: true
  *       content:
@@ -72,13 +88,24 @@ userRoutes.post('/register',userController.register);
  *             properties:
  *               email:
  *                 type: string
- *                 example: user@gmail.com
+ *                 example: user@example.com
  *               password:
  *                 type: string
- *                 example: Abc@1234
+ *                 example: Pass@1234
  *     responses:
  *       200:
- *         description: Đăng nhập thành công, trả về JWT
+ *         description: Đăng nhập thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
+ *                 token:
+ *                   type: string
+ *                   description: JWT Token dùng để xác thực các request sau
  *       401:
  *         description: Sai email hoặc mật khẩu
  */
@@ -102,25 +129,46 @@ authRoutes.post('/logout',userController.logout);
  * @swagger
  * /profile:
  *   get:
- *     summary: Lấy thông tin người dùng hiện tại
- *     tags: [Users]
+ *     summary: Xem thông tin cá nhân
+ *     tags:
+ *       - Users
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Thành công
+ *         description: Lấy thông tin thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     fullname:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     phone_number:
+ *                       type: string
+ *                     address:
+ *                       type: string
  *       401:
- *         description: Chưa đăng nhập
- *       404:
- *         description: Không tìm thấy người dùng
+ *         description: Chưa đăng nhập (Thiếu token)
  */
 authRoutes.get('/profile',userController.profile);
 /**
  * @swagger
  * /updateprofile:
  *   put:
- *     summary: Cập nhật thông tin người dùng
- *     tags: [Users]
+ *     summary: Cập nhật thông tin cá nhân
+ *     tags:
+ *       - Users
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -136,20 +184,29 @@ authRoutes.get('/profile',userController.profile);
  *             properties:
  *               fullName:
  *                 type: string
- *                 example: Nguyễn Văn B
+ *                 example: "Nguyễn Văn B"
  *               phoneNumber:
  *                 type: string
- *                 example: "0987654321"
+ *                 example: "0123456789"
  *               address:
  *                 type: string
- *                 example: TP.HCM
+ *                 example: "Hà Nội"
  *     responses:
  *       200:
  *         description: Cập nhật thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Đổi thông tin thành công
  *       400:
- *         description: Thiếu thông tin
- *       401:
- *         description: Chưa đăng nhập
+ *         description: Thiếu thông tin đầu vào
  */
 authRoutes.put('/updateprofile',userController.updateUser);
 

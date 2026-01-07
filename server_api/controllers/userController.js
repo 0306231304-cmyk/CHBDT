@@ -1,7 +1,6 @@
 import {hash, compare} from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
-import cartModel from '../models/cartModel.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
@@ -79,8 +78,7 @@ export default class userController{
             PhoneNumber: phoneNumber
         });
 
-        if (!newId) throw new Error('User creation failed');
-        await cartModel.createCartForUser(newId);
+        if (!newId) return res.status(500).json({succeeded:false, message: "Tạo tài khoản thất bại"});
         return res.status(201).json({
             succeeded: true, 
             user: { id: newId, email }

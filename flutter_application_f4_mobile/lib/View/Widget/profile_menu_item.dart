@@ -9,13 +9,13 @@ class ProfileMenuItem extends StatelessWidget {
   final bool isLast;
 
   const ProfileMenuItem({
-    Key? key,
+    super.key,
     required this.icon,
     required this.text,
     required this.onTap,
     this.textColor = Colors.black87,
     this.isLast = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

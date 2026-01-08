@@ -4,7 +4,7 @@ import 'admin_order_detail_screen.dart';
 import '../login_screen.dart';
 
 class AdminOrderListScreen extends StatefulWidget {
-  const AdminOrderListScreen({Key? key}) : super(key: key);
+  const AdminOrderListScreen({super.key});
 
   @override
   State<AdminOrderListScreen> createState() => _AdminOrderListScreenState();

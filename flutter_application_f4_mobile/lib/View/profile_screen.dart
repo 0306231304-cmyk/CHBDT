@@ -9,7 +9,7 @@ import 'order_history_screen.dart';
 import 'Widget/profile_menu_item.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();

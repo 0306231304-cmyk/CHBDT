@@ -196,7 +196,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   if (item != items.last) Divider(color: Colors.grey.shade100, height: 20),
                 ],
               );
-            }).toList(),
+            }),
 
             const SizedBox(height: 10),
 

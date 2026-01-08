@@ -5,7 +5,7 @@ import 'thanhtoanok_screen.dart';
 import '../Model/order_model.dart';
 
 class CheckoutScreen extends StatefulWidget {
-  const CheckoutScreen({Key? key}) : super(key: key);
+  const CheckoutScreen({super.key});
 
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
@@ -20,7 +20,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String _appliedCode = "";
   int _discount = 0;
   final int _promoLimit = 10;
-  int _promoUsed = 8; // Giả định đã dùng 8/10 suất
+  final int _promoUsed = 8; // Giả định đã dùng 8/10 suất
 
   @override
   void initState() {
@@ -164,8 +164,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                       const SizedBox(height: 30),
                       CustomButton(text: "Thanh toán", onPressed: () {
-                        if (_isEWallet || _isCOD) Navigator.push(context, MaterialPageRoute(builder: (context) => const ThanhToanOkScreen()));
-                        else _showNotify("Vui lòng chọn phương thức thanh toán!");
+                        if (_isEWallet || _isCOD) {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const ThanhToanOkScreen()));
+                        } else {
+                          _showNotify("Vui lòng chọn phương thức thanh toán!");
+                        }
                       }),
                     ],
                   ),

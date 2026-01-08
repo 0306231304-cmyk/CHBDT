@@ -5,13 +5,11 @@ import '../Category/category_screen.dart';
 import '../login_screen.dart';
 import '../../Controller/auth_controller.dart';
 import '../profile_screen.dart';
-<<<<<<< HEAD
 import 'package:shared_preferences/shared_preferences.dart';
-=======
-import '../cart_screen.dart';
 import '../../Resources/app_colors.dart';
+import '../Product/all_product_screen.dart';
+import '../Category/product_by_category_screen.dart';
 
->>>>>>> 818f8ec67931c8a2fa616a0523264d344c34c2d8
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -28,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Map<String, dynamic>> products = [
     {
       "name": "Samsung A53",
-      "price": "12000000",
+      "price": "12.000.000 VND",
       "storage": "128GB",
       "img": "assets/images/anh6.png",
       // này là icon trái tim và chữ new -15%
@@ -71,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       "name": "Iphone 14 ProMax",
-      "price": "15900000",
+      "price": "15.900.000 VND",
       "storage": "1TB",
       "img": "assets/images/anh7.png",
       "tag": "NEW",
@@ -111,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       "name": "Huawei",
-      "price": "10550000",
+      "price": "10.550.000 VND",
       "storage": "256GB",
       "img": "assets/images/anh11.png",
       "tag": "",
@@ -149,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       "name": "Iphone 11",
-      "price": "10990000",
+      "price": "10.990.000 VND",
       "storage": "1TB",
       "img": "assets/images/anh9.png",
       "tag": "-15%",
@@ -187,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       "name": "SamSung A70",
-      "price": "10000000 VND",
+      "price": "10.000.000 VND",
       "storage": "256GB",
       "img": "assets/images/anh10.png",
       "tag": "-5%",
@@ -266,12 +264,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 // ✅ FIX DUY NHẤT Ở ĐÂY
                 _buildSectionTitle(
-                  "Categories",
+                  "Categories", 
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => const CategoryScreen(),
+                        
                       ),
                     );
                   },
@@ -280,7 +279,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildCategoryList(),
 
                 // ❌ FEATURED KHÔNG CÓ onTap → KHÔNG CHUYỂN TRANG
-                _buildSectionTitle("Featured products"),
+                _buildSectionTitle(
+                  "Featured products",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AllProductsScreen(
+                          products: products,
+                        ),
+                      ),
+                    );
+                  },
+                ),
 
                 _buildProductGrid(constraints),
               ],
@@ -306,11 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () {
             Navigator.push(
               context,
-<<<<<<< HEAD
               MaterialPageRoute(builder: (context) => const ShoppingCardScreen()),
-=======
-              MaterialPageRoute(builder: (context) => const CartScreen()),
->>>>>>> 818f8ec67931c8a2fa616a0523264d344c34c2d8
             );
           },
         ),
@@ -388,12 +395,30 @@ class _HomeScreenState extends State<HomeScreen> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: products.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      /*gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: constraints.maxWidth > 1200 ? 4 : 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
         childAspectRatio: constraints.maxWidth > 1200 ? 0.9 : 0.75,
+      ),*/
+
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: constraints.maxWidth >= 1200
+            ? 4
+            : constraints.maxWidth >= 800
+                ? 3
+                : 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+
+        // 🔥 QUAN TRỌNG NHẤT
+        childAspectRatio: constraints.maxWidth >= 1200
+            ? 0.85   // Web lớn
+            : constraints.maxWidth >= 800
+                ? 0.8 // Tablet / web nhỏ
+                : 0.7 // 📱 Điện thoại
       ),
+
       itemBuilder: (context, index) {
         return _buildProductCard(index);
       },
@@ -466,9 +491,10 @@ Widget _buildProductCard(int index) {
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 32,
-                  child: p['showQty']
+                  child: _buildAddToCartBtn(index),
+                  /*child: p['showQty']
                       ? _buildQtySelector(index)
-                      : _buildAddToCartBtn(index),
+                      : _buildAddToCartBtn(index),*/
                 ),
               ],
             ),
@@ -533,14 +559,17 @@ Widget _buildProductCard(int index) {
   );
 }
 
-  /* ======================= ADD / QTY ======================= */
   Widget _buildAddToCartBtn(int index) {
     return InkWell(
       onTap: () {
-        setState(() {
-          products[index]['showQty'] = true;
-          products[index]['qty'] = 1;
-        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProductDetailScreen(
+              product: products[index],
+            ),
+          ),
+        );
       },
       child: Container(
         height: 32,
@@ -562,6 +591,7 @@ Widget _buildProductCard(int index) {
       ),
     );
   }
+
 
   Widget _buildQtySelector(int index) {
     return Container(
@@ -612,31 +642,64 @@ Widget _buildProductCard(int index) {
       {"name": "OPPO", "img": 'assets/images/anh4.png'},
       {"name": "HUAWEI", "img": 'assets/images/anh5.png'},
     ];
-
-    return Row(
+    
+        return Row(
       children: categories.map((cat) {
         return Expanded(
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: const Color(0xFFF9F9F9),
-                child: Image.asset(cat['img']!, fit: BoxFit.contain),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                cat['name']!,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              bool isHover = false;
+
+              return MouseRegion(
+                onEnter: (_) => setState(() => isHover = true),
+                onExit: (_) => setState(() => isHover = false),
+                cursor: SystemMouseCursors.click,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProductByCategoryScreen(
+                          category: cat['name']!.toLowerCase(),
+                        ),
+                      ),
+                    );
+                  },
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent, // 🚫 không hover toàn card
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor:
+                            isHover ? Colors.black : const Color(0xFFF9F9F9),
+                        child: Image.asset(
+                          cat['img']!,
+                          fit: BoxFit.contain,
+                          color: isHover ? Colors.white : null, // icon đổi màu
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        cat['name']!,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              );
+            },
           ),
         );
       }).toList(),
     );
+
+
   }
   
   /* ======================= SECTION TITLE =======================

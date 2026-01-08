@@ -15,70 +15,256 @@ class _ProductByCategoryScreenState extends State<ProductByCategoryScreen> {
     final Map<String, List<Map<String, dynamic>>> data = {
       "apple": [
         {
-          "name": "iPhone 14 Pro",
-          "price": "25.000.000 VND",
-          "storage": "256GB",
+          "name": "Iphone 14 ProMax",
+          "price": "15.900.000 VND",
+          "storage": "1TB",
           "img": "assets/images/anh15.png",
           "tag": "NEW",
           "isFav": false,
-          "showQty": false,
-          "qty": 0,
+          "showQty": true,
+          "qty": 1,
+          "rating": 4.8,
+          "ratingPercent": {
+            5: 0.7,   // 80%
+            4: 0.10,  // 12%
+            3: 0.03,
+            2: 0.02,
+            1: 0.01,
+          },
+          
+          "reviewCount": 20,
+          "stock": 120,
+          "desc": [
+            "Chip A16 Bionic mạnh mẽ",
+            "Camera 48MP siêu nét",
+            "Màn hình ProMotion 120Hz",
+            "Thiết kế cao cấp"
+          ],
+          "colors": [Colors.black, Colors.blue, Colors.white],
+          "reviewList": [
+            {
+              "user": "Nguyễn Văn A",
+              "star": 5,
+              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
+            },
+            {
+              "user": "Trần Thị B",
+              "star": 4,
+              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
+            },
+          ],
         },
         {
-          "name": "iPhone 11",
+          "name": "Iphone 11",
           "price": "10.990.000 VND",
-          "storage": "128GB",
+          "storage": "1TB",
           "img": "assets/images/anh9.png",
           "tag": "-15%",
           "isFav": false,
           "showQty": false,
           "qty": 0,
+          "rating": 4.5,
+          "stock": 60,
+          "reviewCount": 100,
+          "ratingPercent": {
+            5: 0.10,   // 80%
+            4: 0.09,  // 12%
+            3: 0.04,
+            2: 0.03,
+            1: 0.06,
+          },
+          "desc": [
+            "Chip A13 mạnh mẽ",
+            "Camera kép chụp đẹp",
+            "Pin ổn định"
+          ],
+          "colors": [Colors.black, Colors.white, Colors.red],
+          "reviewList": [
+            {
+              "user": "Nguyễn Văn e",
+              "star": 5,
+              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
+            },
+            {
+              "user": "Trần Thị f",
+              "star": 4,
+              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
+            },
+          ],
         },
       ],
       "samsung": [
         {
-          "name": "Samsung S23",
-          "price": "18.000.000 VND",
-          "storage": "256GB",
-          "img": "assets/images/anh6.png",
-          "tag": "NEW",
-          "isFav": false,
-          "showQty": false,
-          "qty": 0,
-        },
-        {
           "name": "Samsung A53",
           "price": "12.000.000 VND",
           "storage": "128GB",
-          "img": "assets/images/anh10.png",
+          "img": "assets/images/anh6.png",
+          // này là icon trái tim và chữ new -15%
           "tag": "",
           "isFav": false,
-          "showQty": false,
-          "qty": 0,
+          "showQty": false,// thanh số lượng
+
+          "qty": 0,// số lượng
+          "rating": 4.9,
+          "ratingPercent": {// % sao cho mỗi sản phẩm
+            5: 0.8,   // 80%
+            4: 0.12,  // 12%
+            3: 0.05,
+            2: 0.02,
+            1: 0.01,
+          },
+          
+          "reviewCount": 47,
+          "stock": 300,
+          "desc": [
+            "Chip xử lý mạnh mẽ, tiết kiệm pin",
+            "Camera chất lượng cao, chụp đêm tốt",
+            "Màn hình lớn, hiển thị sắc nét",
+            "Thiết kế sang trọng, cao cấp"
+          ],
+          "colors": [Colors.black, Colors.blue, Colors.white],
+          "reviewList": [
+            {
+              "user": "Nguyễn Văn A",
+              "star": 5,
+              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
+            },
+            {
+              "user": "Trần Thị B",
+              "star": 4,
+              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
+            },
+          ],
+        },
+        {
+          "name": "Samsung A70",
+          "price": "10.000.000 VND",
+          "storage": "128GB",
+          "img": "assets/images/anh10.png",
+          // này là icon trái tim và chữ new -15%
+          "tag": "",
+          "isFav": false,
+          "showQty": false,// thanh số lượng
+
+          "qty": 0,// số lượng
+          "rating": 4.9,
+          "ratingPercent": {// % sao cho mỗi sản phẩm
+            5: 0.8,   // 80%
+            4: 0.12,  // 12%
+            3: 0.05,
+            2: 0.02,
+            1: 0.01,
+          },
+          
+          "reviewCount": 47,
+          "stock": 300,
+          "desc": [
+            "Chip xử lý mạnh mẽ, tiết kiệm pin",
+            "Camera chất lượng cao, chụp đêm tốt",
+            "Màn hình lớn, hiển thị sắc nét",
+            "Thiết kế sang trọng, cao cấp"
+          ],
+          "colors": [Colors.black, Colors.blue, Colors.white],
+          "reviewList": [
+            {
+              "user": "Nguyễn Văn A",
+              "star": 5,
+              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
+            },
+            {
+              "user": "Trần Thị B",
+              "star": 4,
+              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
+            },
+          ],
         },
       ],
       "xiaomi": [
         {
           "name": "Xiaomi 13",
-          "price": "9.500.000 VND",
-          "storage": "256GB",
-          "img": "assets/images/anh11.png",
+          "price": "20.000.000 VND",
+          "storage": "128GB",
+          "img": "assets/images/anh13.png",
+          // này là icon trái tim và chữ new -15%
           "tag": "",
           "isFav": false,
-          "showQty": false,
-          "qty": 0,
+          "showQty": false,// thanh số lượng
+
+          "qty": 0,// số lượng
+          "rating": 4.9,
+          "ratingPercent": {// % sao cho mỗi sản phẩm
+            5: 0.8,   // 80%
+            4: 0.12,  // 12%
+            3: 0.05,
+            2: 0.02,
+            1: 0.01,
+          },
+          
+          "reviewCount": 47,
+          "stock": 300,
+          "desc": [
+            "Chip xử lý mạnh mẽ, tiết kiệm pin",
+            "Camera chất lượng cao, chụp đêm tốt",
+            "Màn hình lớn, hiển thị sắc nét",
+            
+          ],
+          "colors": [Colors.black, Colors.blue, Colors.white],
+          "reviewList": [
+            {
+              "user": "Nguyễn Văn A",
+              "star": 5,
+              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
+            },
+            {
+              "user": "Trần Thị B",
+              "star": 4,
+              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
+            },
+          ],
         },
       ],
       "oppo": [
         {
           "name": "Oppo Reno 10",
           "price": "11.000.000 VND",
-          "storage": "256GB",
-          "img": "assets/images/anh16.png",
+          "storage": "128GB",
+          "img": "assets/images/anh17.png",
+          // này là icon trái tim và chữ new -15%
           "tag": "",
           "isFav": false,
-          "showQty": false,
-          "qty": 0,
+          "showQty": false,// thanh số lượng
+
+          "qty": 0,// số lượng
+          "rating": 4.9,
+          "ratingPercent": {// % sao cho mỗi sản phẩm
+            5: 0.8,   // 80%
+            4: 0.12,  // 12%
+            3: 0.05,
+            2: 0.02,
+            1: 0.01,
+          },
+          
+          "reviewCount": 47,
+          "stock": 300,
+          "desc": [
+            "Chip xử lý mạnh mẽ, tiết kiệm pin",
+            
+            "Màn hình lớn, hiển thị sắc nét",
+            
+          ],
+          "colors": [Colors.black, Colors.blue, Colors.white],
+          "reviewList": [
+            {
+              "user": "Nguyễn Văn A",
+              "star": 5,
+              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
+            },
+            {
+              "user": "Trần Thị B",
+              "star": 4,
+              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
+            },
+          ],
         },
       ],
     };

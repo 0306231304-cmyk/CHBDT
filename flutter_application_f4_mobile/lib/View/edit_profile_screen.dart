@@ -2,99 +2,133 @@ import 'package:flutter/material.dart';
 import '../../resources/app_colors.dart';
 import 'Widget/custom_button.dart';
 import 'Widget/custom_textfield.dart';
+import '../Controller/auth_controller.dart'; 
+import '../Model/User.dart'; 
 
 class EditProfileScreen extends StatefulWidget {
-  const EditProfileScreen({Key? key}) : super(key: key);
+  final User? currentUser; 
+  const EditProfileScreen({Key? key, this.currentUser}) : super(key: key);
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  // Tạo controller có sẵn dữ liệu giả
-  final _nameController = TextEditingController(text: "Lois Becket");
-  final _emailController = TextEditingController(text: "Loisbecket@gmail.com");
-  final _dobController = TextEditingController(text: "18/03/2024");
-  final _phoneController = TextEditingController(text: "(454) 726-0592");
-  final _addressController = TextEditingController(text: "123 ABC Street");
+  // Khởi tạo các controller
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
+  late TextEditingController _addressController;
+  final AuthController _authController = AuthController();
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.currentUser?.fullname ?? "");
+    _emailController = TextEditingController(text: widget.currentUser?.email ?? "");
+    _phoneController = TextEditingController(text: widget.currentUser?.phone_number ?? "");
+    _addressController = TextEditingController(text: widget.currentUser?.address ?? "");
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _dobController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
     super.dispose();
   }
 
-  void _handleSave() {
-    // 1. Kiểm tra nhập đủ
-    if (_nameController.text.isEmpty || 
-        _emailController.text.isEmpty ||
-        _addressController.text.isEmpty) {
-       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Vui lòng nhập đầy đủ thông tin"), backgroundColor: Colors.red),
-       );
+  Future<void> _handleSave() async {
+    if (_nameController.text.isEmpty) {
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tên không được để trống"), backgroundColor: Colors.red));
        return;
     }
 
-    // 2. Giả lập lưu thành công
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Cập nhật thông tin thành công!")),
+    setState(() => _isLoading = true); 
+
+    bool isSuccess = await _authController.updateProfile(
+      fullName: _nameController.text.trim(),
+      phoneNumber: _phoneController.text.trim(),
+      address: _addressController.text.trim(),
     );
-    Navigator.pop(context); // Quay về màn hình Profile
+
+    setState(() => _isLoading = false); 
+
+    if (isSuccess) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cập nhật thành công!"), backgroundColor: Colors.green));
+      Navigator.pop(context, true);
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cập nhật thất bại"), backgroundColor: Colors.red));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = widget.currentUser;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundOrange,
-      // Nút Back trên Appbar
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        title: const Text("Chỉnh sửa thông tin", style: TextStyle(color: Colors.white)),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Column(
         children: [
           const SizedBox(height: 10),
-          // Phần nội dung trắng bo góc
           Expanded(
             child: Container(
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               ),
               padding: const EdgeInsets.all(24),
               child: SingleChildScrollView(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Center(
-                      child: Text("Cập nhật thông tin", 
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-
-                    CustomTextField(label: "Họ và Tên", hint: "Nhập tên...", controller: _nameController),
-                    CustomTextField(label: "Email", hint: "Nhập email...", controller: _emailController, keyboardType: TextInputType.emailAddress),
-                    CustomTextField(label: "Ngày sinh", hint: "dd/mm/yyyy", controller: _dobController, suffixIcon: Icons.calendar_today_outlined),
-                    CustomTextField(label: "Số điện thoại", hint: "Nhập sđt...", controller: _phoneController, keyboardType: TextInputType.phone),
-                    CustomTextField(label: "Địa chỉ", hint: "Nhập địa chỉ...", controller: _addressController),
-
                     const SizedBox(height: 20),
+                    
+                    CustomTextField(
+                       label: "Email (Không thể sửa)", 
+                       hint: user?.email ?? "Email",
+                       controller: _emailController,
+                       readOnly: true,
+                    ),
+
+                    CustomTextField(
+                      label: "Họ và Tên", 
+                      hint: user?.fullname ?? "Nhập tên...",
+                      controller: _nameController
+                    ),
+
+                    CustomTextField(
+                      label: "Số điện thoại", 
+                      hint: user?.phone_number ?? "Nhập sđt...",
+                      controller: _phoneController, 
+                      keyboardType: TextInputType.phone
+                    ),
+
+                    CustomTextField(
+                      label: "Địa chỉ", 
+                      hint: user?.address ?? "Nhập địa chỉ...",
+                      controller: _addressController
+                    ),
+
+                    const SizedBox(height: 30),
+                    
                     CustomButton(
-                      text: "Lưu thay đổi",
-                      onPressed: _handleSave,
+                      text: _isLoading ? "Đang xử lý..." : "Đăng ký", 
+                      onPressed: _isLoading ? () {} : _handleSave,
                     ),
                   ],
                 ),

@@ -41,4 +41,21 @@ export default class productModel{
             throw new Error("Database query failed: " + error.message);
         }
     }
+
+    static async findProductVariantById(product_variant_id){
+        try{
+            const [product_variants] = await execute(`
+                    SELECT * FROM product_variants p WHERE p.id = ?
+                `,[product_variant_id]);
+
+            if(product_variants.length === 0) {
+                throw new Error('Không tìm thấy sản phẩm này');
+            }
+
+            return product_variants[0] ?? null;
+        }
+        catch(error){
+            throw new Error('Lỗi Lấy biến thể sản phẩm bằng id: ' + error.message)
+        }
+    }
 }

@@ -19,7 +19,6 @@ export default class userController{
         if(!email || !password) return res.status(400).json({succeeded: false, message: "Thiếu Email hoặc Mật khẩu"});
 
         const user = await userModel.findByUsername(email);
-        console.log(user);
         if(!user) return res.status(401).json({succeeded: false, message: 'Không tìm thấy Email'});
         const isMatch = await compare(password, user.password);
         if(!isMatch) return res.status(401).json({succeeded: false, message: "Sai mật khẩu"});
@@ -155,5 +154,22 @@ export default class userController{
             });
         }
 
+    }
+    static async changePassword(req,res){
+        try{
+            const user_id = req.userid;
+            const {newPassword} = req.body;
+
+            if(!newPassword) return res.status(400).json({succeeded: false, message: "Thiếu mật khẩu mới "});
+            await userModel.changePass(newPassword,user_id);
+
+            return res.status(200).json({succeeded: true, message: "Đổi mật khẩu thành công"});
+        }
+        catch(error){
+            return res.status(500).json({
+                succeeded:false,
+                message: "Lỗi đổi mật khẩu: " + error.message
+            });
+        }
     }
 }

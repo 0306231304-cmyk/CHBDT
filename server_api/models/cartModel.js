@@ -61,21 +61,24 @@ export default class cartModel{
             return []; 
         }
 
-        const cartId = cartRows[0].id; // Lúc này mới an toàn để lấy ID
-
-        const query = `
-                SELECT 
-                    c.product_variant_id, 
-                    c.quantity,
-                    p.name as product_name,
-                    pv.color, pv.ram, pv.storage, pv.price, pv.image_url, pv.stock_quantity
-                FROM carts c
-                JOIN product_variants pv ON c.product_variant_id = pv.id
-                JOIN products p ON pv.product_id = p.id
-                WHERE c.user_id = ?
-            `;
-        const [items] = await execute(query, [cartId]);
-        console.log("DEBUG: Kết quả tìm items:", items);
+        const [items] = await execute(`
+            SELECT 
+                product_variants.id as product_variant_id, 
+                product_variants.price, 
+                product_variants.image_url,
+                product_variants.color,
+                product_variants.ram,
+                product_variants.storage,
+                products.name,
+                carts.quantity
+            FROM 
+                carts, product_variants, products 
+            WHERE 
+                carts.product_variant_id = product_variants.id 
+                AND carts.user_id = 7 
+                AND product_variants.product_id = products.id;
+        `,[userId]);
+        console.log('DEBUG: Kết quả tìm item: ', items);
         return items;
     }
 

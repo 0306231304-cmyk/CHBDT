@@ -18,11 +18,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         fontFamily: 'Roboto',
       ),
-<<<<<<< HEAD
-      home:  LoginScreen(),
-=======
       home:  HomeScreen(),
->>>>>>> 9d899fdb26a436606bfb35ee1e51d527182369ab
     );
   }
 }

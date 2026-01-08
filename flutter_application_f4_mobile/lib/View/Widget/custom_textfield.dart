@@ -8,6 +8,7 @@ class CustomTextField extends StatefulWidget {
   final bool isPassword;
   final IconData? suffixIcon;
   final TextInputType keyboardType;
+  final bool readOnly;
 
   const CustomTextField({
     Key? key,
@@ -17,6 +18,7 @@ class CustomTextField extends StatefulWidget {
     this.isPassword = false,
     this.suffixIcon,
     this.keyboardType = TextInputType.text,
+    this.readOnly = false,
   }) : super(key: key);
 
   @override
@@ -44,10 +46,16 @@ class _CustomTextFieldState extends State<CustomTextField> {
           controller: widget.controller,
           obscureText: widget.isPassword ? _obscureText : false,
           keyboardType: widget.keyboardType,
+          
+          readOnly: widget.readOnly, 
+
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: TextStyle(color: Colors.grey.shade400),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            filled: widget.readOnly, 
+            fillColor: widget.readOnly ? Colors.grey.shade100 : null,
+
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey.shade300),

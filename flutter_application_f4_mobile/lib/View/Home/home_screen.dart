@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_f4_mobile/View/shoppingcard_screen.dart';
 import '../Product/product_detail_screen.dart';
 import '../Category/category_screen.dart';
 import '../login_screen.dart';
 import '../../Controller/auth_controller.dart';
 import '../profile_screen.dart';
+<<<<<<< HEAD
+import 'package:shared_preferences/shared_preferences.dart';
+=======
 import '../cart_screen.dart';
+import '../../Resources/app_colors.dart';
 
+>>>>>>> 818f8ec67931c8a2fa616a0523264d344c34c2d8
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -217,7 +223,31 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     },
   ];
+  
+  String? _userToken;
+  bool _isLoading = true;
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    debugPrint("TOKEN: ${_userToken.toString()}");
+    _loadToken();
+  }
+
+  Future<void> _loadToken()async{
+    final prefs = await SharedPreferences.getInstance();
+
+    final token = prefs.getString('user_token') ?? '';
+
+    if(mounted) {
+      setState(() {
+        _userToken = token;
+        debugPrint("TOKEN: ${_userToken.toString()}");
+        _isLoading = false;
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -276,17 +306,29 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+<<<<<<< HEAD
+              MaterialPageRoute(builder: (context) => const ShoppingCardScreen()),
+=======
+              MaterialPageRoute(builder: (context) => const CartScreen()),
+>>>>>>> 818f8ec67931c8a2fa616a0523264d344c34c2d8
             );
           },
         ),
         IconButton(
           icon: const Icon(Icons.person_outline, color: Colors.black),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
-            );
+          onPressed: (){
+            if(_userToken != ''){
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
+            }
+            else{
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            }
           },
         ),
         IconButton(
@@ -407,7 +449,7 @@ Widget _buildProductCard(int index) {
                   p['price'],
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Colors.green,
+                    color: AppColors.primaryOrange,
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                   ),
@@ -504,7 +546,7 @@ Widget _buildProductCard(int index) {
         height: 32,
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.1),
+          color: AppColors.primaryOrange.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: const Center(
@@ -513,7 +555,7 @@ Widget _buildProductCard(int index) {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: Colors.green,
+              color: AppColors.primaryOrange,
             ),
           ),
         ),
@@ -525,7 +567,7 @@ Widget _buildProductCard(int index) {
     return Container(
       height: 32,
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
+        color: AppColors.primaryOrange.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -556,7 +598,7 @@ Widget _buildProductCard(int index) {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Icon(icon, size: 18, color: Colors.green),
+        child: Icon(icon, size: 18, color: AppColors.primaryOrange),
       ),
     );
   }

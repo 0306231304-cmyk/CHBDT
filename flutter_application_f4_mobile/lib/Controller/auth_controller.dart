@@ -5,7 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/User.dart';
 
 class AuthController {
-  static const String baseUrl = "http://192.168.1.151:3001"; 
+<<<<<<< HEAD
+  static const String baseUrl = "http://192.168.30.212:3001"; 
+=======
+  static const String baseUrl = "https://irretentive-alex-wanly.ngrok-free.dev"; 
+>>>>>>> 818f8ec67931c8a2fa616a0523264d344c34c2d8
 
   // --- 1. HÀM ĐĂNG KÝ ---
   Future<void> register(BuildContext context, {
@@ -21,7 +25,8 @@ class AuthController {
     try {
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',},
         body: jsonEncode({
           'email': email,
           'password': password,
@@ -61,7 +66,8 @@ Future<bool> login(BuildContext context, String email, String password) async {
     try {
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',},
         body: jsonEncode({
           'email': email, 
           'password': password,
@@ -113,10 +119,12 @@ Future<bool> login(BuildContext context, String email, String password) async {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
+          'ngrok-skip-browser-warning': 'true',
         },
       );
 
       if (response.statusCode == 200) {
+        print("🔥 DATA SERVER TRẢ VỀ: ${response.body}");
         final data = jsonDecode(response.body);
         return User.fromJson(data['user']); 
       }
@@ -137,6 +145,7 @@ Future<bool> login(BuildContext context, String email, String password) async {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
+            'ngrok-skip-browser-warning': 'true',
           },
         );
       }
@@ -147,4 +156,49 @@ Future<bool> login(BuildContext context, String email, String password) async {
     await prefs.remove('email');
     return true;
   }
+
+  // --- 3. HÀM SỬA THÔNG TIN PROFILE ---
+  Future<bool> updateProfile({
+    required String fullName,
+    required String phoneNumber,
+    required String address,
+}) async {
+    final url = Uri.parse('$baseUrl/updateprofile'); 
+    print("🌍 Đang gọi API Update: $url");
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('user_token');
+
+    if (token == null) return false;
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          'ngrok-skip-browser-warning': 'true',
+        },
+        body: jsonEncode({
+          'fullName': fullName,       
+          'phoneNumber': phoneNumber, 
+          'address': address,
+        }),
+      );
+
+      print("Update Status: ${response.statusCode}");
+      print("Response: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['succeeded'] == true) {
+             return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      print("Lỗi kết nối Update: $e");
+      return false;
+    }
+}
 }

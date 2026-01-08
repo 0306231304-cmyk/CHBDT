@@ -13,8 +13,8 @@ class ProfileMenuItem extends StatelessWidget {
     required this.icon,
     required this.text,
     required this.onTap,
-    this.textColor = Colors.black87, // Mặc định màu đen
-    this.isLast = false,             // Mặc định có mũi tên
+    this.textColor = Colors.black87,
+    this.isLast = false,
   }) : super(key: key);
 
   @override
@@ -37,7 +37,7 @@ class ProfileMenuItem extends StatelessWidget {
           color: textColor
         ),
       ),
-      // Nếu là mục cuối (như Đăng xuất) thì không hiện mũi tên
+      // Nếu là mục cuối thì không hiện mũi tên
       trailing: isLast ? null : const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
     );
   }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_f4_mobile/View/Home/home_screen.dart';
+<<<<<<< HEAD
 import 'View/login_screen.dart';
 import 'package:flutter_application_f4_mobile/View/checkout_screen.dart'; 
 import 'package:flutter_application_f4_mobile/View/thanhtoanok_screen.dart'; 
 import 'package:flutter_application_f4_mobile/View/shoppingcard_screen.dart';
+=======
+>>>>>>> 818f8ec67931c8a2fa616a0523264d344c34c2d8
 
 void main() {
   runApp(const MyApp());

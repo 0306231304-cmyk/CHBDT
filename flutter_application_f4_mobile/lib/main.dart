@@ -3,7 +3,7 @@ import 'package:flutter_application_f4_mobile/View/Home/home_screen.dart';
 import 'View/login_screen.dart';
 import 'package:flutter_application_f4_mobile/View/checkout_screen.dart'; 
 import 'package:flutter_application_f4_mobile/View/thanhtoanok_screen.dart'; 
-import 'package:flutter_application_f4_mobile/View/cart_screen.dart';
+import 'package:flutter_application_f4_mobile/View/shoppingcard_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         fontFamily: 'Roboto',
       ),
-      home:  CheckoutScreen(),
+      home:  HomeScreen(),
     );
   }
 }

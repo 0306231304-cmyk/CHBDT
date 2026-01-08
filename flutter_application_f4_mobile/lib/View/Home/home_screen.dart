@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_f4_mobile/View/shoppingcard_screen.dart';
 import '../Product/product_detail_screen.dart';
 import '../Category/category_screen.dart';
 import '../login_screen.dart';
 import '../../Controller/auth_controller.dart';
 import '../profile_screen.dart';
-import '../cart_screen.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -217,7 +217,31 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     },
   ];
+  
+  String? _userToken;
+  bool _isLoading = true;
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    debugPrint("TOKEN: ${_userToken.toString()}");
+    _loadToken();
+  }
+
+  Future<void> _loadToken()async{
+    final prefs = await SharedPreferences.getInstance();
+
+    final token = prefs.getString('user_token') ?? '';
+
+    if(mounted) {
+      setState(() {
+        _userToken = token;
+        debugPrint("TOKEN: ${_userToken.toString()}");
+        _isLoading = false;
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -276,17 +300,25 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              MaterialPageRoute(builder: (context) => const ShoppingCardScreen()),
             );
           },
         ),
         IconButton(
           icon: const Icon(Icons.person_outline, color: Colors.black),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
-            );
+          onPressed: (){
+            if(_userToken != ''){
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
+            }
+            else{
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            }
           },
         ),
         IconButton(

@@ -40,32 +40,41 @@ cartRoutes.use(auth);
  *                     properties:
  *                       product_variant_id:
  *                         type: integer
- *                         example: 10
- *                       product_name:
+ *                         description: ID của biến thể sản phẩm (variant id)
+ *                         example: 1
+ *                       name:
  *                         type: string
+ *                         description: Tên sản phẩm
  *                         example: "iPhone 15 Pro Max"
- *                       color:
- *                         type: string
- *                         example: "Titan Tự nhiên"
- *                       ram:
- *                         type: string
- *                         example: "8GB"
- *                       storage:
- *                         type: string
- *                         example: "256GB"
  *                       price:
- *                         type: number
- *                         example: 29990000
- *                       quantity:
- *                         type: integer
- *                         example: 2
+ *                         type: string
+ *                         description: Giá tiền (dạng chuỗi decimal)
+ *                         example: "29990000.00"
  *                       image_url:
  *                         type: string
- *                         example: "https://example.com/image.jpg"
+ *                         description: Link ảnh sản phẩm
+ *                         example: "https://cdn2.cellphones.com.vn/..."
+ *                       color:
+ *                         type: string
+ *                         description: Màu sản phẩm
+ *                         example: "Tím"
+ *                       ram:
+ *                         type: string
+ *                         description: RAM
+ *                         example: "6GB"
+ *                       storage:
+ *                         type: string
+ *                         description: Dung lượng máy
+ *                         example: "128GB"
+ *                       quantity:
+ *                         type: int
+ *                         description: Số lượng sản phẩm
+ *                         example: 1 
  *                 total_money:
  *                   type: number
- *                   description: Tổng tiền tạm tính của cả giỏ
- *                   example: 59980000
+ *                   nullable: true
+ *                   description: Tổng tiền tạm tính (có thể null)
+ *                   example: 29990000.00
  *       500:
  *         description: Lỗi server
  */

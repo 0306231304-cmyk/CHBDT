@@ -210,5 +210,53 @@ authRoutes.get('/profile',userController.profile);
  */
 authRoutes.put('/updateprofile',userController.updateUser);
 
+/**
+ * @swagger
+ * /change-password:
+ *   patch:
+ *     summary: Đổi mật khẩu người dùng
+ *     description: Người dùng phải đăng nhập mới được đổi mật khẩu
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - newPassword
+ *             properties:
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *                 description: Mật khẩu mới
+ *                 example: NewPass@123
+ *     responses:
+ *       200:
+ *         description: Đổi mật khẩu thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Đổi mật khẩu thành công
+ *       400:
+ *         description: Thiếu thông tin mật khẩu mới
+ *       401:
+ *         description: Chưa đăng nhập (Token không hợp lệ)
+ *       500:
+ *         description: Lỗi server
+ */
+
+authRoutes.patch('/change-password',userController.changePassword);
+
 userRoutes.use('/',authRoutes);
 export default userRoutes;

@@ -1,4 +1,6 @@
+import { compare, hash } from "bcrypt";
 import { execute } from "../config/db.js";
+const PASSWORD_HASH_ROUNDS = parseInt(process.env.PASSWORD_HASH_ROUNDS) || 10;
 export default class userModel{
     //Get all users
     static async all(inculdeDeleted = false){
@@ -73,6 +75,26 @@ export default class userModel{
         }
         catch(error){
             throw new Error("Lỗi update user: "+error.message);
+        }
+    }
+
+    static async changePass(newPassword, user_id){
+        try{
+            const user = await this.findById(user_id);
+
+            if(user){
+                if(await compare(newPassword, user.password)){
+                    throw new Error('Password mới trùng với password hiện tại');
+                }
+                const hashedPassword = await hash(newPassword, PASSWORD_HASH_ROUNDS)
+                const [changePassword] = await execute('UPDATE users SET password = ? WHERE id = ?',[hashedPassword,user_id]);
+                return changePassword.affectedRows > 0? true:false;
+            }else{
+                throw new Error('Không tìm thấy user_ID này');
+            }
+        }
+        catch(error){
+            throw new Error('Lỗi đổi mật khẩu (userModel): '+ error.message);
         }
     }
 }

@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         fontFamily: 'Roboto',
       ),
-      home:  CheckoutScreen(),
+      home:  LoginScreen(),
     );
   }
 }

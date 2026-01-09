@@ -199,5 +199,58 @@ Future<bool> login(BuildContext context, String email, String password) async {
   }
 
   //-- HÀM ĐỔI MẬT KHẨU --
-   
+
+Future<void> changePassword(BuildContext context, {
+    required String currentPassword,
+    required String newPassword
+  }) async {
+    final url = Uri.parse('$baseUrl/change-password');
+    print("🌍 Gọi API Đổi mật khẩu: $url");
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('user_token');
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Hết phiên đăng nhập, vui lòng đăng nhập lại"), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          'ngrok-skip-browser-warning': 'true',
+        },
+        body: jsonEncode({
+          'newPassword': newPassword,
+          'currentPassword': currentPassword,
+        }),
+      );
+
+      print("Response Status: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Đổi mật khẩu thành công!"), backgroundColor: Colors.green),
+        );
+        Navigator.pop(context); // Quay về Profile
+      } else {
+        final errorData = jsonDecode(response.body);      
+        String message = errorData['message'] ?? errorData['title'] ?? "Đổi mật khẩu thất bại";
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Lỗi kết nối Server!"), backgroundColor: Colors.red),
+      );
+    }
+}
 }

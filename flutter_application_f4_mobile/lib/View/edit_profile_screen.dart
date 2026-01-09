@@ -127,7 +127,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 30),
                     
                     CustomButton(
-                      text: _isLoading ? "Đang xử lý..." : "Đăng ký", 
+                      text: _isLoading ? "Đang xử lý..." : "Xác nhận", 
                       onPressed: _isLoading ? () {} : _handleSave,
                     ),
                   ],

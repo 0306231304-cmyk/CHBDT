@@ -24,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
     String email = _emailController.text.trim();
     String pass = _passController.text.trim();
 
-    // 1. Kiểm tra rỗng
+    // Kiểm tra rỗng
     if (email.isEmpty || pass.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Vui lòng nhập Email và Mật khẩu"), backgroundColor: Colors.red),
@@ -34,13 +34,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    // 2. Gọi API Đăng nhập
+    // Gọi API Đăng nhập
     bool isSuccess = await _authController.login(context, email, pass);
 
     if (mounted) {
       setState(() => _isLoading = false);
 
-      // 3. Nếu thành công thì chuyển trang
+      // Nếu thành công thì chuyển trang
       if (isSuccess) {
          Navigator.pushAndRemoveUntil(
            context, 
@@ -57,6 +57,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.backgroundOrange,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // Quay về trang chủ
+            Navigator.pushReplacement(
+              context, 
+              MaterialPageRoute(builder: (_) => const HomeScreen())
+            );
+          },
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -117,7 +131,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // Nút Đăng nhập có hiệu ứng loading
                   CustomButton(
                     text: _isLoading ? "Đang xử lý..." : "Đăng Nhập",
                     onPressed: _isLoading ? () {} : _handleLogin,

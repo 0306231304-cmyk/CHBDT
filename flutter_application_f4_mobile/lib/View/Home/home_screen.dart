@@ -338,19 +338,6 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           },
         ),
-        IconButton(
-          icon: const Icon(Icons.logout, color: Colors.black),
-          onPressed: () async {
-            await _authController.logout(); 
-            if (context.mounted) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (route) => false,
-              );
-            }
-          }
-        ),
       ],
     );
   }

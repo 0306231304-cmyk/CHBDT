@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../resources/app_colors.dart';
 import 'Widget/custom_button.dart';
 import 'Widget/custom_textfield.dart';
-import '../Controller/auth_controller.dart'; // Import Controller
+import '../Controller/auth_controller.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -15,8 +15,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _oldPassController = TextEditingController();
   final _newPassController = TextEditingController();
   final _confirmPassController = TextEditingController();
-  
-  // Khởi tạo AuthController
   final AuthController _authController = AuthController();
   bool _isLoading = false;
 
@@ -55,10 +53,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
        return;
     }
 
-    // --- GỌI API ---
     setState(() => _isLoading = true);
 
-    // Gọi hàm changePassword trong Controller
     await _authController.changePassword(
       context, 
       currentPassword: _oldPassController.text, 
@@ -107,7 +103,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                     const SizedBox(height: 30),
 
-                    // Inputs cho mật khẩu
                     CustomTextField(
                       label: "Mật khẩu cũ", 
                       hint: "*******", 

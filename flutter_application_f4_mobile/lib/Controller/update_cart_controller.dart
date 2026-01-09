@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/update_cart_model.dart'; // Import model request/response
@@ -30,15 +31,15 @@ class UpdateCartController {
       );
 
       // Gọi API Update (kiểm tra lại endpoint backend của bạn có phải /cart/update ko nhé)
-      final response = await http.post(
+      final response = await http.put(
         Uri.parse('$baseUrl/cart/update'), 
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode(requestModel.toJson()),
+        body: jsonEncode({'variant_id':variantId, 'quantity': newQuantity}),
       );
-
+      
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Nếu server trả về JSON kết quả
         final responseData = jsonDecode(response.body);
@@ -47,7 +48,7 @@ class UpdateCartController {
         // Hoặc nếu lười check model thì cứ return true;
       }
     } catch (e) {
-      print("Lỗi Update Server: $e");
+      debugPrint("Lỗi Update Server: $e");
     }
     return false;
   }
@@ -80,7 +81,7 @@ class UpdateCartController {
         }
       }
     } catch (e) {
-      print("Lỗi Update Local: $e");
+      debugPrint("Lỗi Update Local: $e");
     }
     return false;
   }

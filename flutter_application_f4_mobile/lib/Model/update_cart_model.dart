@@ -10,7 +10,7 @@ class UpdateCartRequest {
   // Dùng để đóng gói dữ liệu gửi lên Server
   Map<String, dynamic> toJson() {
     return {
-      'product_variant_id': productVariantId,
+      'variant_id': productVariantId,
       'quantity': quantity,
     };
   }

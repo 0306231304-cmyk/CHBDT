@@ -49,7 +49,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
     // 3. Gọi API (Hiển thị loading nhẹ hoặc chặn click liên tục nếu cần)
     // Ở đây mình làm đơn giản là gọi thẳng API
     bool success = await _updateCartController.updateCartQuantity(variantId, newQty);
-
+    debugPrint('TEST ADD QUANTITY: ${success.toString()}');
     if (success) {
       // 4. Nếu thành công -> Reload lại trang để cập nhật tổng tiền và số lượng
       await _refreshCart();

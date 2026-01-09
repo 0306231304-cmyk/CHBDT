@@ -128,7 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         ProfileMenuItem(
                           icon: Icons.person_outline,
-                          text: "Thông tin cá nhân",
+                          text: "Chỉnh sửa thông tin",
                           onTap: () async {
                             final result = await Navigator.push(
                               context, 
@@ -151,7 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
 
                         ProfileMenuItem(
-                          icon: Icons.favorite, 
+                          icon: Icons.favorite_outline_outlined, 
                           text: "Danh sách yêu thích", 
                           onTap: () {}
                         ),

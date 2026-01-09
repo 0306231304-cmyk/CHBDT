@@ -74,7 +74,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -116,7 +116,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       isPassword: true
                     ),
                     CustomTextField(
-                      label: "Nhập lại mật khẩu mới", 
+                      label: "Xác nhận mật khẩu mới", 
                       hint: "*******", 
                       controller: _confirmPassController, 
                       isPassword: true

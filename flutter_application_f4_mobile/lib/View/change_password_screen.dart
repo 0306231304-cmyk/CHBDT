@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../resources/app_colors.dart';
 import 'Widget/custom_button.dart';
 import 'Widget/custom_textfield.dart';
+import '../Controller/auth_controller.dart'; // Import Controller
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -14,6 +15,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _oldPassController = TextEditingController();
   final _newPassController = TextEditingController();
   final _confirmPassController = TextEditingController();
+  
+  // Khởi tạo AuthController
+  final AuthController _authController = AuthController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -23,30 +28,46 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     super.dispose();
   }
 
-  void _handleChangePassword() {
-    // 1. Kiểm tra rỗng
+  Future<void> _handleChangePassword() async {
+    // Kiểm tra rỗng
     if (_oldPassController.text.isEmpty || 
         _newPassController.text.isEmpty || 
         _confirmPassController.text.isEmpty) {
        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Vui lòng nhập đủ các trường"), backgroundColor: Colors.red),
+         const SnackBar(content: Text("Vui lòng nhập đủ các trường"), backgroundColor: Colors.red),
        );
        return;
     }
 
-    // 2. Kiểm tra mật khẩu khớp nhau
+    // Kiểm tra mật khẩu xác nhận
     if (_newPassController.text != _confirmPassController.text) {
        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Mật khẩu xác nhận không khớp"), backgroundColor: Colors.red),
+         const SnackBar(content: Text("Mật khẩu xác nhận không khớp"), backgroundColor: Colors.red),
        );
        return;
     }
 
-    // 3. Giả lập thành công
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Đổi mật khẩu thành công!")),
+    // Kiểm tra mật khẩu mới trùng mật khẩu cũ
+    if (_oldPassController.text == _newPassController.text) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(content: Text("Mật khẩu mới không được trùng với mật khẩu cũ"), backgroundColor: Colors.red),
+       );
+       return;
+    }
+
+    // --- GỌI API ---
+    setState(() => _isLoading = true);
+
+    // Gọi hàm changePassword trong Controller
+    await _authController.changePassword(
+      context, 
+      currentPassword: _oldPassController.text, 
+      newPassword: _newPassController.text
     );
-    Navigator.pop(context); // Quay về Profile
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -107,9 +128,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
 
                     const SizedBox(height: 20),
-                    CustomButton(
-                      text: "Lưu mật khẩu",
-                      onPressed: _handleChangePassword,
+                    
+                     CustomButton(
+                      text: _isLoading ? "Đang xử lý..." : "Đăng ký", 
+                      onPressed: _isLoading ? () {} : _handleChangePassword,
                     ),
                   ],
                 ),

@@ -151,7 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         ProfileMenuItem(
                           icon: Icons.payment, 
-                          text: "Phương thức thanh toán", 
+                          text: "Danh sách yêu thích", 
                           onTap: () {}
                         ),
                         

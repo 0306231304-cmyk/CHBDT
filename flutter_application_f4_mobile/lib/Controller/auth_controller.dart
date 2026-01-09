@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/User.dart';
 
 class AuthController {
-  static const String baseUrl = "http://192.168.30.212:3001"; 
+  static const String baseUrl = "https://irretentive-alex-wanly.ngrok-free.dev"; 
 
   // --- HÀM ĐĂNG KÝ ---
   Future<void> register(BuildContext context, {
@@ -120,7 +120,6 @@ Future<bool> login(BuildContext context, String email, String password) async {
       );
 
       if (response.statusCode == 200) {
-        print("🔥 DATA SERVER TRẢ VỀ: ${response.body}");
         final data = jsonDecode(response.body);
         return User.fromJson(data['user']); 
       }

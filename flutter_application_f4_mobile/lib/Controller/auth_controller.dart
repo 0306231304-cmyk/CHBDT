@@ -5,9 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/User.dart';
 
 class AuthController {
-  static const String baseUrl = "http://192.168.30.212:3001"; 
+  static const String baseUrl = "https://irretentive-alex-wanly.ngrok-free.dev"; 
 
-  // --- 1. HÀM ĐĂNG KÝ ---
+  // --- HÀM ĐĂNG KÝ ---
   Future<void> register(BuildContext context, {
     required String email,
     required String password,
@@ -35,6 +35,7 @@ class AuthController {
       print("Response Code: ${response.statusCode}");
 
       if (response.statusCode == 201 || response.statusCode == 200) {
+        if(!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Đăng ký thành công! Hãy đăng nhập."), backgroundColor: Colors.green),
         );
@@ -42,6 +43,7 @@ class AuthController {
       } else {
         final errorData = jsonDecode(response.body);
         String message = errorData['message'] ?? "Đăng ký thất bại";
+        if(!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message), backgroundColor: Colors.red),
         );
@@ -54,7 +56,7 @@ class AuthController {
     }
   }
 
-  // --- 2. HÀM ĐĂNG NHẬP ---
+  // --- HÀM ĐĂNG NHẬP ---
 Future<bool> login(BuildContext context, String email, String password) async {
     final url = Uri.parse('$baseUrl/login');
     print("🌍 Gọi API Đăng nhập: $url");
@@ -77,7 +79,6 @@ Future<bool> login(BuildContext context, String email, String password) async {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_token', token);
         await prefs.setString('email', email);
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Đăng nhập thành công!"), backgroundColor: Colors.green),
         );
@@ -101,7 +102,7 @@ Future<bool> login(BuildContext context, String email, String password) async {
     }
   }
 
-  // --- 3. HÀM LẤY PROFILE ---
+  // --- HÀM LẤY PROFILE ---
   Future<User?> getProfile() async {
     final url = Uri.parse('$baseUrl/profile');
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -130,7 +131,7 @@ Future<bool> login(BuildContext context, String email, String password) async {
     return null;
   }
   
-  // --- 4. HÀM ĐĂNG XUẤT ---
+  // --- HÀM ĐĂNG XUẤT ---
   Future<bool> logout() async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('user_token');
@@ -153,7 +154,7 @@ Future<bool> login(BuildContext context, String email, String password) async {
     return true;
   }
 
-  // --- 3. HÀM SỬA THÔNG TIN PROFILE ---
+  // --- HÀM SỬA THÔNG TIN PROFILE ---
   Future<bool> updateProfile({
     required String fullName,
     required String phoneNumber,
@@ -196,5 +197,8 @@ Future<bool> login(BuildContext context, String email, String password) async {
       print("Lỗi kết nối Update: $e");
       return false;
     }
-}
+  }
+
+  //-- HÀM ĐỔI MẬT KHẨU --
+   
 }

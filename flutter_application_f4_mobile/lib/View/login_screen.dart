@@ -7,7 +7,7 @@ import '../Controller/auth_controller.dart';
 import 'Home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -42,9 +42,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // 3. Nếu thành công thì chuyển trang
       if (isSuccess) {
-         Navigator.pushReplacement(
+         Navigator.pushAndRemoveUntil(
            context, 
-           MaterialPageRoute(builder: (_) => const HomeScreen())
+           MaterialPageRoute(builder: (_) => const HomeScreen()),
+           (route) => false
          );
       }
     }

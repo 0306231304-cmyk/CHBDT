@@ -5,7 +5,7 @@ class OrderDetailScreen extends StatelessWidget {
   // Nhận toàn bộ object đơn hàng từ màn hình danh sách
   final Map<String, dynamic> orderData;
 
-  const OrderDetailScreen({Key? key, required this.orderData}) : super(key: key);
+  const OrderDetailScreen({super.key, required this.orderData});
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +111,7 @@ class OrderDetailScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                       ],
                     );
-                  }).toList(),
+                  }),
 
                   const Divider(),
                   

@@ -4,7 +4,7 @@ import '../../resources/app_colors.dart';
 class AdminOrderDetailScreen extends StatelessWidget {
   final Map<String, dynamic> orderData;
 
-  const AdminOrderDetailScreen({Key? key, required this.orderData}) : super(key: key);
+  const AdminOrderDetailScreen({super.key, required this.orderData});
 
   @override
   Widget build(BuildContext context) {

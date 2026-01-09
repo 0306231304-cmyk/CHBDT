@@ -96,7 +96,7 @@ export default class userModel{
             }
         }
         catch(error){
-            throw new Error('Lỗi đổi mật khẩu (userModel): '+ error.message);
+            throw new Error(error.message);
         }
     }
 }

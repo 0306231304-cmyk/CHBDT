@@ -161,6 +161,14 @@ export default class userController{
             const {newPassword, currentPassword} = req.body;
 
             if(!newPassword) return res.status(400).json({succeeded: false, message: "Thiếu mật khẩu mới"});
+
+            if (!userController.validatePassword(newPassword)) {
+            return res.status(400).json({
+                succeeded: false, 
+                message: 'Mật khẩu yếu: 8-100 ký tự, phải bao gồm A-Z, a-z, 0-9, ký tự đặc biệt'
+            });
+        }
+
             await userModel.changePass(currentPassword,newPassword,user_id);
 
             return res.status(200).json({succeeded: true, message: "Đổi mật khẩu thành công"});

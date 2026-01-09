@@ -3,7 +3,7 @@ import '../../resources/app_colors.dart';
 import 'Widget/custom_button.dart';
 
 class ThanhToanOkScreen extends StatelessWidget {
-  const ThanhToanOkScreen({Key? key}) : super(key: key);
+  const ThanhToanOkScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

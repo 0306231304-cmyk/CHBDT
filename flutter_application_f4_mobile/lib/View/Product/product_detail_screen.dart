@@ -167,6 +167,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void initState() {
     super.initState();
     qty = widget.product['qty'] ?? 1;
+    widget.product['isFav'] ??= false;
   }
 
   @override
@@ -184,6 +185,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.favorite,
+              color: widget.product['isFav'] ? Colors.red : Colors.grey,
+            ),
+            onPressed: () {
+              setState(() {
+                widget.product['isFav'] = !widget.product['isFav'];
+              });
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -197,7 +211,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 height: 300,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.green.withOpacity(0.08),
+                  color: Colors.orange.withOpacity(0.08),
                 ),
                 child: Image.asset(
                   widget.product['img'],
@@ -205,7 +219,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // =================== TÊN SẢN PHẨM ===================
             Padding(
@@ -216,7 +230,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
 
             // =================== DUNG LƯỢNG + SAO + TỒN KHO ===================
             Padding(
@@ -228,21 +242,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(widget.product['storage']),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          const Icon(Icons.star,
-                              color: Colors.orange, size: 18),
-                          const SizedBox(width: 4),
-                          Text(
-                            "${widget.product['rating']} (${widget.product['reviewCount']} reviews)",
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
+                      const SizedBox(height: 2),
+                      
                     ],
                   ),
                   const Spacer(),
+                  
                   Column(
                     children: [
                       Container(
@@ -352,27 +357,101 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             // =================== HEADER REVIEW ===================
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Reviews",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      const Text(
+                        "Reviews",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      
+
+                      // ❤️ TRÁI TIM (CODE THÊM TRÁI TIM)
+                      /*InkWell(
+                        onTap: () {
+                          setState(() {
+                            widget.product['isFav'] = !widget.product['isFav'];
+                          });
+                        },
+                        child: Icon(
+                          Icons.favorite,
+                          size: 20,
+                          color: widget.product['isFav'] ? Colors.red : Colors.grey,
+                        ),
+                      ),*/
+                    ],
                   ),
-                  const Spacer(),
-                  const Icon(Icons.star, color: Colors.green, size: 18),
-                  Text(" ${widget.product['rating']}"),
+
+                  const SizedBox(height: 8),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Divider(
+                      color: Colors.grey.shade300,
+                      thickness: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      // ---- 4.9 ----
+                      Text(
+                        "${widget.product['rating']}",
+                        style: const TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(width: 6),
+
+                      // ---- out of 5 (CÙNG HÀNG, KHÔNG TỤT) ----
+                      const Text(
+                        "out of 5",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+
+                      const Spacer(),
+
+                      // ---- SAO + RATINGS (GÓC PHẢI) ----
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Row(
+                            children: List.generate(
+                              5,
+                              (_) => const Icon(
+                                Icons.star,
+                                size: 18,
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "${reviews.length} ratings",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(
-                color: Colors.grey.shade300,
-                thickness: 1,
-              ),
-            ),
             const SizedBox(height: 8),
 
             // =================== BIỂU ĐỒ % SAO ===================
@@ -391,10 +470,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
-                  const Icon(Icons.edit, size: 16, color: Colors.green),
-                  const SizedBox(width: 4),
                   const Text("Write a review",
-                      style: TextStyle(color: Colors.green)),
+                      style: TextStyle(color: Colors.orange)),
+
+                  const Icon(Icons.edit, size: 16, color: Colors.orange),
+                  const SizedBox(width: 4),
                 ],
               ),
             ),
@@ -444,7 +524,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.green,
+                  color: Colors.orange,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -502,13 +582,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Text(
               widget.product['price'],
               style: const TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                  fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                  backgroundColor: Colors.orange,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
@@ -586,7 +666,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   p['price'],
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Colors.green,
+                    color: Colors.orange,
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                   ),
@@ -674,7 +754,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             child: LinearProgressIndicator(
               value: value,
               backgroundColor: Colors.grey.shade300,
-              color: Colors.green,
+              color: Colors.orange,
             ),
           ),
           const SizedBox(width: 8),
@@ -697,7 +777,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           CircleAvatar(
             radius: 18,
             backgroundColor: Colors.green.shade100,
-            child: Text(name[0], style: const TextStyle(color: Colors.green)),
+            child: Text(name[0], style: const TextStyle(color: Colors.orange)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -731,3 +811,796 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 }
+
+
+
+
+
+
+
+
+/*
+import 'package:flutter/material.dart';
+
+class ProductDetailScreen extends StatefulWidget {
+  final Map<String, dynamic> product;
+
+  const ProductDetailScreen({super.key, required this.product});
+
+  @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  int qty = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    qty = widget.product['qty'] ?? 1;
+    widget.product['isFav'] ??= false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List reviews = widget.product['reviewList'] ?? [];
+    final Map<int, double> ratingPercent =
+        Map<int, double>.from(widget.product['ratingPercent'] ?? {});
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+
+      // =================== APP BAR ===================
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.favorite,
+              color: widget.product['isFav'] ? Colors.red : Colors.grey,
+            ),
+            onPressed: () {
+              setState(() {
+                widget.product['isFav'] = !widget.product['isFav'];
+              });
+            },
+          ),
+        ],
+      ),
+
+      // =================== BODY ===================
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            // =================== IMAGE ===================
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 16),
+                width: 280,
+                height: 280,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.orange.withOpacity(0.08),
+                ),
+                child: Image.asset(widget.product['img']),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // =================== NAME ===================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                widget.product['name'],
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            // =================== 128GB + TỒN KHO + QTY (GÓC PHẢI) ===================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  // ---- LEFT INFO ----
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.product['storage'], // 128GB
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "In stock: ${widget.product['stock']}",
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const Spacer(),
+
+                  // ---- QTY BOX ----
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove, size: 18),
+                          onPressed: qty > 1
+                              ? () => setState(() => qty--)
+                              : null,
+                        ),
+                        Text(
+                          "$qty",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add, size: 18),
+                          onPressed: () {
+                            if (qty < widget.product['stock']) {
+                              setState(() => qty++);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 8),
+            Divider(color: Colors.grey.shade300),
+
+            // =================== DESCRIPTION ===================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: (widget.product['desc'] as List<String>)
+                    .map(
+                      (e) => Text(
+                        "• $e",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // =================== REVIEW HEADER (OUT OF 5 Ở GIỮA – SAO GÓC PHẢI) ===================
+          // =================== REVIEW HEADER (FIX BASELINE CHUẨN) ===================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Reviews",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      // ---- 4.9 ----
+                      Text(
+                        "${widget.product['rating']}",
+                        style: const TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(width: 6),
+
+                      // ---- out of 5 (CÙNG BASELINE) ----
+                      Text(
+                        "out of 5",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+
+                      // ---- ĐẨY SAO SANG PHẢI ----
+                      const Spacer(),
+
+                      // ---- SAO + RATINGS (GÓC PHẢI) ----
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Row(
+                            children: List.generate(
+                              5,
+                              (_) => const Icon(
+                                Icons.star,
+                                size: 18,
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "${reviews.length} ratings",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+
+
+            const SizedBox(height: 12),
+            Divider(color: Colors.grey.shade300),
+
+            // =================== RATING BAR ===================
+            ...ratingPercent.entries.map(
+              (e) => _ratingBar(
+                e.key.toString(),
+                e.value,
+                (e.value * 100).toInt(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // =================== REVIEW LIST ===================
+            ...reviews.map(
+              (r) => _reviewItem(
+                name: r['user'],
+                rating: r['star'],
+                content: r['content'],
+              ),
+            ),
+
+            const SizedBox(height: 120),
+          ],
+        ),
+      ),
+
+      // =================== ADD TO CART ===================
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orange,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "Đã thêm $qty sản phẩm vào giỏ hàng thành công",
+                ),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
+          child: const Text(
+            "Add to cart",
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // =================== SUPPORT ===================
+  Widget _ratingBar(String star, double value, int percent) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          Text(star),
+          const SizedBox(width: 8),
+          Expanded(
+            child: LinearProgressIndicator(
+              value: value,
+              backgroundColor: Colors.grey.shade300,
+              color: Colors.orange,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text("$percent%"),
+        ],
+      ),
+    );
+  }
+
+  Widget _reviewItem({
+    required String name,
+    required int rating,
+    required String content,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: Colors.green.shade100,
+            child: Text(name[0]),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Row(
+                  children: List.generate(
+                    rating,
+                    (_) => const Icon(
+                      Icons.star,
+                      size: 14,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ),
+                Text(content,
+                    style: const TextStyle(color: Colors.grey)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+*/
+
+
+/*
+import 'package:flutter/material.dart';
+
+class ProductDetailScreen extends StatefulWidget {
+  final Map<String, dynamic> product;
+
+  const ProductDetailScreen({super.key, required this.product});
+
+  @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  int selectedColorIndex = 0;
+  int qty = 1;
+
+  // =================== OTHER PRODUCTS (BẮT BUỘC) ===================
+  final List<Map<String, dynamic>> otherProducts = [
+    {
+      "name": "iPhone 14",
+      "img": "assets/images/iphone14.png",
+      "price": "\$999",
+      "storage": "128GB",
+    },
+    {
+      "name": "Samsung S23",
+      "img": "assets/images/s23.png",
+      "price": "\$899",
+      "storage": "256GB",
+    },
+    {
+      "name": "Xiaomi 13",
+      "img": "assets/images/xiaomi13.png",
+      "price": "\$799",
+      "storage": "128GB",
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    qty = widget.product['qty'] ?? 1;
+    widget.product['isFav'] ??= false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List reviews = widget.product['reviewList'] ?? [];
+    final Map<int, double> ratingPercent =
+        Map<int, double>.from(widget.product['ratingPercent'] ?? {});
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+
+      // ================= APP BAR =================
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.favorite,
+              color: widget.product['isFav'] ? Colors.red : Colors.grey,
+            ),
+            onPressed: () {
+              setState(() {
+                widget.product['isFav'] = !widget.product['isFav'];
+              });
+            },
+          ),
+        ],
+      ),
+
+      // ================= BODY =================
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            // ================= IMAGE =================
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 16),
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.orange.withOpacity(0.08),
+                ),
+                child: Image.asset(widget.product['img'], fit: BoxFit.contain),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ================= NAME =================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                widget.product['name'],
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            // ================= STORAGE + STOCK =================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Text(widget.product['storage']),
+                  const Spacer(),
+                  Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          "${widget.product['stock']}",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        "Số lượng tồn kho",
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 10),
+            Divider(color: Colors.grey.shade300),
+
+            // ================= MÔ TẢ =================
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                "Mô tả chi tiết sản phẩm",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: (widget.product['desc'] as List<String>)
+                    .map((e) => Text("• $e",
+                        style:
+                            const TextStyle(fontSize: 14, color: Colors.grey)))
+                    .toList(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            Divider(color: Colors.grey.shade300),
+
+            // ================= REVIEWS =================
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text("Reviews",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+
+            const SizedBox(height: 8),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text("${widget.product['rating']}",
+                      style: const TextStyle(
+                          fontSize: 36, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 6),
+                  const Text("out of 5",
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey)),
+                  const Spacer(),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: List.generate(
+                            5,
+                            (_) => const Icon(Icons.star,
+                                size: 18, color: Colors.orange)),
+                      ),
+                      const SizedBox(height: 4),
+                      Text("${reviews.length} ratings",
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.grey)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 8),
+            Divider(color: Colors.grey.shade300),
+
+            ...ratingPercent.entries.map((e) =>
+                _ratingBar(e.key.toString(), e.value,
+                    (e.value * 100).toInt())),
+
+            const SizedBox(height: 16),
+
+            ...reviews.map((r) => _reviewItem(
+                  name: r['user'],
+                  rating: r['star'],
+                  content: r['content'],
+                )),
+
+            const SizedBox(height: 24),
+
+            // ================= CÁC SẢN PHẨM KHÁC =================
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text("Các sản phẩm khác",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+
+            const SizedBox(height: 8),
+
+            SizedBox(
+              height: 220,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: otherProducts.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 16),
+                itemBuilder: (_, index) =>
+                    _buildOtherProductCard(otherProducts[index]),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // ================= QUANTITY =================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Số lượng",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold)),
+                    Row(
+                      children: [
+                        _iconBtnQty(Icons.remove, () {
+                          if (qty > 1) setState(() => qty--);
+                        }),
+                        Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text("$qty",
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold)),
+                        ),
+                        _iconBtnQty(Icons.add,
+                            () => setState(() => qty++)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 100),
+          ],
+        ),
+      ),
+
+      // ================= ADD TO CART =================
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(16),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orange,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content:
+                      Text("Đã thêm $qty sản phẩm vào giỏ hàng")),
+            );
+          },
+          child: const Text("Add to cart"),
+        ),
+      ),
+    );
+  }
+
+  // ================= HELPERS =================
+  Widget _ratingBar(String star, double value, int percent) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: [
+          Text(star),
+          const SizedBox(width: 8),
+          Expanded(
+            child: LinearProgressIndicator(
+              value: value,
+              backgroundColor: Colors.grey.shade300,
+              color: Colors.orange,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text("$percent%"),
+        ],
+      ),
+    );
+  }
+
+  Widget _reviewItem(
+      {required String name,
+      required int rating,
+      required String content}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          CircleAvatar(child: Text(name[0])),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    style:
+                        const TextStyle(fontWeight: FontWeight.bold)),
+                Row(
+                  children: List.generate(
+                      rating,
+                      (_) => const Icon(Icons.star,
+                          size: 14, color: Colors.orange)),
+                ),
+                const SizedBox(height: 4),
+                Text(content,
+                    style:
+                        const TextStyle(color: Colors.grey)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOtherProductCard(Map<String, dynamic> p) {
+    return SizedBox(
+      width: 160,
+      child: Card(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              Expanded(
+                  child: Image.asset(p['img'], fit: BoxFit.contain)),
+              const SizedBox(height: 6),
+              Text(p['name'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style:
+                      const TextStyle(fontWeight: FontWeight.bold)),
+              Text(p['price'],
+                  style: const TextStyle(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold)),
+              Text(p['storage'],
+                  style: const TextStyle(
+                      fontSize: 11, color: Colors.grey)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _iconBtnQty(IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child:
+          Padding(padding: const EdgeInsets.all(8), child: Icon(icon, color: Colors.white)),
+    );
+  }
+}
+
+*/

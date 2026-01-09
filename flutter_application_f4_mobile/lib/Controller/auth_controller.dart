@@ -7,7 +7,7 @@ import '../Model/User.dart';
 class AuthController {
   static const String baseUrl = "http://192.168.30.212:3001"; 
 
-  // --- 1. HÀM ĐĂNG KÝ ---
+  // --- HÀM ĐĂNG KÝ ---
   Future<void> register(BuildContext context, {
     required String email,
     required String password,
@@ -54,7 +54,7 @@ class AuthController {
     }
   }
 
-  // --- 2. HÀM ĐĂNG NHẬP ---
+  // --- HÀM ĐĂNG NHẬP ---
 Future<bool> login(BuildContext context, String email, String password) async {
     final url = Uri.parse('$baseUrl/login');
     print("🌍 Gọi API Đăng nhập: $url");
@@ -101,7 +101,7 @@ Future<bool> login(BuildContext context, String email, String password) async {
     }
   }
 
-  // --- 3. HÀM LẤY PROFILE ---
+  // --- HÀM LẤY PROFILE ---
   Future<User?> getProfile() async {
     final url = Uri.parse('$baseUrl/profile');
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -130,7 +130,7 @@ Future<bool> login(BuildContext context, String email, String password) async {
     return null;
   }
   
-  // --- 4. HÀM ĐĂNG XUẤT ---
+  // --- HÀM ĐĂNG XUẤT ---
   Future<bool> logout() async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('user_token');
@@ -153,7 +153,7 @@ Future<bool> login(BuildContext context, String email, String password) async {
     return true;
   }
 
-  // --- 3. HÀM SỬA THÔNG TIN PROFILE ---
+  // --- HÀM SỬA THÔNG TIN PROFILE ---
   Future<bool> updateProfile({
     required String fullName,
     required String phoneNumber,
@@ -195,6 +195,62 @@ Future<bool> login(BuildContext context, String email, String password) async {
     } catch (e) {
       print("Lỗi kết nối Update: $e");
       return false;
+    }
+  }
+
+  //-- HÀM ĐỔI MẬT KHẨU --
+
+Future<void> changePassword(BuildContext context, {
+    required String currentPassword,
+    required String newPassword
+  }) async {
+    final url = Uri.parse('$baseUrl/change-password');
+    print("🌍 Gọi API Đổi mật khẩu: $url");
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('user_token');
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Hết phiên đăng nhập, vui lòng đăng nhập lại"), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    try {
+      final response = await http.patch(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          'ngrok-skip-browser-warning': 'true',
+        },
+        body: jsonEncode({
+          'newPassword': newPassword,
+          'currentPassword': currentPassword,
+        }),
+      );
+
+      print("Response Status: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Đổi mật khẩu thành công!"), backgroundColor: Colors.green),
+        );
+        Navigator.pop(context); // Quay về Profile
+      } else {
+        final errorData = jsonDecode(response.body);      
+        String message = errorData['message'] ?? errorData['title'] ?? "Đổi mật khẩu thất bại";
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Lỗi kết nối Server!"), backgroundColor: Colors.red),
+      );
     }
 }
 }

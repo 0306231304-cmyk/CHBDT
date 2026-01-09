@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:flutter_application_f4_mobile/View/shoppingcard_screen.dart';
 import '../Product/product_detail_screen.dart';
 import '../Category/category_screen.dart';
@@ -9,6 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../Resources/app_colors.dart';
 import '../Product/all_product_screen.dart';
 import '../Category/product_by_category_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -720,4 +723,313 @@ Widget _buildProductCard(int index) {
 
 
 }
+*/
 
+
+
+
+import 'package:flutter/material.dart';
+import 'package:flutter_application_f4_mobile/View/shoppingcard_screen.dart';
+import '../Product/product_detail_screen.dart';
+import '../Category/category_screen.dart';
+import '../login_screen.dart';
+import '../../Controller/auth_controller.dart';
+import '../profile_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../Resources/app_colors.dart';
+import '../Product/all_product_screen.dart';
+import '../Category/product_by_category_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  final AuthController _authController = AuthController();
+
+  // 🔧 [EDIT 1] products lấy từ API
+  List<Map<String, dynamic>> products = [];
+
+  String? _userToken;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadToken();
+    _fetchProducts(); // 🔧 [EDIT 3]
+  }
+
+  // 🔧 [EDIT 2] CALL API PRODUCTS
+  Future<void> _fetchProducts() async {
+    try {
+      final response = await http.get(
+        Uri.parse("https://irretentive-alex-wanly.ngrok-free.dev/products"),
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+          "Accept": "application/json",
+        },
+      );
+
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List list = data['products'];
+
+        setState(() {
+          products = list.map((item) {
+            return {
+              "id": item['id'],
+              "name": item['name'],
+              "price": "Liên hệ",
+              "storage": "128GB",
+              "img": item['image_url'],
+              "tag": "NEW",
+              "isFav": false,
+              "showQty": false,
+              "qty": 0,
+              "rating": 4.5,
+              "stock": 100,
+              "reviewCount": 10,
+              "ratingPercent": {
+                5: 0.7,
+                4: 0.2,
+                3: 0.1,
+              },
+              "desc": [
+                "Sản phẩm chính hãng",
+                "Bảo hành 12 tháng",
+              ],
+              "colors": [Colors.black, Colors.white],
+              "reviewList": [],
+            };
+          }).toList();
+
+          _isLoading = false; // 🔧 [EDIT 5]
+        });
+      }
+    } catch (e) {
+      debugPrint("Lỗi load sản phẩm: $e");
+      _isLoading = false;
+    }
+  }
+
+  Future<void> _loadToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('user_token') ?? '';
+    setState(() => _userToken = token);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: _buildAppBar(),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSearchBar(),
+                      const SizedBox(height: 16),
+                      _buildBanner(constraints),
+                      _buildSectionTitle("Categories", onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CategoryScreen()),
+                        );
+                      }),
+                      _buildCategoryList(),
+                      _buildSectionTitle("Featured products", onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AllProductsScreen(products: products),
+                          ),
+                        );
+                      }),
+                      _buildProductGrid(constraints),
+                    ],
+                  ),
+                );
+              },
+            ),
+    );
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      title: const Text("F4 MOBILE",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ShoppingCardScreen()),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.person_outline, color: Colors.black),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => _userToken != ''
+                    ? const ProfileScreen()
+                    : const LoginScreen(),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const TextField(
+        decoration: InputDecoration(
+          hintText: "Tìm kiếm...",
+          border: InputBorder.none,
+          icon: Icon(Icons.search),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBanner(BoxConstraints constraints) {
+    return AspectRatio(
+      aspectRatio: constraints.maxWidth > 900 ? 3 / 1 : 16 / 9,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          image: const DecorationImage(
+            image: AssetImage('assets/images/trangchu1.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductGrid(BoxConstraints constraints) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: products.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: constraints.maxWidth >= 1200 ? 4 : 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.7,
+      ),
+      itemBuilder: (context, index) => _buildProductCard(index),
+    );
+  }
+
+  Widget _buildProductCard(int index) {
+    final p = products[index];
+    return Material(
+      borderRadius: BorderRadius.circular(16),
+      elevation: 3,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => ProductDetailScreen(product: p)),
+          );
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: Image.network(
+                p['img'], // 🔧 [EDIT 4]
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.image_not_supported),
+              ),
+            ),
+            Text(p['name'], maxLines: 1),
+            Text(p['price'],
+                style: const TextStyle(color: AppColors.primaryOrange)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryList() {
+    final categories = [
+      {"name": "APPLE", "img": 'assets/images/anh1.png'},
+      {"name": "SAMSUNG", "img": 'assets/images/anh2.png'},
+      {"name": "XIAOMI", "img": 'assets/images/anh3.png'},
+      {"name": "OPPO", "img": 'assets/images/anh4.png'},
+      {"name": "HUAWEI", "img": 'assets/images/anh5.png'},
+    ];
+
+    return Row(
+      children: categories.map((cat) {
+        return Expanded(
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ProductByCategoryScreen(
+                    category: cat['name']!.toLowerCase(),
+                  ),
+                ),
+              );
+            },
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  child: Image.asset(cat['img']!),
+                ),
+                const SizedBox(height: 8),
+                Text(cat['name']!,
+                    style: const TextStyle(fontSize: 10)),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, {VoidCallback? onTap}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          InkWell(onTap: onTap, child: const Icon(Icons.chevron_right)),
+        ],
+      ),
+    );
+  }
+}

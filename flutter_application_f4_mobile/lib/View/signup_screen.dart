@@ -15,7 +15,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   // Khai báo controller
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _dobController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController(); 
   final _passController = TextEditingController();
@@ -27,7 +26,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _dobController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
     _passController.dispose();
@@ -36,13 +34,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _handleRegister() async{
-    // 1. Kiểm tra rỗng
+    // Kiểm tra rỗng
     if (_nameController.text.isEmpty || _emailController.text.isEmpty || _passController.text.isEmpty) {
        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng nhập tên, email và mật khẩu")));
        return;
     }
 
-    // 2. Kiểm tra mật khẩu khớp nhau
+    // Kiểm tra mật khẩu khớp nhau
     if (_passController.text != _confirmPassController.text) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Mật khẩu xác nhận không khớp"), backgroundColor: Colors.red));
       return;
@@ -50,7 +48,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     setState(() => _isLoading = true);
 
-    // 3. Gọi API qua Controller
+    // Gọi API qua Controller
     await _authController.register(
       context, 
       email: _emailController.text.trim(),
@@ -58,7 +56,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       fullname: _nameController.text.trim(),
       phone: _phoneController.text.trim(),
       address: _addressController.text.trim(),
-      // dob: _dobController.text (Database chưa hỗ trợ nên chưa gửi)
     );
 
     if (mounted) {
@@ -110,10 +107,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 30),
 
-                    // Inputs
                     CustomTextField(label: "Họ và tên", hint: "Lois Becket", controller: _nameController),
                     CustomTextField(label: "Email", hint: "Loisbecket@gmail.com", controller: _emailController, keyboardType: TextInputType.emailAddress),
-                    CustomTextField(label: "Ngày sinh", hint: "18/03/2024", controller: _dobController),
                     CustomTextField(label: "Số điện thoại", hint: "(454) 726-0592", controller: _phoneController, keyboardType: TextInputType.phone),
                     CustomTextField(label: "Địa chỉ", hint: "123 Đường ABC", controller: _addressController),
                     CustomTextField(label: "Mật khẩu", hint: "*******", controller: _passController, isPassword: true),
@@ -121,7 +116,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                     const SizedBox(height: 20),
                     
-                    // Nút Đăng ký có hiệu ứng loading
                     CustomButton(
                       text: _isLoading ? "Đang xử lý..." : "Đăng ký", 
                       onPressed: _isLoading ? () {} : _handleRegister,

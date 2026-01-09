@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/User.dart';
 
 class AuthController {
-  static const String baseUrl = "https://irretentive-alex-wanly.ngrok-free.dev"; 
+  static const String baseUrl = "http://192.168.30.212:3001"; 
 
   // --- HÀM ĐĂNG KÝ ---
   Future<void> register(BuildContext context, {

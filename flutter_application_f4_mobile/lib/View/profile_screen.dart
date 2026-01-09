@@ -7,6 +7,7 @@ import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
 import 'order_history_screen.dart';
 import 'Widget/profile_menu_item.dart';
+import 'Home/home_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -127,7 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         ProfileMenuItem(
                           icon: Icons.person_outline,
-                          text: "Thông tin cá nhân",
+                          text: "Chỉnh sửa thông tin",
                           onTap: () async {
                             final result = await Navigator.push(
                               context, 
@@ -150,7 +151,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
 
                         ProfileMenuItem(
-                          icon: Icons.payment, 
+                          icon: Icons.favorite_outline_outlined, 
                           text: "Danh sách yêu thích", 
                           onTap: () {}
                         ),
@@ -169,10 +170,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onTap: () async {
                             await _authController.logout();
                             if (context.mounted) {
-                              Navigator.pushAndRemoveUntil(
+                              Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (_) => const LoginScreen()),
-                                (route) => false,
+                                MaterialPageRoute(builder: (_) => const HomeScreen()),
                               );
                             }
                           },

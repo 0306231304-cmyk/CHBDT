@@ -75,8 +75,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text("Chỉnh sửa thông tin", style: TextStyle(color: Colors.white)),
-        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
@@ -96,7 +94,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
+                    const Center(
+                      child: Text(
+                        "Chỉnh sửa thông tin",
+                        style: TextStyle(
+                          fontSize: 24, 
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
                     
                     CustomTextField(
                        label: "Email (Không thể sửa)", 
@@ -127,7 +136,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 30),
                     
                     CustomButton(
-                      text: _isLoading ? "Đang xử lý..." : "Đăng ký", 
+                      text: _isLoading ? "Đang xử lý..." : "Xác nhận", 
                       onPressed: _isLoading ? () {} : _handleSave,
                     ),
                   ],

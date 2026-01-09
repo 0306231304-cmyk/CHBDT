@@ -42,9 +42,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // 3. Nếu thành công thì chuyển trang
       if (isSuccess) {
-         Navigator.pushReplacement(
+         Navigator.pushAndRemoveUntil(
            context, 
-           MaterialPageRoute(builder: (_) => const HomeScreen())
+           MaterialPageRoute(builder: (_) => const HomeScreen()),
+           (route) => false
          );
       }
     }

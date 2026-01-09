@@ -78,11 +78,13 @@ export default class userModel{
         }
     }
 
-    static async changePass(newPassword, user_id){
+    static async changePass( currentPassword,newPassword, user_id){
         try{
             const user = await this.findById(user_id);
-
             if(user){
+                if(!await compare(currentPassword, user.password)){
+                    throw new Error('Mật khẩu hiện tại không đúng');
+                }
                 if(await compare(newPassword, user.password)){
                     throw new Error('Password mới trùng với password hiện tại');
                 }

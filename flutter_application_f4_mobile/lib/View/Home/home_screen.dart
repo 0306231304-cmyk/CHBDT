@@ -5,13 +5,8 @@ import '../Category/category_screen.dart';
 import '../login_screen.dart';
 import '../../Controller/auth_controller.dart';
 import '../profile_screen.dart';
-<<<<<<< HEAD
 import 'package:shared_preferences/shared_preferences.dart';
-=======
-import '../cart_screen.dart';
 import '../../Resources/app_colors.dart';
-
->>>>>>> 818f8ec67931c8a2fa616a0523264d344c34c2d8
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -306,11 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () {
             Navigator.push(
               context,
-<<<<<<< HEAD
               MaterialPageRoute(builder: (context) => const ShoppingCardScreen()),
-=======
-              MaterialPageRoute(builder: (context) => const CartScreen()),
->>>>>>> 818f8ec67931c8a2fa616a0523264d344c34c2d8
             );
           },
         ),

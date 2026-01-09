@@ -158,10 +158,10 @@ export default class userController{
     static async changePassword(req,res){
         try{
             const user_id = req.userid;
-            const {newPassword} = req.body;
+            const {newPassword, currentPassword} = req.body;
 
-            if(!newPassword) return res.status(400).json({succeeded: false, message: "Thiếu mật khẩu mới "});
-            await userModel.changePass(newPassword,user_id);
+            if(!newPassword) return res.status(400).json({succeeded: false, message: "Thiếu mật khẩu mới"});
+            await userModel.changePass(currentPassword,newPassword,user_id);
 
             return res.status(200).json({succeeded: true, message: "Đổi mật khẩu thành công"});
         }

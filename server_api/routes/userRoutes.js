@@ -228,12 +228,18 @@ authRoutes.put('/updateprofile',userController.updateUser);
  *             type: object
  *             required:
  *               - newPassword
+ *               - currentPassword
  *             properties:
  *               newPassword:
  *                 type: string
  *                 format: password
  *                 description: Mật khẩu mới
  *                 example: NewPass@123
+ *               currentPassword:
+ *                 type: string
+ *                 format: password
+ *                 description: Mật khẩu hiện tại
+ *                 example: CurrentPass@123
  *     responses:
  *       200:
  *         description: Đổi mật khẩu thành công
@@ -255,7 +261,6 @@ authRoutes.put('/updateprofile',userController.updateUser);
  *       500:
  *         description: Lỗi server
  */
-
 authRoutes.patch('/change-password',userController.changePassword);
 
 userRoutes.use('/',authRoutes);

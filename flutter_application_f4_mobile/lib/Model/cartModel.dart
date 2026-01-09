@@ -38,6 +38,28 @@ class CartItem {
     required this.quantity,
     required this.imageUrl,
   });
+  CartItem copyWith({
+    int? productVariantId,
+    String? productName,
+    String? imageUrl,
+    String? color,
+    String? ram,
+    String? storage,
+    String? price,
+    int? quantity,
+  }) {
+    return CartItem(
+      // Giữ nguyên giá trị cũ nếu không truyền giá trị mới
+      productVariantId: productVariantId ?? this.productVariantId,
+      productName: productName ?? this.productName,
+      imageUrl: imageUrl ?? this.imageUrl,
+      color: color ?? this.color,
+      ram: ram ?? this.ram,
+      storage: storage ?? this.storage,
+      price: price ?? this.price,
+      quantity: quantity ?? this.quantity,
+    );
+  }
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(

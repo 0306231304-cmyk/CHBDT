@@ -3,9 +3,8 @@ import '../../resources/app_colors.dart';
 import '../Model/cartModel.dart'; 
 import '../Model/update_cart_model.dart';
 import '../Controller/cart_Controller.dart';
-import '../Controller/update_cart_controller.dart'; // <--- IMPORT MỚI
+import '../Controller/update_cart_controller.dart'; 
 import 'Widget/custom_button.dart';
-
 
 class ShoppingCardScreen extends StatefulWidget {
   const ShoppingCardScreen({super.key});
@@ -15,49 +14,79 @@ class ShoppingCardScreen extends StatefulWidget {
 }
 
 class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
-  // Khởi tạo Controller Lấy dữ liệu
   final CartController _cartController = CartController();
-  
-  // Khởi tạo Controller Cập nhật (Tăng/Giảm) ---> MỚI
   final UpdateCartController _updateCartController = UpdateCartController();
   
-  // Biến Future để lưu trữ trạng thái của API
-  late Future<CartResponse?> _cartFuture;
+  // THAY ĐỔI 1: Không dùng Future, dùng biến chứa dữ liệu trực tiếp
+  CartResponse? _cartData;
+  bool _isLoadingInitial = true; // Chỉ loading lần đầu tiên vào màn hình
 
   @override
   void initState() {
     super.initState();
-    _cartFuture = _cartController.getCartData();
+    _firstLoad();
   }
 
-  // Hàm làm mới giỏ hàng (Dùng cho RefreshIndicator và sau khi Update)
-  Future<void> _refreshCart() async {
-    setState(() {
-      _cartFuture = _cartController.getCartData();
-    });
-    await _cartFuture;
+  // Hàm load dữ liệu lần đầu (Có hiện Loading)
+  Future<void> _firstLoad() async {
+    try {
+      final data = await _cartController.getCartData();
+      if (mounted) {
+        setState(() {
+          _cartData = data;
+          _isLoadingInitial = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingInitial = false;
+        });
+      }
+    }
   }
 
-  // --- HÀM XỬ LÝ TĂNG GIẢM SỐ LƯỢNG (MỚI) ---
-  Future<void> _handleUpdateQuantity(int variantId, int currentQty, bool isIncrease) async {
+  // Hàm load lại dữ liệu ngầm (KHÔNG hiện loading, dùng để cập nhật tổng tiền sau khi tăng giảm)
+  Future<void> _refreshCartSilent() async {
+    final data = await _cartController.getCartData();
+    if (mounted && data != null) {
+      setState(() {
+        _cartData = data;
+      });
+    }
+  }
+
+  // --- HÀM XỬ LÝ TĂNG GIẢM SỐ LƯỢNG (SỬA LẠI: OPTIMISTIC UPDATE) ---
+  Future<void> _handleUpdateQuantity(int index, int variantId, int currentQty, bool isIncrease) async {
     // 1. Tính toán số lượng mới
     int newQty = isIncrease ? currentQty + 1 : currentQty - 1;
+    if (newQty < 1) return;
 
-    // 2. Chặn không cho giảm xuống dưới 1
-    if (newQty < 1) return; 
+    // 2. CẬP NHẬT UI NGAY LẬP TỨC (Không chờ API - Để tránh giật lag)
+    setState(() {
+      _cartData!.data[index] = _cartData!.data[index].copyWith(quantity: newQty);
+      // Lưu ý: Nếu Model CartItem của bạn không có copyWith, hãy gán trực tiếp:
+      // _cartData!.data[index].quantity = newQty; 
+    });
 
-    // 3. Gọi API (Hiển thị loading nhẹ hoặc chặn click liên tục nếu cần)
-    // Ở đây mình làm đơn giản là gọi thẳng API
+    // 3. Gọi API cập nhật bên dưới (Background)
     bool success = await _updateCartController.updateCartQuantity(variantId, newQty);
-    debugPrint('TEST ADD QUANTITY: ${success.toString()}');
+
     if (success) {
-      // 4. Nếu thành công -> Reload lại trang để cập nhật tổng tiền và số lượng
-      await _refreshCart();
+      // 4. Nếu thành công -> Gọi API lấy dữ liệu mới (để cập nhật Tổng tiền) NHƯNG KHÔNG HIỆN LOADING
+      await _refreshCartSilent(); 
     } else {
-      // 5. Nếu lỗi -> Báo user
-      if(mounted) {
+      // 5. Nếu lỗi -> Hoàn tác lại số lượng cũ trên UI
+      if (mounted) {
+        setState(() {
+           // Revert lại số cũ
+           int oldQty = isIncrease ? newQty - 1 : newQty + 1;
+           // _cartData!.data[index].quantity = oldQty; // Dùng dòng này nếu model ko có copyWith
+           _cartData!.data[index] = _cartData!.data[index].copyWith(quantity: oldQty);
+        });
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Lỗi cập nhật số lượng! Vui lòng kiểm tra mạng."), backgroundColor: Colors.red),
+          const SnackBar(content: Text("Lỗi cập nhật! Kiểm tra kết nối."), backgroundColor: Colors.red),
         );
       }
     }
@@ -87,38 +116,8 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                   ),
                 ),
                 padding: const EdgeInsets.all(24),
-                child: FutureBuilder<CartResponse?>(
-                  future: _cartFuture,
-                  builder: (context, snapshot) {
-                    // 1. Loading
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    
-                    // 2. Lỗi
-                    if (snapshot.hasError) {
-                      return Center(child: Text("Đã xảy ra lỗi: ${snapshot.error}"));
-                    }
-
-                    // 3. Rỗng
-                    if (!snapshot.hasData || snapshot.data!.data.isEmpty) {
-                      return RefreshIndicator(
-                        onRefresh: _refreshCart,
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: Container(
-                            height: MediaQuery.of(context).size.height * 0.5,
-                            alignment: Alignment.center,
-                            child: const Text("Giỏ hàng của bạn đang trống"),
-                          ),
-                        ),
-                      );
-                    }
-
-                    // 4. Có dữ liệu
-                    return _buildMainContent(snapshot.data!);
-                  },
-                ),
+                // THAY ĐỔI 2: Không dùng FutureBuilder nữa, dùng if/else check biến state
+                child: _buildBodyContent(), 
               ),
             ),
           ],
@@ -127,7 +126,28 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
     );
   }
 
-  Widget _buildMainContent(CartResponse cartData) {
+  Widget _buildBodyContent() {
+    // 1. Đang loading lần đầu
+    if (_isLoadingInitial) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // 2. Dữ liệu null hoặc rỗng
+    if (_cartData == null || _cartData!.data.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _firstLoad, // Kéo xuống để reload lại từ đầu
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.5,
+            alignment: Alignment.center,
+            child: const Text("Giỏ hàng của bạn đang trống"),
+          ),
+        ),
+      );
+    }
+
+    // 3. Có dữ liệu -> Hiển thị list
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -135,35 +155,34 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
         const SizedBox(height: 12),
         _buildAddressSection(),
         const SizedBox(height: 24),
-        Text("Order list (${cartData.data.length})", style: const TextStyle(color: Colors.grey, fontSize: 16)),
+        Text("Order list (${_cartData!.data.length})", style: const TextStyle(color: Colors.grey, fontSize: 16)),
         const SizedBox(height: 12),
         
-        // Danh sách sản phẩm
         Expanded(
           child: RefreshIndicator(
-            onRefresh: _refreshCart,
+            onRefresh: _firstLoad,
             child: ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: cartData.data.length,
+              itemCount: _cartData!.data.length,
               separatorBuilder: (context, index) => const Divider(height: 32),
-              itemBuilder: (context, index) => _buildCartItem(cartData.data[index]),
+              // Truyền thêm index để biết đang sửa item nào
+              itemBuilder: (context, index) => _buildCartItem(_cartData!.data[index], index),
             ),
           ),
         ),
 
         const SizedBox(height: 16),
-        _buildFooterTotal(cartData.totalMoney),
+        _buildFooterTotal(_cartData!.totalMoney),
         const SizedBox(height: 16),
         CustomButton(text: "Tiếp tục thanh toán", onPressed: () {}),
       ],
     );
   }
 
-  Widget _buildCartItem(CartItem item) {
+  Widget _buildCartItem(CartItem item, int index) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Ảnh sản phẩm
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
@@ -177,32 +196,25 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
         ),
         const SizedBox(width: 16),
         
-        // Thông tin và nút tăng giảm
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Tên SP
               Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              
-              // Thông số kỹ thuật
               Text(
                 "${item.color} | ${item.ram} | ${item.storage}", 
                 style: const TextStyle(color: Colors.grey, fontSize: 14)
               ),
-              
               const SizedBox(height: 8),
               
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Giá tiền
                   Text(
-                    item.price, // Hiển thị giá string từ API (VD: "20.000.000")
+                    item.price, 
                     style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent, fontSize: 16)
                   ),
                   
-                  // --- CỤM NÚT TĂNG GIẢM (SỬA LẠI PHẦN NÀY) ---
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.grey[100],
@@ -210,9 +222,9 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                     ),
                     child: Row(
                       children: [
-                        // Nút TRỪ
                         InkWell(
-                          onTap: () => _handleUpdateQuantity(item.productVariantId, item.quantity, false),
+                          // Truyền index vào để cập nhật đúng item trong List
+                          onTap: () => _handleUpdateQuantity(index, item.productVariantId, item.quantity, false),
                           borderRadius: BorderRadius.circular(20),
                           child: const Padding(
                             padding: EdgeInsets.all(8.0),
@@ -220,7 +232,6 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                           ),
                         ),
                         
-                        // Số lượng
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Text(
@@ -229,9 +240,8 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                           ),
                         ),
                         
-                        // Nút CỘNG
                         InkWell(
-                          onTap: () => _handleUpdateQuantity(item.productVariantId, item.quantity, true),
+                          onTap: () => _handleUpdateQuantity(index, item.productVariantId, item.quantity, true),
                           borderRadius: BorderRadius.circular(20),
                           child: const Padding(
                             padding: EdgeInsets.all(8.0),
@@ -241,7 +251,6 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                       ],
                     ),
                   )
-                  // --------------------------------------------
                 ],
               ),
             ],
@@ -264,7 +273,6 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
     );
   }
 
-  // --- Các Widget tĩnh giữ nguyên ---
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

@@ -121,7 +121,6 @@ Future<bool> login(BuildContext context, String email, String password) async {
       );
 
       if (response.statusCode == 200) {
-        print("🔥 DATA SERVER TRẢ VỀ: ${response.body}");
         final data = jsonDecode(response.body);
         return User.fromJson(data['user']); 
       }

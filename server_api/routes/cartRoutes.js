@@ -207,4 +207,6 @@ cartRoutes.put('/update', cartController.update);
  */
 cartRoutes.delete('/remove', cartController.remove);
 
+cartRoutes.post('/merge', cartController.mergeCart);
+
 export default cartRoutes;

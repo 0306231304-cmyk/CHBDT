@@ -4,15 +4,16 @@ export default class cartController{
     static async addToCart(req, res) {
         try {
             const userId = req.userid; // Lấy từ Token
-            const { variant_id, quantity } = req.body;
+            const { variant_id } = req.body;
 
             if (!variant_id || !quantity) return res.status(400).json({ message: "Thiếu thông tin" });
-
-            await cartModel.addToCart(userId, variant_id, parseInt(quantity));
+            console.log("DEBUG: variant_id = ",variant_id);
+            await cartModel.addToCart(userId, variant_id);
 
             return res.status(200).json({ succeeded: true, message: "Đã thêm vào giỏ" });
         } catch (error) {
-            return res.status(500).json({ succeeded: false, error: error.message });
+            console.log("DEBUG: Lỗi addToCart: ", error.message);
+            return res.status(500).json({ succeeded: false, message: error.message });
         }
     }
 
@@ -66,6 +67,31 @@ export default class cartController{
             return res.status(200).json({ succeeded: true, message: "Đã cập nhật số lượng" });
         } catch (error) {
             return res.status(500).json({ succeeded: false, error: error.message });
+        }
+    }
+
+    static async mergeCart(req,res){
+        try{
+            const user_id = req.userid;
+            console.log("DEBUG: user_id = ", user_id);
+            const {product_variant_id, quantity} = req.body;
+
+            if(!product_variant_id || !quantity) return res.status(400).json({
+                succeeded: false,
+                message: "Thiếu mã biến thể hoặc số lượng"
+            });
+
+            await cartModel.mergeCart(user_id,product_variant_id,quantity);
+            
+            return res.status(200).json({
+                succeeded: true,
+            });
+        }
+        catch(error){
+            return res.status(500).json({
+                succeeded: false,
+                message: "Lỗi gộp giỏ hàng: " + error.message
+            });
         }
     }
 }

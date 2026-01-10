@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../Product/product_detail_screen.dart';
 
 class ProductByCategoryScreen extends StatefulWidget {
-  final String category;
+  final String? category;
   const ProductByCategoryScreen({super.key, required this.category});
 
   @override
@@ -289,7 +289,7 @@ class _ProductByCategoryScreenState extends State<ProductByCategoryScreen> {
         elevation: 0,
         leading: const BackButton(color: Colors.black),
         title: Text(
-          widget.category.toUpperCase(),
+          widget.category.toString(),
           style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,

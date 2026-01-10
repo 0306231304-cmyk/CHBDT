@@ -1,7 +1,7 @@
 class CartResponse {
   final bool succeeded;
   final List<CartItem> data;
-  final int totalMoney;
+  final double totalMoney;
 
   CartResponse({
     required this.succeeded,
@@ -12,32 +12,38 @@ class CartResponse {
   factory CartResponse.fromJson(Map<String, dynamic> json) {
     return CartResponse(
       succeeded: json['succeeded'] ?? false,
+      // Mapping danh sách CartItem
       data: (json['data'] as List? ?? []).map((e) => CartItem.fromJson(e)).toList(),
-      totalMoney: json['total_money'] ?? 0, // Chú ý key là total_money
+      
+      // --- SỬA LỖI 1: Xử lý total_money ---
+      // Chuyển về String rồi mới parse sang double để tránh lỗi type
+      totalMoney: double.tryParse(json['total_money'].toString()) ?? 0.0,
     );
   }
 }
 
 class CartItem {
-  final int productVariantId; // Sửa từ id thành product_variant_id
-  final String productName;   // Sửa từ name thành product_name
-  final String color;
-  final String ram;
-  final String storage;       // Thêm trường storage (như trong ảnh 256GB)
-  final String price;
-  final int quantity;
-  final String imageUrl;      // Sửa từ image thành image_url
+  final int? productVariantId;
+  final String? productName;
+  final String? color;
+  final String? ram;
+  final String? storage;
+  final double? price;
+  final int? quantity;
+  final String? imageUrl;
 
   CartItem({
-    required this.productVariantId,
-    required this.productName,
-    required this.color,
-    required this.ram,
-    required this.storage,
-    required this.price,
-    required this.quantity,
-    required this.imageUrl,
+    this.productVariantId,
+    this.productName,
+    this.color,
+    this.ram,
+    this.storage,
+    this.price,
+    this.quantity,
+    this.imageUrl,
   });
+
+  // Hàm copyWith giữ nguyên, không cần sửa
   CartItem copyWith({
     int? productVariantId,
     String? productName,
@@ -45,11 +51,10 @@ class CartItem {
     String? color,
     String? ram,
     String? storage,
-    String? price,
+    double? price,
     int? quantity,
   }) {
     return CartItem(
-      // Giữ nguyên giá trị cũ nếu không truyền giá trị mới
       productVariantId: productVariantId ?? this.productVariantId,
       productName: productName ?? this.productName,
       imageUrl: imageUrl ?? this.imageUrl,
@@ -64,17 +69,22 @@ class CartItem {
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
       productVariantId: json['product_variant_id'] ?? 0,
-      productName: json['name'] ?? '',
+      productName: json['name'] ?? '', // Kiểm tra lại server trả về 'name' hay 'product_name'
       color: json['color'] ?? '',
       ram: json['ram'] ?? '',
       storage: json['storage'] ?? '',
-      price: json['price'] ?? '0',
+      
+      // --- SỬA LỖI 2: Xử lý price ---
+      // json['price'] đang là String "30990000.00", gán thẳng vào double sẽ lỗi
+      // Cách sửa: .toString() -> tryParse -> nếu lỗi thì lấy 0.0
+      price: double.tryParse(json['price'].toString()) ?? 0.0,
+      
       quantity: json['quantity'] ?? 1,
       imageUrl: json['image_url'] ?? '',
     );
   }
-
-  // Hàm này dùng để lưu xuống Local Storage (phải khớp key với Server)
+  
+  // Hàm toJson nếu cần dùng để lưu xuống LocalStorage
   Map<String, dynamic> toJson() {
     return {
       'product_variant_id': productVariantId,

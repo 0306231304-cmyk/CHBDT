@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../resources/app_colors.dart';
 import '../Model/cartModel.dart'; 
-import '../Model/update_cart_model.dart';
 import '../Controller/cart_Controller.dart';
 import '../Controller/update_cart_controller.dart'; 
 import 'Widget/custom_button.dart';
@@ -66,7 +65,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
     setState(() {
       _cartData!.data[index] = _cartData!.data[index].copyWith(quantity: newQty);
       // Lưu ý: Nếu Model CartItem của bạn không có copyWith, hãy gán trực tiếp:
-      // _cartData!.data[index].quantity = newQty; 
+      // _cartData!.data[index].quantity = newQty;
     });
 
     // 3. Gọi API cập nhật bên dưới (Background)
@@ -92,7 +91,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
     }
   }
 
-  String _formatPrice(int price) {
+  String _formatPrice(double price) {
     return "${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}đ";
   }
 
@@ -186,7 +185,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
-            item.imageUrl,
+            item.imageUrl ?? '',
             width: 80, height: 80, fit: BoxFit.cover,
             errorBuilder: (c, e, s) => Container(
               width: 80, height: 80, color: Colors.grey[200],
@@ -200,7 +199,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(item.productName ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               Text(
                 "${item.color} | ${item.ram} | ${item.storage}", 
                 style: const TextStyle(color: Colors.grey, fontSize: 14)
@@ -211,7 +210,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    item.price, 
+                    item.price.toString(), 
                     style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent, fontSize: 16)
                   ),
                   
@@ -224,7 +223,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                       children: [
                         InkWell(
                           // Truyền index vào để cập nhật đúng item trong List
-                          onTap: () => _handleUpdateQuantity(index, item.productVariantId, item.quantity, false),
+                          onTap: () => _handleUpdateQuantity(index, item.productVariantId ?? 0, item.quantity ?? 0, false),
                           borderRadius: BorderRadius.circular(20),
                           child: const Padding(
                             padding: EdgeInsets.all(8.0),
@@ -241,7 +240,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                         ),
                         
                         InkWell(
-                          onTap: () => _handleUpdateQuantity(index, item.productVariantId, item.quantity, true),
+                          onTap: () => _handleUpdateQuantity(index, item.productVariantId ?? 0, item.quantity ?? 0, true),
                           borderRadius: BorderRadius.circular(20),
                           child: const Padding(
                             padding: EdgeInsets.all(8.0),
@@ -260,7 +259,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
     );
   }
 
-  Widget _buildFooterTotal(int totalMoney) {
+  Widget _buildFooterTotal(double totalMoney) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

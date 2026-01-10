@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/User.dart';
+import '../Config/baseUrl.dart';
 
-class AuthController {
-  static const String baseUrl = "http://192.168.30.212:3001"; 
+class AuthController { 
 
   // --- HÀM ĐĂNG KÝ ---
   Future<void> register(BuildContext context, {

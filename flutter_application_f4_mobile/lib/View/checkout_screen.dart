@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../Resources/app_colors.dart';
 import 'Widget/custom_button.dart';
 import 'thanhtoanok_screen.dart';
 import '../Model/order_model.dart';

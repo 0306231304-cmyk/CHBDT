@@ -1,5 +1,3 @@
-import cartModel from "../models/cartModel.js";
-import couponModel from "../models/couponModel.js";
 import orderModel from "../models/orderModel.js";
 
 export default class orderController{

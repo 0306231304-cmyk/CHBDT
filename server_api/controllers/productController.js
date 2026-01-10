@@ -7,7 +7,6 @@ export default class productController{
 
             return res.status(200).json({
                 succeeded: true,
-                message: "Lấy danh sách sản phẩm thành công",
                 products: products
             });
         }catch(error){
@@ -53,6 +52,45 @@ export default class productController{
         }
         catch(error){
             return res.status(500).json({succeeded: false,message: error.message});
+        }
+    }
+
+    static async getProductVariantByProductId(req,res){
+        try{
+            const {product_id} = req.params;
+            console.log("DEBUG (get-product-variant): ",product_id);
+            if(!product_id) return res.status(400).json({succeeded: false, message: "Thiếu id sản phẩm"});
+
+            const products = await productModel.findProductVariantByProductID(product_id);
+            
+            return res.status(200).json({
+                succeeded: true,
+                message: "Lấy danh sách biến thể sản phẩm thành công",
+                product_variants: products
+            });
+        }
+        catch(error){
+            return res.status(500).json({
+                succeeded: false,
+                message: error.message
+            });
+        }
+    }
+
+    static async getAllProductVariant(req,res){
+        try{
+            const product_variant = await productModel.getProductVariants();
+
+            return res.status(200).json({
+                succeeded: true,
+                product_variants: product_variant
+            });
+        }
+        catch(error){
+            return res.status(500).json({
+                succeeded: false,
+                message: error.message
+            });
         }
     }
 }

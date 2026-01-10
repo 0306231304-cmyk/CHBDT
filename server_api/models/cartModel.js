@@ -18,7 +18,7 @@ export default class cartModel{
         }
     }
     
-    static async addToCart(userId, variantId, quantity) {
+    static async addToCart(userId, variantId) {
         try {
             const [checkItem] = await execute(
                 "SELECT * FROM carts WHERE user_id = ? AND product_variant_id = ?", 
@@ -27,7 +27,7 @@ export default class cartModel{
 
             if (checkItem.length > 0) {
                 // Đã có -> Chỉ cần cộng thêm số lượng
-                const newQuantity = checkItem[0].quantity + quantity;
+                const newQuantity = checkItem[0].quantity + 1;
                 await execute(
                     "UPDATE carts SET quantity = ? WHERE user_id = ? AND product_variant_id = ?",
                     [newQuantity, userId, variantId]
@@ -36,7 +36,7 @@ export default class cartModel{
                 // Chưa có -> Thêm dòng mới
                 await execute(
                     "INSERT INTO carts (user_id, product_variant_id, quantity) VALUES (?, ?, ?)",
-                    [userId, variantId, quantity]
+                    [userId, variantId, 1]
                 );
             }
             return true;
@@ -99,6 +99,26 @@ export default class cartModel{
         }
         catch(error){
             throw new Error('Lỗi tính tổng tiền giỏ hàng: ',error.message);
+        }
+    }
+
+    static async mergeCart(user_id, product_variant_id, quantity){
+        try{
+            const cartDetail = await this.getCartDetails(user_id);
+            console.log('DEBUG (mergeCart): user_id = ',user_id);
+            console.log('DEBUG (mergeCart): product_variant_id = ',product_variant_id);
+            console.log('DEBUG (mergeCart): quantity = ',quantity);
+            for(const cartItem of cartDetail){
+                if(cartItem.product_variant_id == product_variant_id){
+                    await this.updateQuantity(user_id,product_variant_id,cartItem.quantity + quantity);
+                    return;
+                }
+            }
+            await execute('INSERT INTO carts (user_id, product_variant_id, quantity) VALUES(?, ?, ?)',[user_id,product_variant_id,quantity]);
+            return;
+        }
+        catch(error){
+            throw new Error("Lỗi gộp giỏ hàng: " + error.message);
         }
     }
 }

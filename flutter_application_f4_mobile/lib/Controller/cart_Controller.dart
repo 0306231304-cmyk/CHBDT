@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/cartModel.dart';
-
+import '../Config/baseUrl.dart';
 class CartController {
-  final String baseUrl = 'http://192.168.30.212:3001';
 
   // --- 1. LẤY GIỎ HÀNG ---
   Future<CartResponse?> getCartData() async {
@@ -18,7 +17,7 @@ class CartController {
     }
   }
 
-  Future<CartResponse?> _getCartFromServer(String token) async {
+  static Future<CartResponse?> _getCartFromServer(String token) async {
     try {
       await _mergeLocalCartToServer(token); // Gộp giỏ hàng trước khi lấy
       final response = await http.get(
@@ -34,32 +33,92 @@ class CartController {
         return CartResponse.fromJson(jsonData);
       }
     } catch (e) {
-      print("Lỗi Server: $e");
+      print("Lỗi lấy danh sách sản phẩm trong giỏ hàng trên server: $e");
     }
     return null;
   }
 
-  Future<CartResponse?> _getCartFromLocal() async {
+  // --- Hàm xử lý lấy giỏ hàng Local (Khi chưa đăng nhập) ---
+  static Future<CartResponse?> _getCartFromLocal() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? cartJson = prefs.getString('local_cart');
-    
-    if (cartJson != null) {
-      List<dynamic> localList = jsonDecode(cartJson);
-      int totalMoney = 0;
-      
-      // Tính tổng tiền dựa trên cấu trúc mới
-      for (var item in localList) {
-        totalMoney += (item['price'] as int) * (item['quantity'] as int);
-      }
+    String? localCartJson = prefs.getString('local_cart');
 
-      List<CartItem> items = localList.map((i) => CartItem.fromJson(i)).toList();
-      return CartResponse(succeeded: true, data: items, totalMoney: totalMoney);
+    // 1. Nếu local chưa có gì, trả về rỗng (đúng format Model)
+    if (localCartJson == null || localCartJson.isEmpty) {
+      return CartResponse(succeeded: true, data: [], totalMoney: 0);
     }
+
+    List<dynamic> localList = [];
+    try {
+      localList = jsonDecode(localCartJson);
+      print('LOCAL CART JSON: $localList');
+    } catch (e) {
+      return CartResponse(succeeded: true, data: [], totalMoney: 0);
+    }
+
+    // 2. Gọi API lấy danh sách biến thể để tra cứu thông tin
+    try {
+      // Đảm bảo URL này đúng với server của bạn
+      final response = await http.get(Uri.parse('$baseUrl/products/product-variants/get-all'));
+
+      if (response.statusCode == 200) {
+        final serverData = jsonDecode(response.body);
+        
+        if (serverData['succeeded'] == true) {
+          List<dynamic> allVariants = serverData['product_variants'];
+          List<CartItem> finalCartItems = [];
+          double tempTotalMoney = 0.0;
+
+          // 3. Vòng lặp ghép dữ liệu
+          for (var localItem in localList) {
+            int localId = localItem['product_variant_id'];
+            int localQty = localItem['quantity'] ?? 1;
+
+            // Tìm thông tin trên server khớp với ID local
+            var variantInfo = allVariants.firstWhere(
+              (v) => v['id'] == localId,
+              orElse: () => null,
+            );
+
+            if (variantInfo != null) {
+              double price = double.tryParse(variantInfo['price'].toString()) ?? 0.0;
+              print("DEBUG: $localId\n ${variantInfo['name']}\n ${variantInfo['storage']}");
+              // Tạo CartItem đúng với tên trường trong cartModel.dart
+              final item = CartItem(
+                productVariantId: localId,
+                productName: variantInfo['name'], // Model dùng productName
+                color: variantInfo['color'],      // Map thêm màu
+                ram: variantInfo['ram'],          // Map thêm ram
+                storage: variantInfo['storage'],  // Map thêm bộ nhớ
+                imageUrl: variantInfo['image_url'], // Model dùng imageUrl
+                price: price,
+                quantity: localQty,
+              );
+
+              finalCartItems.add(item);
+              
+              // Cộng dồn tổng tiền
+              tempTotalMoney += price * localQty;
+            }
+          }
+
+          // Trả về kết quả đúng với CartResponse model
+          return CartResponse(
+            succeeded: true, 
+            data: finalCartItems,        // Sửa 'result' thành 'data'
+            totalMoney: tempTotalMoney.toDouble() // Thêm 'totalMoney'
+          );
+        }
+      }
+    } catch (e) {
+      print("Lỗi khi lấy thông tin chi tiết cho giỏ hàng Local: $e");
+    }
+
     return CartResponse(succeeded: true, data: [], totalMoney: 0);
   }
 
   // --- 2. LOGIC GỘP ---
-  Future<void> _mergeLocalCartToServer(String token) async {
+  static Future<void> _mergeLocalCartToServer(String token) async {
     final prefs = await SharedPreferences.getInstance();
     final String? cartJson = prefs.getString('local_cart');
 
@@ -69,7 +128,7 @@ class CartController {
         for (var item in localList) {
           // Gửi đúng key product_variant_id lên server
           await http.post(
-            Uri.parse('$baseUrl/cart/add'),
+            Uri.parse('$baseUrl/cart/merge'),
             headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
             body: jsonEncode({
               'product_variant_id': item['product_variant_id'],
@@ -83,39 +142,91 @@ class CartController {
   }
 
   // --- 3. THÊM VÀO GIỎ HÀNG ---
-  Future<void> addToCart(CartItem newItem) async {
+  static Future<void> addToCart(int? userId, int productVariantId) async {
     final prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('user_token');
 
+    // 1. TRƯỜNG HỢP ĐÃ ĐĂNG NHẬP (GỌI API)
     if (token != null) {
-      // Gọi API Add
-       await http.post(
-        Uri.parse('$baseUrl/cart/add'),
-        headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
-        body: jsonEncode({'product_variant_id': newItem.productVariantId, 'quantity': newItem.quantity})
-      );
-    } else {
-      // Lưu Local
-      List<dynamic> currentList = [];
-      if (prefs.getString('local_cart') != null) {
-        currentList = jsonDecode(prefs.getString('local_cart')!);
-      }
-
-      bool exists = false;
-      for (var item in currentList) {
-        // So sánh product_variant_id
-        if (item['product_variant_id'] == newItem.productVariantId) {
-          item['quantity'] += newItem.quantity;
-          exists = true;
-          break;
+      try {
+        print("DEBUG: Đang thêm vào giỏ hàng Server...");
+        final response = await http.post(
+          Uri.parse('$baseUrl/cart/add'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json'
+          },
+          body: jsonEncode({
+            'product_variant_id': productVariantId,
+            'quantity': 1 
+          }),
+        );
+        
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          print("DEBUG: Thêm vào server thành công");
+        } else {
+          print("DEBUG: Lỗi server ${response.body}");
         }
+      } catch (e) {
+        print("Lỗi thêm vào giỏ hàng (API): $e");
       }
+    } 
+    // 2. TRƯỜNG HỢP CHƯA ĐĂNG NHẬP (LƯU LOCAL)
+    else {
+      try {
+        print("DEBUG: Đang xử lý giỏ hàng Local...");
+        List<dynamic> currentList = [];
+        String? localCartJson = prefs.getString('local_cart');
+        
+        // Decode JSON cũ nếu có
+        if (localCartJson != null && localCartJson.isNotEmpty) {
+          try {
+            currentList = jsonDecode(localCartJson);
+          } catch (e) {
+            print("Lỗi decode JSON cũ, sẽ reset giỏ hàng: $e");
+            currentList = [];
+          }
+        }
 
-      if (!exists) {
-        currentList.add(newItem.toJson()); // toJson() đã match với cấu trúc Server
+        bool exists = false;
+        
+        // Duyệt qua danh sách để tìm sản phẩm trùng
+        for (var i = 0; i < currentList.length; i++) {
+          // Ép kiểu về Map để truy cập an toàn
+          Map<String, dynamic> item = currentList[i];
+
+          if (item['product_variant_id'] == productVariantId) {
+            // SỬA LỖI ĐƠ: Kiểm tra null trước khi cộng
+            int currentQty = item['quantity'] ?? 0;
+            item['quantity'] = currentQty + 1;
+            
+            // Cập nhật lại vào list
+            currentList[i] = item;
+            exists = true;
+            print("DEBUG: Đã cộng dồn số lượng lên ${item['quantity']}");
+            break; // Tìm thấy rồi thì thoát vòng lặp ngay
+          }
+        }
+
+        // Nếu chưa tồn tại thì thêm mới
+        if (!exists) {
+          currentList.add({
+            'product_variant_id': productVariantId,
+            'quantity': 1,
+            // Có thể thêm ngày tạo nếu cần để sort
+            'added_at': DateTime.now().toIso8601String(), 
+          });
+          print("DEBUG: Đã thêm mới sản phẩm vào local");
+        }
+
+        // Lưu ngược lại vào SharedPreferences
+        await prefs.setString('local_cart', jsonEncode(currentList));
+        print("DEBUG: Lưu local thành công");
+
+      } catch (e) {
+        print("Lỗi nghiêm trọng khi lưu Local Cart: $e");
+        // Không throw lỗi để tránh crash UI
       }
-
-      await prefs.setString('local_cart', jsonEncode(currentList));
     }
   }
 }

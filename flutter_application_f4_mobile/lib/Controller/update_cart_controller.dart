@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../Model/update_cart_model.dart'; // Import model request/response
+import '../Model/update_cart_model.dart';
+import '../Config/baseUrl.dart';
 
 class UpdateCartController {
   // Copy y chang IP từ CartController của bạn
-  final String baseUrl = 'http://192.168.30.212:3001';
 
   // --- HÀM CHÍNH: QUYẾT ĐỊNH DÙNG SERVER HAY LOCAL ---
   Future<bool> updateCartQuantity(int variantId, int newQuantity) async {

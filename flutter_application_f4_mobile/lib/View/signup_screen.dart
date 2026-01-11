@@ -12,16 +12,18 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  // Khai báo controller
+  // --- 1. KHAI BÁO BIẾN ---
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController(); 
   final _passController = TextEditingController();
   final _confirmPassController = TextEditingController();
+  
   final AuthController _authController = AuthController(); 
-  bool _isLoading = false; 
+  bool _isLoading = false; // Biến để hiện vòng xoay loading
 
+  // Giải phóng bộ nhớ khi tắt màn hình
   @override
   void dispose() {
     _nameController.dispose();
@@ -33,22 +35,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
+  // --- 2. XỬ LÝ LOGIC ---
   void _handleRegister() async{
-    // Kiểm tra rỗng
+    // B1: Kiểm tra rỗng
     if (_nameController.text.isEmpty || _emailController.text.isEmpty || _passController.text.isEmpty) {
-       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng nhập tên, email và mật khẩu")));
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng nhập đủ thông tin"), backgroundColor: Colors.red));
        return;
     }
 
-    // Kiểm tra mật khẩu khớp nhau
+    // B2: Kiểm tra mật khẩu xác nhận
     if (_passController.text != _confirmPassController.text) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Mật khẩu xác nhận không khớp"), backgroundColor: Colors.red));
       return;
     }
 
-    setState(() => _isLoading = true);
+    // B3: Gọi API đăng ký
+    setState(() => _isLoading = true); // Hiện loading
 
-    // Gọi API qua Controller
     await _authController.register(
       context, 
       email: _emailController.text.trim(),
@@ -58,11 +61,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       address: _addressController.text.trim(),
     );
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-    }
+    if (mounted) setState(() => _isLoading = false); // Tắt loading
   }
 
+  // --- 3. GIAO DIỆN ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,31 +73,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context), // Quay về trang Login
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 10),
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Logo
+              Image.asset('assets/Logo.png', height: 200, width: 200),
+              const SizedBox(height: 20),
+
+              // Khung Form màu trắng
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black12, blurRadius: 10, offset: const Offset(0, 5))
+                  ],
                 ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: SingleChildScrollView(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text("Đăng Ký", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
                     
-                    // Chuyển sang trang Đăng Nhập
+                    // Link quay lại Đăng nhập
                     Row(
                       children: [
                         const Text("Đã có tài khoản? ", style: TextStyle(color: Colors.grey)),
@@ -107,26 +117,60 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 30),
 
-                    CustomTextField(label: "Họ và tên", hint: "Lois Becket", controller: _nameController),
-                    CustomTextField(label: "Email", hint: "Loisbecket@gmail.com", controller: _emailController, keyboardType: TextInputType.emailAddress),
-                    CustomTextField(label: "Số điện thoại", hint: "(454) 726-0592", controller: _phoneController, keyboardType: TextInputType.phone),
-                    CustomTextField(label: "Địa chỉ", hint: "123 Đường ABC", controller: _addressController),
-                    CustomTextField(label: "Mật khẩu", hint: "*******", controller: _passController, isPassword: true),
-                    CustomTextField(label: "Xác nhận mật khẩu", hint: "*******", controller: _confirmPassController, isPassword: true),
+                    // Các ô nhập liệu
+                    CustomTextField(
+                      label: "Họ tên", 
+                      hint: "Nguyễn Văn A", 
+                      controller: _nameController
+                    ),
+
+                    CustomTextField(
+                      label: "Email", 
+                      hint: "abc@gmail.com", 
+                      controller: _emailController, 
+                      keyboardType: TextInputType.emailAddress
+                    ),
+
+                    CustomTextField(
+                      label: "SĐT", 
+                      hint: "0909...", 
+                      controller: _phoneController, 
+                      keyboardType: TextInputType.phone
+                    ),
+
+                    CustomTextField(
+                      label: "Địa chỉ", 
+                      hint: "TP.HCM", 
+                      controller: _addressController
+                    ),
+
+                    CustomTextField(
+                      label: "Mật khẩu", 
+                      hint: "*******", 
+                      controller: _passController, 
+                      isPassword: true
+                    ),
+
+                    CustomTextField(
+                      label: "Nhập lại mật khẩu", 
+                      hint: "*******", 
+                      controller: _confirmPassController, 
+                      isPassword: true
+                    ),
 
                     const SizedBox(height: 20),
                     
+                    // Nút bấm Đăng ký
                     CustomButton(
                       text: _isLoading ? "Đang xử lý..." : "Đăng ký", 
                       onPressed: _isLoading ? () {} : _handleRegister,
                     ),
-                    const SizedBox(height: 30),
                   ],
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -13,21 +13,25 @@ class OrderHistoryScreen extends StatefulWidget {
 }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
+  // --- 1. KHAI BÁO BIẾN ---
   final OrderController _orderController = OrderController();
-  late Future<List<Order>> _ordersFuture;
+  late Future<List<Order>> _ordersFuture; // Biến chứa dữ liệu Order bất đồng bộ
 
+  // --- 2. KHỞI TẠO ---
   @override
   void initState() {
     super.initState();
-    _ordersFuture = _orderController.getOrderHistory();
+    _ordersFuture = _orderController.getOrderHistory(); // Gọi API lấy danh sách đơn hàng
   }
 
-  // Hàm format tiền tệ
+  // --- 3. HÀM HỖ TRỢ ---
+
+  // Hàm định dạng tiền tệ (VD: 100000 -> 100.000đ)
   String formatCurrency(int amount) {
     return NumberFormat.currency(locale: 'vi_VN', symbol: 'đ').format(amount);
   }
 
-  // Hàm map trạng thái tiếng Anh sang tiếng Việt và màu sắc
+  // Hàm chuyển đổi trạng thái đơn hàng (Anh -> Việt) và gán màu sắc tương ứng
   Map<String, dynamic> getStatusInfo(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
@@ -43,6 +47,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
+  // --- 4. GIAO DIỆN ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,17 +61,26 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
+      
+      // FutureBuilder: Quản lý trạng thái tải dữ liệu
       body: FutureBuilder<List<Order>>(
         future: _ordersFuture,
         builder: (context, snapshot) {
+          
+          // Trạng thái đang tải
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+          
+          // Trạng thái không có dữ liệu hoặc lỗi
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text("Bạn chưa có đơn hàng nào"));
           }
 
+          // Trạng thái thành công -> Lấy danh sách đơn hàng
           final orders = snapshot.data!;
+          
+          // Hiển thị danh sách dạng cuộn
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: orders.length,
@@ -76,7 +90,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
               return GestureDetector(
                 onTap: () {
-                  // Chuyển sang trang chi tiết, truyền ID đơn hàng
+                  // Chuyển sang màn hình chi tiết khi bấm vào đơn hàng
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -84,6 +98,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     ),
                   );
                 },
+                // Card hiển thị thông tin tóm tắt của đơn hàng
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(16),
@@ -101,6 +116,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   ),
                   child: Column(
                     children: [
+                      // Dòng 1: Mã đơn hàng + Trạng thái
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -118,7 +134,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                           ),
                         ],
                       ),
+                      
                       const Divider(height: 20),
+                      
+                      // Dòng 2: Ngày đặt + Tổng tiền
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

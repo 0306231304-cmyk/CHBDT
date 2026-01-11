@@ -16,12 +16,12 @@ class AdminOrderDetailScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.backgroundOrange,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           "Đơn hàng ${orderData['id']}",
-          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         elevation: 0,

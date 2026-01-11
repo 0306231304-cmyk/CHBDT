@@ -11,11 +11,11 @@ class AdminOrderListScreen extends StatefulWidget {
 }
 
 class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
-  // 1. Danh sách Tabs trạng thái
+  // Danh sách Tabs trạng thái
   final List<String> _tabs = ["All", "Chờ xử lý", "Chờ lấy hàng", "Lịch sử"];
   int _selectedIndex = 0;
 
-  // 2. Dữ liệu giả (Dummy Data)
+  // Dữ liệu giả
   final List<Map<String, dynamic>> _allOrders = [
     {
       "id": "#CM9801",
@@ -65,7 +65,7 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
         children: [
           // --- PHẦN HEADER ---
           Container(
-            padding: const EdgeInsets.only(top: 50, left: 16, right: 16, bottom: 16),
+            padding: const EdgeInsets.only(top: 20, left: 16, right: 16, bottom: 16),
             color: AppColors.backgroundOrange,
             child: Column(
               children: [
@@ -73,13 +73,13 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const SizedBox(width: 24),
+                    const SizedBox(width: 12),
                     const Text(
                       "Danh sách đơn hàng",
-                      style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.power_settings_new, color: Colors.black),
+                      icon: const Icon(Icons.power_settings_new, color: Colors.white),
                       onPressed: () {
                         Navigator.pushAndRemoveUntil(
                           context,
@@ -169,19 +169,19 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
 
     switch (status) {
       case "Chờ lấy hàng":
-        badgeColor = const Color(0xFFEEE5FF); // Tím nhạt
+        badgeColor = const Color(0xFFEEE5FF);
         badgeTextColor = Colors.purple;
         break;
       case "Chờ xử lý":
-        badgeColor = const Color(0xFFE3F2FD); // Xanh dương nhạt
+        badgeColor = const Color(0xFFE3F2FD);
         badgeTextColor = Colors.blue;
         break;
       case "Thành công":
-        badgeColor = const Color(0xFFE8F5E9); // Xanh lá nhạt
+        badgeColor = const Color(0xFFE8F5E9);
         badgeTextColor = Colors.green;
         break;
       default: // Đã hủy
-        badgeColor = const Color(0xFFFFEBEE); // Đỏ nhạt
+        badgeColor = const Color(0xFFFFEBEE);
         badgeTextColor = Colors.red;
     }
 

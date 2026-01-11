@@ -7,8 +7,7 @@ import 'package:flutter_application_f4_mobile/View/shoppingcard_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Controller/product_controller.dart';
 import '../../Model/product_model.dart';
-// Đảm bảo import đúng đường dẫn
-import '../Category/product_by_category_screen.dart'; // Đảm bảo import đúng đường dẫn
+import '../Category/product_by_category_screen.dart';
 import '../../Controller/cart_Controller.dart';
 import 'package:intl/intl.dart';
 import '../../Model/brandsModel.dart';

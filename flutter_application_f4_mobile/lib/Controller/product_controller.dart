@@ -30,9 +30,9 @@ class ProductController {
       final response = await http.get(
         Uri.parse("$baseUrl/products"),
         headers: {
-          //"Accept": "application/json",
+          "Accept": "application/json",
           "Content-Type": "application/json",
-          //"ngrok-skip-browser-warning": "true",
+          "ngrok-skip-browser-warning": "true",
         },
       );
       if (response.statusCode == 200) {

@@ -9,7 +9,12 @@ import cartRoutes from "./routes/cartRoutes.js";
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger.js';
 import orderRoutes from "./routes/orderRoutes.js";
-import categoriesRoute from './routes/categoriesRoutes.js'
+import categoriesRoute from './routes/categoriesRoutes.js';
+import path from 'path';
+import { fileURLToPath } from 'url'; // Nhập thư viện url
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(bodyParser.json());
@@ -24,6 +29,7 @@ app.use('/cart', cartRoutes);
 app.use('/orders',orderRoutes);
 app.use('/categories',categoriesRoute);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 app.use('/',userRoutes);
 app.use((req,res,next)=>{
     res.status(404).json({message: 'Endpoint not found'});

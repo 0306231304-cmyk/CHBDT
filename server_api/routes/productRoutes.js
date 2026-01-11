@@ -115,6 +115,81 @@ productRoute.get('/',productController.products);
 
 productRoute.get('/search',productController.searchProduct);
 
+/**
+ * @swagger
+ * /products/product-variants/get-all:
+ *   get:
+ *     summary: Lấy danh sách tất cả biến thể sản phẩm
+ *     description: Trả về danh sách biến thể kèm thông tin chung (tên, hãng, cấu hình...) và link ảnh đầy đủ.
+ *     tags:
+ *       - Products
+ *     responses:
+ *       200:
+ *         description: Lấy dữ liệu thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
+ *                 product_variants:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 10
+ *                       brand_id:
+ *                         type: integer
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         example: iPhone 15 Pro Max
+ *                       screen_size:
+ *                         type: string
+ *                         example: 6.7 inch
+ *                       camera:
+ *                         type: string
+ *                         example: 48MP
+ *                       storage:
+ *                         type: string
+ *                         example: 256GB
+ *                       product_id:
+ *                         type: integer
+ *                         example: 5
+ *                       color:
+ *                         type: string
+ *                         example: Titan Tự nhiên
+ *                       ram:
+ *                         type: string
+ *                         example: 8GB
+ *                       price:
+ *                         type: number
+ *                         format: double
+ *                         example: 28990000
+ *                       stock_quantity:
+ *                         type: integer
+ *                         example: 50
+ *                       image:
+ *                         type: string
+ *                         example: http://192.168.1.5:3000/uploads/iphone15.jpg
+ *       500:
+ *         description: Lỗi Server
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Lỗi lấy danh sách biến thể sản phẩm
+ */
 productRoute.get('/product-variants/get-all',productController.getAllProductVariant);
 /**
  * @swagger
@@ -430,7 +505,7 @@ authProductRoute.get('/favorites/get-all', favoriteController.getListFavoriteByU
  *         description: Lỗi server hoặc sản phẩm không tồn tại
  */
 
-authProductRoute.post('/favorites/add/:product_id',favoriteController.addFavorite);
+authProductRoute.post('/favorites/add/:product_variant_id',favoriteController.addFavorite);
 
 /**
  * @swagger
@@ -469,7 +544,7 @@ authProductRoute.post('/favorites/add/:product_id',favoriteController.addFavorit
  *         description: Lỗi server hoặc không tìm thấy sản phẩm trong danh sách yêu thích
  */
 
-authProductRoute.delete('/favorites/remove/:product_id',favoriteController.removeFavorite);
+authProductRoute.delete('/favorites/remove/:product_variant_id',favoriteController.removeFavorite);
 
 productRoute.use('/', authProductRoute);
 

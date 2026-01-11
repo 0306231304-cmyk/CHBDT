@@ -88,5 +88,22 @@ export default class orderController{
             return res.status(500).json({succeeded: false, message: "Lỗi lấy lịch sử đơn hàng của người dùng: " + error.message});
         }
     }
+
+    static async getAllOrder(req,res){
+        try{
+            const orders = await orderModel.getAllOrder();
+
+            return res.status(200).json({
+                succeeded: true,
+                orders: orders
+            });
+        }
+        catch(error){
+            return res.status(500).json({
+                succeeded: false,
+                message: error.message
+            });
+        }
+    }
     
 }

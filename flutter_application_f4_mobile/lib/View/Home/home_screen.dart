@@ -22,14 +22,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<List<dynamic>> _futureCombinedData;
   late Future<List<BrandsModel>> _futureBrands;
-  // Dữ liệu cứng cho phần Categories để giống thiết kế
-  final List<Map<String, String>> categories = [
-    {"name": "Apple", "img": "assets/images/anh1.png"},
-    {"name": "Samsung", "img": "assets/images/anh2.png"},
-    {"name": "Xiaomi", "img": "assets/images/anh3.png"},
-    {"name": "Oppo", "img": "assets/images/anh4.png"},
-    {"name": "Huawei", "img": "assets/images/anh5.png"},
-  ];
 
   String formatCurrency(double? amount) {
     // locale: 'vi_VN' để dùng dấu chấm phân cách hàng nghìn
@@ -114,7 +106,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 20),
 
                 // 4. Categories Section
-                _buildSectionTitle("Categories", onTap: () {}),
+                _buildSectionTitle("Categories", onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => CategoryScreen())
+                  );
+                }),
                 const SizedBox(height: 10),
                 _buildCategoryList(),
                 const SizedBox(height: 20),

@@ -1,4 +1,6 @@
 import { execute } from "../config/db.js";
+import baseUrl from '../baseUrl.js';
+
 
 export default class productModel{
     static async allproduct(){
@@ -23,8 +25,8 @@ export default class productModel{
             const product = productRows[0];
 
             // Bước 2: Lấy các phiên bản (Màu sắc, bộ nhớ, giá)
-            const queryVariants = `SELECT * FROM product_variants WHERE product_id = ?`;
-            const [variants] = await execute(queryVariants, [id]);
+            const queryVariants = `SELECT *, CONCAT(?, "/uploads/", pv.image_url) as image FROM product_variants WHERE product_id = ?`;
+            const [variants] = await execute(queryVariants, [baseUrl, id]);
 
             // Gộp lại
             product.variants = variants; 
@@ -45,8 +47,8 @@ export default class productModel{
     static async findProductVariantById(product_variant_id){
         try{
             const [product_variants] = await execute(`
-                    SELECT * FROM product_variants p WHERE p.id = ?
-                `,[product_variant_id]);
+                    SELECT *, CONCAT(?, "/uploads/", pv.image_url) as image FROM product_variants pv WHERE p.id = ?
+                `,[baseUrl,product_variant_id]);
 
             if(product_variants.length === 0) {
                 throw new Error('Không tìm thấy sản phẩm này');
@@ -61,7 +63,7 @@ export default class productModel{
 
     static async findProductVariantByProductID(product_id){
         try{
-            const [rows] = await execute('SELECT p.brand_id, p.name, p.description, p.screen_size, p.cpu, p.camera, p.battery, pv.product_id, pv.color, pv.ram, pv.storage, pv.price, pv.stock_quantity, pv.image_url FROM products p, product_variants pv WHERE p.id = pv.product_id AND p.id = ?',[product_id]);
+            const [rows] = await execute('SELECT p.brand_id, p.name, p.description, p.screen_size, p.cpu, p.camera, p.battery, pv.product_id, pv.color, pv.ram, pv.storage, pv.price, pv.stock_quantity, CONCAT(?, "/uploads/", pv.image_url) as image FROM products p, product_variants pv WHERE p.id = pv.product_id AND p.id = ?',[baseUrl,product_id]);
             if(rows.length === 0) throw new Error('Không tìm thấy product_id');
 
             return rows;
@@ -73,7 +75,11 @@ export default class productModel{
 
     static async getProductVariants(){
         try{
-            const [product_variant] = await execute('SELECT pv.id, p.brand_id, p.name, p.screen_size, p.camera, pv.storage, pv.product_id, pv.color, pv.ram, pv.price, pv.stock_quantity, pv.image_url FROM products p, product_variants pv WHERE p.id = pv.product_id');
+            // Sửa lại: CONCAT(?, '/uploads/', pv.image_url)
+            const [product_variant] = await execute(
+                'SELECT pv.id, p.brand_id, p.name, p.screen_size, p.camera, pv.storage, pv.product_id, pv.color, pv.ram, pv.price, pv.stock_quantity, CONCAT(?, "/uploads/", pv.image_url) as image FROM products p, product_variants pv WHERE p.id = pv.product_id', 
+                [baseUrl] // Biến này sẽ điền vào dấu ? đầu tiên
+            );
             if(product_variant.length === 0) return [];
             return product_variant;
         }catch(error){

@@ -23,6 +23,7 @@ class CartController {
       final response = await http.get(
         Uri.parse('$baseUrl/cart'),
         headers: {
+          "ngrok-skip-browser-warning": "true",
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
@@ -32,6 +33,7 @@ class CartController {
         final jsonData = jsonDecode(response.body);
         return CartResponse.fromJson(jsonData);
       }
+      print("Lỗi lấy danh sách sản phẩm trong giỏ hàng trên server (${response.statusCode}): ${jsonDecode(response.body)['message']}");
     } catch (e) {
       print("Lỗi lấy danh sách sản phẩm trong giỏ hàng trên server: $e");
     }
@@ -59,7 +61,12 @@ class CartController {
     // 2. Gọi API lấy danh sách biến thể để tra cứu thông tin
     try {
       // Đảm bảo URL này đúng với server của bạn
-      final response = await http.get(Uri.parse('$baseUrl/products/product-variants/get-all'));
+      final response = await http.get(
+          Uri.parse('$baseUrl/products/product-variants/get-all'),
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          }  
+        );
 
       if (response.statusCode == 200) {
         final serverData = jsonDecode(response.body);
@@ -90,7 +97,7 @@ class CartController {
                 color: variantInfo['color'],      // Map thêm màu
                 ram: variantInfo['ram'],          // Map thêm ram
                 storage: variantInfo['storage'],  // Map thêm bộ nhớ
-                imageUrl: variantInfo['image_url'], // Model dùng imageUrl
+                imageUrl: variantInfo['image'], // Model dùng imageUrl
                 price: price,
                 quantity: localQty,
               );
@@ -129,7 +136,11 @@ class CartController {
           // Gửi đúng key product_variant_id lên server
           await http.post(
             Uri.parse('$baseUrl/cart/merge'),
-            headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+              //"ngrok-skip-browser-warning": "true",
+            },
             body: jsonEncode({
               'product_variant_id': item['product_variant_id'],
               'quantity': item['quantity']
@@ -154,16 +165,16 @@ class CartController {
           Uri.parse('$baseUrl/cart/add'),
           headers: {
             'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            "ngrok-skip-browser-warning": "true",
           },
           body: jsonEncode({
-            'product_variant_id': productVariantId,
-            'quantity': 1 
+            'variant_id': productVariantId,
           }),
         );
         
         if (response.statusCode >= 200 && response.statusCode < 300) {
-          print("DEBUG: Thêm vào server thành công");
+          print("DEBUG: Thêm vào server thành công $productVariantId");
         } else {
           print("DEBUG: Lỗi server ${response.body}");
         }

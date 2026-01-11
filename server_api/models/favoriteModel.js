@@ -15,14 +15,14 @@ export default class favoriteModel{
         }
     }
 
-    static async addFavorite(user_id, product_id){
+    static async addFavorite(user_id, product_variant_id){
         try{
-            const [product] = await execute('SELECT * FROM products WHERE id = ?',[product_id]);
+            const [product] = await execute('SELECT * FROM products WHERE id = ?',[product_variant_id]);
             if(product === 0){
                 throw new Error('Không tìm thấy sản phẩm này');
             }
 
-            const [result] = await execute('INSERT INTO `favorites`(`user_id`, `product_id`, `created_at`) VALUES(?,?,NOW())',[user_id,product_id]);
+            const [result] = await execute('INSERT INTO `favorites`(`user_id`, `product_variant_id`, `created_at`) VALUES(?,?,NOW())',[user_id,product_variant_id]);
 
             return result.affectedRows > 0? result.insertId: null;
         }
@@ -31,9 +31,9 @@ export default class favoriteModel{
         }
     }
 
-    static async getFavoriteID(user_id, product_id){
+    static async getFavoriteID(user_id, product_variant_id){
         try{
-            const [rows] = await execute('SELECT id FROM `favorites` WHERE user_id = ? AND product_id = ?', [user_id,product_id]);
+            const [rows] = await execute('SELECT id FROM `favorites` WHERE user_id = ? AND product_variant_id = ?', [user_id,product_variant_id]);
             if(rows.length === 0) throw new Error('Không tìm thấy mã sản phẩm ưa thích này');
 
             return rows[0];
@@ -57,7 +57,7 @@ export default class favoriteModel{
             return result.affectedRows > 0? result.insertId: null;
         }
         catch(error){
-            throw new Error('Lỗi tìm sản phẩm ưa thích (removeFavorite): ' + error.message);
+            throw new Error('Lỗi xóa sản phẩm ưa thích (removeFavorite): ' + error.message);
         }
     }
 }

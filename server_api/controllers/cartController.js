@@ -6,7 +6,7 @@ export default class cartController{
             const userId = req.userid; // Lấy từ Token
             const { variant_id } = req.body;
 
-            if (!variant_id || !quantity) return res.status(400).json({ message: "Thiếu thông tin" });
+            if (!variant_id) return res.status(400).json({ message: "Thiếu thông tin" });
             console.log("DEBUG: variant_id = ",variant_id);
             await cartModel.addToCart(userId, variant_id);
 

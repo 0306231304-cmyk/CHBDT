@@ -112,6 +112,97 @@ adminAuthRoutes.get('/users',userController.getAllUsers);
 
 /**
  * @swagger
+ * /admin/orders:
+ *   get:
+ *     summary: Lấy danh sách tất cả hóa đơn (Admin)
+ *     description: API trả về danh sách toàn bộ đơn hàng trong hệ thống. Cần quyền Admin.
+ *     tags:
+ *       - Admin Orders
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lấy danh sách thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
+ *                 orders:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         description: ID của hóa đơn
+ *                         example: 1
+ *                       user_id:
+ *                         type: integer
+ *                         description: ID người đặt hàng
+ *                         example: 10
+ *                       coupon_id:
+ *                         type: integer
+ *                         nullable: true
+ *                         description: ID mã giảm giá (nếu có)
+ *                         example: null
+ *                       full_name:
+ *                         type: string
+ *                         description: Tên người nhận
+ *                         example: Nguyễn Văn A
+ *                       address:
+ *                         type: string
+ *                         description: Địa chỉ nhận hàng
+ *                         example: 123 Đường Láng, Hà Nội
+ *                       phone_number:
+ *                         type: string
+ *                         description: Số điện thoại nhận hàng
+ *                         example: 0987654321
+ *                       total_money:
+ *                         type: number
+ *                         format: double
+ *                         description: Tổng tiền đơn hàng
+ *                         example: 15000000
+ *                       payment_method:
+ *                         type: string
+ *                         description: Phương thức thanh toán
+ *                         example: COD
+ *                       status:
+ *                         type: string
+ *                         description: Trạng thái đơn hàng
+ *                         enum:
+ *                           - pending
+ *                           - processing
+ *                           - shipping
+ *                           - delivered
+ *                           - cancelled
+ *                         example: pending
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Thời gian tạo đơn
+ *                         example: 2024-01-01T12:00:00Z
+ *       500:
+ *         description: Lỗi Server
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Lỗi lấy danh sách hóa đơn
+ */
+adminAuthRoutes.get('/orders', orderController.getAllOrder);
+
+/**
+ * @swagger
  * /admin/approve-order/{orderId}:
  *   patch:
  *     summary: Admin thay đổi trạng thái đơn hàng

@@ -193,4 +193,16 @@ export default class orderModel{
             throw new Error('Lỗi lấy danh sách đơn hàng theo ID người dùng: ' + error.message);
         }
     }
+
+    static async getAllOrder(){
+        try{
+            const [orders] = await execute("SELECT * FROM orders");
+            if(orders.length === 0) return [];
+
+            return orders;
+        }
+        catch(error){
+            throw new Error("Lỗi lấy danh sách hóa đơn: " + error.message);
+        }
+    }
 }

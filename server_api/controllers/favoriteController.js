@@ -28,10 +28,10 @@ export default class favoriteController{
     static async addFavorite(req,res){
         try{
             const user_id = req.userid;
-            const {product_id} = req.params;
+            const {product_variant_id} = req.params;
             if(!user_id) return res.status(400).json({succeeded: false, message: "Chưa đăng nhập"});
 
-            const result = await favoriteModel.addFavorite(user_id,product_id);
+            const result = await favoriteModel.addFavorite(user_id,product_variant_id);
 
             return res.status(200).json({
                 succeeded: true,
@@ -49,10 +49,10 @@ export default class favoriteController{
     static async removeFavorite(req,res){
         try{
             const user_id = req.userid;
-            const {product_id} = req.params;
+            const {product_variant_id} = req.params;
             if(!user_id) return res.status(400).json({succeeded: false, message: "Chưa đăng nhập"});
 
-            const result = await favoriteModel.removeFavorite(user_id,product_id);
+            const result = await favoriteModel.removeFavorite(user_id,product_variant_id);
 
             return res.status(200).json({
                 succeeded: true,

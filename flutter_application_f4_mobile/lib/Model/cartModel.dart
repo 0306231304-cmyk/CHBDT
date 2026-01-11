@@ -80,7 +80,7 @@ class CartItem {
       price: double.tryParse(json['price'].toString()) ?? 0.0,
       
       quantity: json['quantity'] ?? 1,
-      imageUrl: json['image_url'] ?? '',
+      imageUrl: json['image'] ?? '',
     );
   }
   

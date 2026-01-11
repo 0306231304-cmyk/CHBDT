@@ -95,28 +95,7 @@ class ProductVariant {
       // Xử lý giá: JSON trả về chuỗi "34990000.00" nên cần parse sang double
       price: json['price'] != null ? double.tryParse(json['price'].toString()) : 0.0,
       stockQuantity: json['stock_quantity'] != null ? int.tryParse(json['stock_quantity'].toString()) : 0,
-      imageUrl: json['image_url'],
+      imageUrl: json['image'],
     );
-  }
-
-  // Hàm chuyển từ Object sang JSON (nếu cần gửi dữ liệu đi)
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'brand_id': brandId,
-      'name': name,
-      'description': description,
-      'screen_size': screenSize,
-      'cpu': cpu,
-      'camera': camera,
-      'battery': battery,
-      'product_id': productId,
-      'color': color,
-      'ram': ram,
-      'storage': storage,
-      'price': price,
-      'stock_quantity': stockQuantity,
-      'image_url': imageUrl,
-    };
   }
 }

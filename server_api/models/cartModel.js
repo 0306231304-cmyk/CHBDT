@@ -1,3 +1,4 @@
+import baseUrl from "../baseUrl.js";
 import { execute } from "../config/db.js";
 
 export default class cartModel{
@@ -60,7 +61,7 @@ export default class cartModel{
             console.log("-> Không tìm thấy giỏ hàng nào!");
             return []; 
         }
-
+        console.log("baseUrl from getCart: " + baseUrl);
         const [items] = await execute(`
             SELECT 
                 product_variants.id as product_variant_id, 
@@ -70,14 +71,15 @@ export default class cartModel{
                 product_variants.ram,
                 product_variants.storage,
                 products.name,
-                carts.quantity
+                carts.quantity,
+                CONCAT(?, "/uploads/", product_variants.image_url) as image
             FROM 
                 carts, product_variants, products 
             WHERE 
                 carts.product_variant_id = product_variants.id 
-                AND carts.user_id = 7 
+                AND carts.user_id = ? 
                 AND product_variants.product_id = products.id;
-        `,[userId]);
+        `,[baseUrl,userId]);
         console.log('DEBUG: Kết quả tìm item: ', items);
         return items;
     }

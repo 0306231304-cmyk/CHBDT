@@ -7,7 +7,10 @@ class BrandsController{
   static Future<List<BrandsModel>> getAllBrands()async{
     try{
       final respone = await http.get(
-        Uri.parse("$baseUrl/categories")
+        Uri.parse("$baseUrl/categories"),
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        }
       );
       if(respone.statusCode == 200){
         Map<String,dynamic> data = jsonDecode(respone.body);

@@ -30,9 +30,9 @@ class ProductController {
       final response = await http.get(
         Uri.parse("$baseUrl/products"),
         headers: {
+          "ngrok-skip-browser-warning": "true",
           "Accept": "application/json",
           "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
         },
       );
       if (response.statusCode == 200) {
@@ -56,7 +56,12 @@ class ProductController {
 
   static Future<List<ProductVariant>> getAllProductVariants() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/products/product-variants/get-all'));
+      final response = await http.get(
+          Uri.parse('$baseUrl/products/product-variants/get-all'),
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          }
+      );
       print("🎯 Status Code: ${response.statusCode}");
       logPrettyJsonString(response.body);
       if (response.statusCode == 200) {

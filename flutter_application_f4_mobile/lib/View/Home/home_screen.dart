@@ -68,13 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-  /*Future<void> _refreshProductVariant()async{
-    setState(() {
-      futureProductVariant = ProductController.getAllProductVariants();
-    });
-  }*/
 
-  
+
 
   @override
   Widget build(BuildContext context) {
@@ -278,9 +273,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 return InkWell(
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                   onTap: () {
-                    /*Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => ProductByCategoryScreen(category: cat.id))
-                    );*/
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => ProductByCategoryScreen(category_id: cat.id, nameBrands: cat.name,))
+                    );
                   },
                   child: Column(
                     children: [

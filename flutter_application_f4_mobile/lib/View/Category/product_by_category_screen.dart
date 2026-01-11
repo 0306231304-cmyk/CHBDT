@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_f4_mobile/Controller/cart_Controller.dart';
+import 'package:flutter_application_f4_mobile/Controller/product_controller.dart';
+import 'package:flutter_application_f4_mobile/Model/product_model.dart';
+import 'package:intl/intl.dart';
 import '../Product/product_detail_screen.dart';
 
 class ProductByCategoryScreen extends StatefulWidget {
-  final String? category;
-  const ProductByCategoryScreen({super.key, required this.category});
+  final int category_id;
+  final String nameBrands;
+  const ProductByCategoryScreen({super.key, required this.category_id, required this.nameBrands}); 
 
   @override
   State<ProductByCategoryScreen> createState() =>
@@ -11,274 +16,43 @@ class ProductByCategoryScreen extends StatefulWidget {
 }
 
 class _ProductByCategoryScreenState extends State<ProductByCategoryScreen> {
-  List<Map<String, dynamic>> getProducts() {
-    final Map<String, List<Map<String, dynamic>>> data = {
-      "apple": [
-        {
-          "name": "Iphone 14 ProMax",
-          "price": "15.900.000 VND",
-          "storage": "1TB",
-          "img": "assets/images/anh15.png",
-          "tag": "NEW",
-          "isFav": false,
-          "showQty": true,
-          "qty": 1,
-          "rating": 4.8,
-          "ratingPercent": {
-            5: 0.7,   // 80%
-            4: 0.10,  // 12%
-            3: 0.03,
-            2: 0.02,
-            1: 0.01,
-          },
-          
-          "reviewCount": 20,
-          "stock": 120,
-          "desc": [
-            "Chip A16 Bionic mạnh mẽ",
-            "Camera 48MP siêu nét",
-            "Màn hình ProMotion 120Hz",
-            "Thiết kế cao cấp"
-          ],
-          "colors": [Colors.black, Colors.blue, Colors.white],
-          "reviewList": [
-            {
-              "user": "Nguyễn Văn A",
-              "star": 5,
-              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
-            },
-            {
-              "user": "Trần Thị B",
-              "star": 4,
-              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
-            },
-          ],
-        },
-        {
-          "name": "Iphone 11",
-          "price": "10.990.000 VND",
-          "storage": "1TB",
-          "img": "assets/images/anh9.png",
-          "tag": "-15%",
-          "isFav": false,
-          "showQty": false,
-          "qty": 0,
-          "rating": 4.5,
-          "stock": 60,
-          "reviewCount": 100,
-          "ratingPercent": {
-            5: 0.10,   // 80%
-            4: 0.09,  // 12%
-            3: 0.04,
-            2: 0.03,
-            1: 0.06,
-          },
-          "desc": [
-            "Chip A13 mạnh mẽ",
-            "Camera kép chụp đẹp",
-            "Pin ổn định"
-          ],
-          "colors": [Colors.black, Colors.white, Colors.red],
-          "reviewList": [
-            {
-              "user": "Nguyễn Văn e",
-              "star": 5,
-              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
-            },
-            {
-              "user": "Trần Thị f",
-              "star": 4,
-              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
-            },
-          ],
-        },
-      ],
-      "samsung": [
-        {
-          "name": "Samsung A53",
-          "price": "12.000.000 VND",
-          "storage": "128GB",
-          "img": "assets/images/anh6.png",
-          // này là icon trái tim và chữ new -15%
-          "tag": "",
-          "isFav": false,
-          "showQty": false,// thanh số lượng
 
-          "qty": 0,// số lượng
-          "rating": 4.9,
-          "ratingPercent": {// % sao cho mỗi sản phẩm
-            5: 0.8,   // 80%
-            4: 0.12,  // 12%
-            3: 0.05,
-            2: 0.02,
-            1: 0.01,
-          },
-          
-          "reviewCount": 47,
-          "stock": 300,
-          "desc": [
-            "Chip xử lý mạnh mẽ, tiết kiệm pin",
-            "Camera chất lượng cao, chụp đêm tốt",
-            "Màn hình lớn, hiển thị sắc nét",
-            "Thiết kế sang trọng, cao cấp"
-          ],
-          "colors": [Colors.black, Colors.blue, Colors.white],
-          "reviewList": [
-            {
-              "user": "Nguyễn Văn A",
-              "star": 5,
-              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
-            },
-            {
-              "user": "Trần Thị B",
-              "star": 4,
-              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
-            },
-          ],
-        },
-        {
-          "name": "Samsung A70",
-          "price": "10.000.000 VND",
-          "storage": "128GB",
-          "img": "assets/images/anh10.png",
-          // này là icon trái tim và chữ new -15%
-          "tag": "",
-          "isFav": false,
-          "showQty": false,// thanh số lượng
+  List<ProductVariant> productVariantByBrandId = [];
 
-          "qty": 0,// số lượng
-          "rating": 4.9,
-          "ratingPercent": {// % sao cho mỗi sản phẩm
-            5: 0.8,   // 80%
-            4: 0.12,  // 12%
-            3: 0.05,
-            2: 0.02,
-            1: 0.01,
-          },
-          
-          "reviewCount": 47,
-          "stock": 300,
-          "desc": [
-            "Chip xử lý mạnh mẽ, tiết kiệm pin",
-            "Camera chất lượng cao, chụp đêm tốt",
-            "Màn hình lớn, hiển thị sắc nét",
-            "Thiết kế sang trọng, cao cấp"
-          ],
-          "colors": [Colors.black, Colors.blue, Colors.white],
-          "reviewList": [
-            {
-              "user": "Nguyễn Văn A",
-              "star": 5,
-              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
-            },
-            {
-              "user": "Trần Thị B",
-              "star": 4,
-              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
-            },
-          ],
-        },
-      ],
-      "xiaomi": [
-        {
-          "name": "Xiaomi 13",
-          "price": "20.000.000 VND",
-          "storage": "128GB",
-          "img": "assets/images/anh13.png",
-          // này là icon trái tim và chữ new -15%
-          "tag": "",
-          "isFav": false,
-          "showQty": false,// thanh số lượng
-
-          "qty": 0,// số lượng
-          "rating": 4.9,
-          "ratingPercent": {// % sao cho mỗi sản phẩm
-            5: 0.8,   // 80%
-            4: 0.12,  // 12%
-            3: 0.05,
-            2: 0.02,
-            1: 0.01,
-          },
-          
-          "reviewCount": 47,
-          "stock": 300,
-          "desc": [
-            "Chip xử lý mạnh mẽ, tiết kiệm pin",
-            "Camera chất lượng cao, chụp đêm tốt",
-            "Màn hình lớn, hiển thị sắc nét",
-            
-          ],
-          "colors": [Colors.black, Colors.blue, Colors.white],
-          "reviewList": [
-            {
-              "user": "Nguyễn Văn A",
-              "star": 5,
-              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
-            },
-            {
-              "user": "Trần Thị B",
-              "star": 4,
-              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
-            },
-          ],
-        },
-      ],
-      "oppo": [
-        {
-          "name": "Oppo Reno 10",
-          "price": "11.000.000 VND",
-          "storage": "128GB",
-          "img": "assets/images/anh17.png",
-          // này là icon trái tim và chữ new -15%
-          "tag": "",
-          "isFav": false,
-          "showQty": false,// thanh số lượng
-
-          "qty": 0,// số lượng
-          "rating": 4.9,
-          "ratingPercent": {// % sao cho mỗi sản phẩm
-            5: 0.8,   // 80%
-            4: 0.12,  // 12%
-            3: 0.05,
-            2: 0.02,
-            1: 0.01,
-          },
-          
-          "reviewCount": 47,
-          "stock": 300,
-          "desc": [
-            "Chip xử lý mạnh mẽ, tiết kiệm pin",
-            
-            "Màn hình lớn, hiển thị sắc nét",
-            
-          ],
-          "colors": [Colors.black, Colors.blue, Colors.white],
-          "reviewList": [
-            {
-              "user": "Nguyễn Văn A",
-              "star": 5,
-              "content": "Máy rất mượt, pin trâu, camera cực đẹp."
-            },
-            {
-              "user": "Trần Thị B",
-              "star": 4,
-              "content": "Thiết kế đẹp, dùng ổn nhưng giá hơi cao."
-            },
-          ],
-        },
-      ],
-    };
-
-    return data[widget.category] ?? [];
-  }
-
-  late List<Map<String, dynamic>> products;
+  bool _isPageLoading = false;
+  Set<int> _loadingCartIds = {};
 
   @override
   void initState() {
     super.initState();
-    products = getProducts();
+    getProducts();
   }
+
+  String formatCurrency(double? amount) {
+    // locale: 'vi_VN' để dùng dấu chấm phân cách hàng nghìn
+    // symbol: '₫' hoặc 'đ' tùy bạn thích
+    // decimalDigits: 0 để bỏ số thập phân (vì VND thường không dùng hào/xu)
+    final format = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+    return format.format(amount);
+  }
+
+  Future<void> getProducts() async {
+  setState(() => _isPageLoading = true);
+
+  final products = await ProductController.getAllProductVariants();
+
+  if (!mounted) return;
+
+  productVariantByBrandId.clear();
+
+  for (var product in products) {
+    if (product.brandId == widget.category_id) {
+      productVariantByBrandId.add(product);
+    }
+  }
+
+  setState(() => _isPageLoading = false);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -287,9 +61,14 @@ class _ProductByCategoryScreenState extends State<ProductByCategoryScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: const BackButton(color: Colors.black),
+        leading: BackButton(
+          color: Colors.black,
+          onPressed: (){
+            Navigator.of(context).pop();
+          },
+        ),
         title: Text(
-          widget.category.toString(),
+          widget.nameBrands,
           style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -298,10 +77,12 @@ class _ProductByCategoryScreenState extends State<ProductByCategoryScreen> {
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          return Padding(
+          return _isPageLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
             padding: const EdgeInsets.all(16),
             child: GridView.builder(
-              itemCount: products.length,
+              itemCount: productVariantByBrandId.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: constraints.maxWidth > 1200 ? 4 : 2,
                 crossAxisSpacing: 16,
@@ -310,7 +91,8 @@ class _ProductByCategoryScreenState extends State<ProductByCategoryScreen> {
                     constraints.maxWidth > 1200 ? 0.9 : 0.75,
               ),
               itemBuilder: (context, index) {
-                return _buildProductCard(index);
+                final product = productVariantByBrandId[index];
+                return _buildProductCard(product);
               },
             ),
           );
@@ -318,128 +100,135 @@ class _ProductByCategoryScreenState extends State<ProductByCategoryScreen> {
       ),
     );
   }
-
-  /* ======================= CARD GIỐNG HOME ======================= */
-  Widget _buildProductCard(int index) {
-    final p = products[index];
-
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 3,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ProductDetailScreen(product: p),
+ /* ======================= CARD GIỐNG HOME ======================= */
+  Widget _buildProductCard(ProductVariant variant) {
+    return GestureDetector(
+      onTap: () {
+        // Xử lý chuyển trang chi tiết (cần sửa lại tham số truyền đi nếu trang chi tiết chưa hỗ trợ variant)
+        // Navigator.push(...);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
             ),
-          );
-        },
+          ],
+        ),
         child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Image.asset(
-                      p['img'],
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Hình ảnh sản phẩm
+                Expanded(
+                  child: Center(
+                    child: Image.network(
+                      variant.imageUrl ?? "", // Dùng ảnh của variant
                       fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.broken_image, size: 50),
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    p['name'],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    p['price'],
-                    style: const TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    p['storage'],
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 32,
-                    child: p['showQty']
-                        ? _buildQtySelector(index)
-                        : _buildAddToCartBtn(index),
-                  ),
-                ],
-              ),
-            ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            // Hiển thị Tên + Màu + RAM/ROM (Tùy bạn format)
+                            "${variant.name}", 
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            // Hiển thị Tên + Màu + RAM/ROM (Tùy bạn format)
+                            "${variant.color}", 
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Colors.amberAccent
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "${formatCurrency(variant.price)}", // Dùng giá của variant
+                            style: const TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 26,
+                            ),
+                          ),
+                          Material(
+                            color: Colors.orange.withOpacity(0.1), // 1. Đưa màu nền ra Material
+                            borderRadius: BorderRadius.circular(8), // 2. Bo góc cho khối Material
+                            child: InkWell(
+                                onTap: _loadingCartIds.contains(variant.id)
+                                    ? null
+                                    : () async {
+                                        setState(() => _loadingCartIds.add(variant.id));
 
-            // ❤️ TIM
-            Positioned(
-              top: 8,
-              right: 8,
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    p['isFav'] = !p['isFav'];
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
+                                        await CartController.addToCart(null, variant.id);
+
+                                        if (!mounted) return;
+
+                                        setState(() => _loadingCartIds.remove(variant.id));
+
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              "Đã thêm ${variant.name} ${variant.color} vào giỏ hàng",
+                                            ),
+                                            duration: const Duration(seconds: 1),
+                                            backgroundColor: Colors.green,
+                                          ),
+                                        );
+                                      },
+                                child: Container(
+                                  padding: const EdgeInsets.all(15),
+                                  child: _loadingCartIds.contains(variant.id)
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      : const Icon(
+                                          Icons.add_shopping_cart,
+                                          size: 16,
+                                          color: Colors.orange,
+                                        ),
+                                ),
+                              ),
+
+                          )
+                        ],
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.favorite,
-                    size: 18,
-                    color: p['isFav'] ? Colors.red : Colors.grey,
-                  ),
                 ),
-              ),
-            ),
-
-            // TAG
-            if ((p['tag'] ?? '').toString().isNotEmpty)
-              Positioned(
-                top: 8,
-                left: 8,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.orange,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    p['tag'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+              ],
+            ),             
+             const SizedBox(), 
           ],
         ),
       ),
@@ -447,7 +236,7 @@ class _ProductByCategoryScreenState extends State<ProductByCategoryScreen> {
   }
 
   /* ======================= ADD / QTY ======================= */
-  Widget _buildAddToCartBtn(int index) {
+  /*Widget _buildAddToCartBtn(int index) {
     return InkWell(
       onTap: () {
         setState(() {
@@ -511,5 +300,5 @@ class _ProductByCategoryScreenState extends State<ProductByCategoryScreen> {
         child: Icon(icon, size: 18, color: Colors.green),
       ),
     );
-  }
+  }*/
 }

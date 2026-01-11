@@ -38,12 +38,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
           "Categories",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: Icon(Icons.tune, color: Colors.black),
-          )
-        ],
       ),
       body:
       FutureBuilder<List<BrandsModel>>(
@@ -73,14 +67,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 return InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
-                    /*Navigator.push(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => ProductByCategoryScreen(
-                          category: cat['key']!, // ✅ GIỜ KHÔNG CÒN NULL
+                          category_id: cat.id,
+                          nameBrands: cat.name, // ✅ GIỜ KHÔNG CÒN NULL
                         ),
                       ),
-                    );*/
+                    );
                   },
                   child: Container(
                     decoration: BoxDecoration(

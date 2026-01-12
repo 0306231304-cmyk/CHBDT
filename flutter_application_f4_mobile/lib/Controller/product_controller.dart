@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../Model/product_model.dart'; // Đảm bảo đường dẫn đúng
+import '../Model/product_model.dart';
 import '../Config/baseUrl.dart';
 
 class ProductController {
@@ -67,6 +67,34 @@ class ProductController {
       }
     } catch (e) {
       throw Exception("Lỗi (getAllProductVariants): $e");
+    }
+  }
+  
+  static Future<Product?> getProductById(int id) async {
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/products/$id"), 
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Giải mã UTF8 để không lỗi font tiếng Việt
+        final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+
+        // Dựa theo productController.js: trả về { succeeded: true, product: {...} }
+        if (data['succeeded'] == true) {
+          // Dữ liệu sản phẩm nằm trong key 'product'
+          return Product.fromJson(data['product']); 
+        }
+      }
+      return null;
+    } catch (e) {
+      print("Lỗi lấy chi tiết sản phẩm ID $id: $e");
+      return null;
     }
   }
 }

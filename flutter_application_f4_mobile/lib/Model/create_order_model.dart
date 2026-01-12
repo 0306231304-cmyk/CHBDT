@@ -1,27 +1,35 @@
 class CreateOrderRequest {
+  // Các biến final như bạn yêu cầu
   final String fullName;
   final String phoneNumber;
   final String address;
+  final String city;          // <--- Thêm City
+  final String couponCode;    // <--- Thêm Coupon Code
   final String note;
   final double totalMoney;
-  final String paymentMethod; // "COD" hoặc "E_WALLET"
+  final String paymentMethod;
   final List<OrderDetailItem> orderDetails;
 
   CreateOrderRequest({
     required this.fullName,
     required this.phoneNumber,
     required this.address,
+    required this.city,       // <---
+    required this.couponCode, // <---
     required this.note,
     required this.totalMoney,
     required this.paymentMethod,
     required this.orderDetails,
   });
 
+  // Map sang JSON để gửi server (dùng snake_case cho chuẩn API)
   Map<String, dynamic> toJson() {
     return {
       'full_name': fullName,
       'phone_number': phoneNumber,
       'address': address,
+      'city': city,                 // Gửi lên server
+      'coupon_code': couponCode,    // Gửi lên server
       'note': note,
       'total_money': totalMoney,
       'payment_method': paymentMethod,

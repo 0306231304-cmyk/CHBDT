@@ -8,6 +8,9 @@ import '../Config/baseUrl.dart';
 class UpdateCartController {
   // Copy y chang IP từ CartController của bạn
 
+  final String baseUrl = 'https://irretentive-alex-wanly.ngrok-free.dev';
+
+
   // --- HÀM CHÍNH: QUYẾT ĐỊNH DÙNG SERVER HAY LOCAL ---
   Future<bool> updateCartQuantity(int variantId, int newQuantity) async {
     final prefs = await SharedPreferences.getInstance();

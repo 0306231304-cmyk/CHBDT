@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../Resources/app_colors.dart'; // Đảm bảo đường dẫn đúng
+import '../Resources/app_colors.dart';
 import '../Model/cartModel.dart';
 import '../Controller/cart_Controller.dart';
 import '../Controller/update_cart_controller.dart';
 import '../Controller/delete_cart_controller.dart'; 
-import '../View/Widget/custom_button.dart'; // Đảm bảo đường dẫn đúng
+import '../View/Widget/custom_button.dart';
+import 'checkout_screen.dart'; // [QUAN TRỌNG] Import trang thanh toán
 
 class ShoppingCardScreen extends StatefulWidget {
   const ShoppingCardScreen({super.key});
@@ -93,7 +94,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
     }
   }
 
-  // --- HÀM TĂNG GIẢM SỐ LƯỢNG (ĐÃ SỬA LỖI COPYWITH) ---
+  // --- HÀM TĂNG GIẢM SỐ LƯỢNG ---
   Future<void> _handleUpdateQuantity(int index, int variantId, int currentQty, bool isIncrease) async {
     int newQty = isIncrease ? currentQty + 1 : currentQty - 1;
 
@@ -103,12 +104,11 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
       return;
     }
 
-    // --- SỬA LỖI Ở ĐÂY: Dùng copyWith thay vì gán trực tiếp ---
     setState(() {
       // Tạo ra object mới với quantity mới và gán đè vào vị trí index
+      // Lưu ý: Đảm bảo CartItem có hàm copyWith, nếu không thì dùng logic gán trực tiếp
       _cartData!.data[index] = _cartData!.data[index].copyWith(quantity: newQty);
     });
-    // ---------------------------------------------------------
 
     // Gọi API update
     bool success = await _updateCartController.updateCartQuantity(variantId, newQty);
@@ -121,7 +121,6 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
       if (mounted) {
         setState(() {
            int oldQty = isIncrease ? newQty - 1 : newQty + 1;
-           // Cũng dùng copyWith để revert
            _cartData!.data[index] = _cartData!.data[index].copyWith(quantity: oldQty);
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -131,10 +130,9 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
     }
   }
 
-  // Hàm format tiền (Chấp nhận cả int và double)
+  // Hàm format tiền
   String _formatPrice(num? price) {
     if (price == null) return "0đ";
-    // toStringAsFixed(0) để bỏ phần thập phân .00 nếu có
     return "${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}đ";
   }
 
@@ -194,10 +192,36 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        // Model trả về double, hàm này giờ nhận double
-        _buildFooterTotal(_cartData!.totalMoney), 
+        
+        _buildFooterTotal(_cartData!.totalMoney ?? 0), 
+        
         const SizedBox(height: 16),
-        CustomButton(text: "Tiếp tục thanh toán", onPressed: () {}),
+        
+        // --- NÚT THANH TOÁN ĐÃ ĐƯỢC SỬA ---
+        CustomButton(
+          text: "Tiếp tục thanh toán", 
+          onPressed: () {
+             // 1. Kiểm tra rỗng
+             if (_cartData == null || _cartData!.data.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Giỏ hàng trống!"))
+                );
+                return;
+             }
+
+             // 2. Chuyển trang + Gửi dữ liệu
+             Navigator.push(
+               context, 
+               MaterialPageRoute(
+                 builder: (context) => CheckoutScreen(
+                    cartItems: _cartData!.data,             // Gửi list hàng
+                    totalMoney: _cartData!.totalMoney ?? 0, // Gửi tổng tiền
+                 )
+               )
+             );
+          }
+        ),
+        // -----------------------------------
       ],
     );
   }
@@ -210,7 +234,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
-            item.imageUrl ?? '', // Xử lý null
+            item.imageUrl ?? '', 
             width: 80, height: 80, fit: BoxFit.cover,
             errorBuilder: (c, e, s) => Container(width: 80, height: 80, color: Colors.grey[200]),
           ),
@@ -302,7 +326,6 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
     );
   }
 
-  // Model của bạn totalMoney là double -> Sửa tham số thành double
   Widget _buildFooterTotal(double totalMoney) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

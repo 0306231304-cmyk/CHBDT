@@ -295,6 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         padding: const EdgeInsets.all(12),
                         child: Image.network(
+                          headers: const {"ngrok-skip-browser-warning": "true",},
                           cat.image_url,
                           fit: BoxFit.contain,
                           errorBuilder: (c, e, s) => const Icon(Icons.image),
@@ -400,6 +401,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: Center(
                     child: Image.network(
+                      headers: const {"ngrok-skip-browser-warning": "true",},
                       variant.imageUrl ?? "", // Dùng ảnh của variant
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) =>

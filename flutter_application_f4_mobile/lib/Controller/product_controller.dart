@@ -56,7 +56,7 @@ class ProductController {
           List<ProductVariant> result = variantList
               .map((item) => ProductVariant.fromJson(item))
               .toList();
-              
+            print("DEBUG(imageURl): ${result[0].imageUrl}");
           return result;
         } else {
           // Trường hợp server trả về succeeded: false

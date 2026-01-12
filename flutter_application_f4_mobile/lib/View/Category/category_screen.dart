@@ -103,6 +103,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           child: Padding(
                             padding: const EdgeInsets.all(14),
                             child: Image.network(
+                              headers: const {"ngrok-skip-browser-warning": "true",},
                               cat.image_url,
                               fit: BoxFit.contain,
                             ),

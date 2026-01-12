@@ -205,4 +205,11 @@ export default class orderModel{
             throw new Error("Lỗi lấy danh sách hóa đơn: " + error.message);
         }
     }
+
+    /*static async cancelOrder(order_id){
+        const conn = await beginTransaction();
+        try{
+            const [result] = await conn.query("UPDATE orders SET status = 'cancelled' WHERE id = 2");
+        }
+    }*/
 }

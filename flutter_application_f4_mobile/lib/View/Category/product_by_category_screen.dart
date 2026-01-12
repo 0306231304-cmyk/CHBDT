@@ -129,6 +129,7 @@ class _ProductByCategoryScreenState extends State<ProductByCategoryScreen> {
                 Expanded(
                   child: Center(
                     child: Image.network(
+                      headers: const {"ngrok-skip-browser-warning": "true",},
                       variant.imageUrl ?? "", // Dùng ảnh của variant
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) =>

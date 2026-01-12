@@ -239,11 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         InkWell(
-          onTap: (){
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => CategoryScreen())
-            );
-          },
+          onTap: onTap,
           child: const Icon(Icons.chevron_right, color: Colors.grey),
         ),
       ],

@@ -35,12 +35,45 @@ export default class productModel{
             throw new Error("Lỗi lấy chi tiết sản phẩm (id): " + error.message);
         }
     }
-    static async findProductByName(name){
-        try{
-            const [row] = await execute("SELECT * FROM products WHERE name LIKE ?",[`%${name}%`]);
-            return row;
-        }catch(error){
-            throw new Error("Database query failed: " + error.message);
+    static async findProductByName(keyword) {
+        try {
+            // 1. Tách từ khóa thành mảng các từ (ví dụ: "Samsung s24" -> ["Samsung", "s24"])
+            const words = keyword.trim().split(/\s+/);
+
+            // 2. Khởi tạo câu SQL cơ bản
+            // Lưu ý: WHERE 1=1 là mẹo để dễ dàng nối chuỗi AND phía sau
+            let sql = `
+                SELECT 
+                    p.id, 
+                    p.name, 
+                    pv.price, 
+                    p.screen_size, 
+                    p.camera,
+                    CONCAT(?,'/uploads/', pv.image_url) as image,
+                    pv.ram,
+                    pv.color
+                FROM products p
+                JOIN product_variants pv ON p.id = pv.product_id
+                WHERE 1=1
+            `;
+
+            const params = [baseUrl]; // Tham số đầu tiên cho CONCAT
+
+            // 3. Vòng lặp: Với mỗi từ khóa, thêm một điều kiện AND ... LIKE
+            words.forEach(word => {
+                sql += " AND p.name LIKE ?";
+                params.push(`%${word}%`); // Thêm % vào trước và sau mỗi từ
+            });
+
+            // Nếu muốn Group By để tránh trùng lặp sản phẩm (nếu 1 sp có nhiều biến thể)
+            sql += " GROUP BY p.id";
+
+            // 4. Thực thi
+            const [rows] = await execute(sql, params);
+            return rows;
+
+        } catch (error) {
+            throw new Error("Lỗi tìm kiếm sản phẩm: " + error.message);
         }
     }
 

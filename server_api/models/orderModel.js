@@ -76,6 +76,11 @@ export default class orderModel{
                         discountAmount = parseFloat(coupon.max_discount_amount);
                     }
                 }
+
+                await conn.query(`
+                UPDATE coupons SET coupons.used_count = coupons.used_count + 1 WHERE coupons.code = ?
+                `,[couponCode]);
+
                 couponId = coupon.id;
             }
 
@@ -118,6 +123,14 @@ export default class orderModel{
                     `UPDATE product_variants SET stock_quantity = stock_quantity - ? WHERE id = ?`,
                     [item.quantity, item.product_variant_id]
                 );
+
+                await conn.query(`
+                    UPDATE products SET sold_count = sold_count + ? WHERE (
+                    SELECT pv.product_id
+                    FROM product_variants pv
+                    WHERE pv.id = ?
+                    )
+                `,[item.quantity, item.product_variant_id]);
             }
 
             // 4.3 Tăng lượt dùng Coupon (nếu có)

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../resources/app_colors.dart';
 import '../Model/cartModel.dart'; 
 import '../Controller/cart_Controller.dart';
@@ -19,6 +20,14 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
   // THAY ĐỔI 1: Không dùng Future, dùng biến chứa dữ liệu trực tiếp
   CartResponse? _cartData;
   bool _isLoadingInitial = true; // Chỉ loading lần đầu tiên vào màn hình
+
+  String formatCurrency(double? amount) {
+    // locale: 'vi_VN' để dùng dấu chấm phân cách hàng nghìn
+    // symbol: '₫' hoặc 'đ' tùy bạn thích
+    // decimalDigits: 0 để bỏ số thập phân (vì VND thường không dùng hào/xu)
+    final format = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+    return format.format(amount);
+  }
 
   @override
   void initState() {
@@ -89,10 +98,6 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
         );
       }
     }
-  }
-
-  String _formatPrice(double price) {
-    return "${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}đ";
   }
 
   @override
@@ -185,6 +190,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
+            headers: const {"ngrok-skip-browser-warning": "true",},
             item.imageUrl ?? '',
             width: 80, height: 80, fit: BoxFit.cover,
             errorBuilder: (c, e, s) => Container(
@@ -210,7 +216,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    item.price.toString(), 
+                  formatCurrency(item.price), 
                     style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent, fontSize: 16)
                   ),
                   
@@ -265,7 +271,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
       children: [
         const Text("Tổng thanh toán:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         Text(
-          _formatPrice(totalMoney), 
+          formatCurrency(totalMoney), 
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red)
         ),
       ],

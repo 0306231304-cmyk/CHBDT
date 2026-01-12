@@ -12,6 +12,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import categoriesRoute from './routes/categoriesRoutes.js';
 import path from 'path';
 import { fileURLToPath } from 'url'; // Nhập thư viện url
+import couponRoute from "./routes/couponRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,6 +29,7 @@ app.use('/products',productRoute);
 app.use('/cart', cartRoutes);
 app.use('/orders',orderRoutes);
 app.use('/categories',categoriesRoute);
+app.use('/coupons',couponRoute);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 app.use('/',userRoutes);

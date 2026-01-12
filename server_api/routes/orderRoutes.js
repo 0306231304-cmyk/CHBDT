@@ -45,7 +45,7 @@ authOrderRoutes.use(auth);
  *               city:
  *                 type: string
  *                 description: Tên tỉnh/thành phố để tính phí ship
- *                 example: "Hồ Chí Minh"
+ *                 example: "TP.HCM || Hà Nội || Khác"
  *               note:
  *                 type: string
  *                 example: "Giao giờ hành chính"

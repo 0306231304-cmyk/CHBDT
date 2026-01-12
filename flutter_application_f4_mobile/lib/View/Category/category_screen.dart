@@ -94,12 +94,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       children: [
                         // ===== VÒNG TRÒN NGOÀI =====
                         Container(
-                          width: 90,
-                          height: 90,
-                          decoration: const BoxDecoration(
+                          width: 200,
+                          height: 200,
+                          /*decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: Color(0xFFF5F5F5),
-                          ),
+                          ),*/
                           child: Padding(
                             padding: const EdgeInsets.all(14),
                             child: Image.network(
@@ -116,7 +116,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           cat.name,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: 30,
                           ),
                         ),
                       ],

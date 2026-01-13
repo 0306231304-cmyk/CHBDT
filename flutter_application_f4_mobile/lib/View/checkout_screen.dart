@@ -84,7 +84,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(key, value);
   }
-
   // Popup Mã giảm giá
   void _onApplyCoupon() {
     TextEditingController couponController = TextEditingController();

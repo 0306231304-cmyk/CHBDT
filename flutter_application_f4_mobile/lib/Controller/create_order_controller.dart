@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_f4_mobile/debugConfig/fromJson.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/create_order_model.dart';
@@ -54,7 +56,22 @@ class CreateOrderController {
         is_buy_now: isBuyNow,
         orderDetails: details,
       );
-
+        print("DEBUG (createOrderController): fullName ${requestBody.fullName} ");
+        print("DEBUG (createOrderController): phoneNumber ${requestBody.phoneNumber} ");
+        print("DEBUG (createOrderController): address ${requestBody.address} ");
+        print("DEBUG (createOrderController): city ${requestBody.city} ");
+        print("DEBUG (createOrderController): couponCode ${requestBody.couponCode} ");
+        print("DEBUG (createOrderController): note ${requestBody.note} ");
+        print("DEBUG (createOrderController): paymentMethod ${requestBody.paymentMethod} ");
+        print("DEBUG (createOrderController): is_buy_now ${requestBody.is_buy_now} ");
+      for(var x in details){
+        print("[");
+        print("DEBUG (createOrderController): orderDetails(price) ${x.price} ");
+        print("DEBUG (createOrderController): orderDetails(pv id) ${x.productVariantId} ");
+        print("DEBUG (createOrderController): orderDetails(quantity) ${x.quantity} ");
+        print("DEBUG (createOrderController): orderDetails(totalmoney) ${x.totalMoney} ");
+        print("]");
+      }
       // 3. Gọi API
       final response = await http.post(
         Uri.parse('$baseUrl/orders/order'),

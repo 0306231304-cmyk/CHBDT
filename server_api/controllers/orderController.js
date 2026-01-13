@@ -9,12 +9,12 @@ export default class orderController{
 
 
             // 1. Nhận dữ liệu (Chỉ nhận mã coupon, KHÔNG nhận giá tiền từ client gửi lên)
-            const { fullName, phone, address, city, note, coupon_code, payment_method, total_money, order_details, is_buy_now } = req.body;
+            const { fullName, phone, address, city, note, coupon_code, payment_method, order_details, is_buy_now } = req.body;
 
-            console.log('DEBUG (createOrder): ' + fullName + ' ' + phone + ' ' + address + ' ' + city + ' ' + note + ' ' + coupon_code + ' ' + payment_method + ' ' + order_details + ' ' + total_money);
+            console.log('DEBUG (createOrder): ' + fullName + ' ' + phone + ' ' + address + ' ' + city + ' ' + note + ' ' + coupon_code + ' ' + payment_method + ' ' + order_details);
 
             // Validate dữ liệu
-            if (!fullName || !phone || !address || !city || !payment_method || !order_details || !is_buy_now) {
+            if (!fullName || !phone || !address || !city || !payment_method || !order_details || is_buy_now === undefined) {
                 return res.status(400).json({ succeeded: false, message: "Thiếu thông tin giao hàng (tên, sđt, địa chỉ, thành phố, các sản phẩm)" });
             }
 

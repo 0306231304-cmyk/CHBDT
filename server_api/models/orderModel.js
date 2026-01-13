@@ -162,27 +162,11 @@ export default class orderModel{
      * @param {Array} orderItems Danh sách sản phẩm [{product_variant_id: 1, quantity: 2}]
      * @param {boolean} is_buy_now true: Mua ngay (không xóa giỏ hàng), false: Thanh toán từ giỏ (xóa giỏ hàng)
      */
-    static async checkout(userId, shippingData, couponCode, payment_method, orderItems, is_buy_now = false) {
+    static async checkout(userId, shippingData, couponCode, payment_method, orderItems, is_buy_now) {
         const conn = await beginTransaction(); // Bắt đầu Transaction
 
         try {
-            // =================================================
-            // BƯỚC 1: Lấy dữ liệu sản phẩm & Check giá, tồn kho thực tế từ DB
-            // =================================================
-            
-            // --- [CODE CŨ] Lấy từ bảng Carts ---
-            /*
-            const [cartItems] = await conn.query(
-                `SELECT c.product_variant_id, c.quantity, pv.price, pv.stock_quantity 
-                 FROM carts c
-                 JOIN product_variants pv ON c.product_variant_id = pv.id
-                 WHERE c.user_id = ? FOR UPDATE`, 
-                [userId]
-            );
-            if (cartItems.length === 0) throw new Error("Giỏ hàng trống!");
-            */
-
-            // --- [CODE MỚI] Xử lý mảng orderItems truyền vào ---
+            // --- Xử lý mảng orderItems truyền vào ---
             if (!orderItems || orderItems.length === 0) throw new Error("Danh sách sản phẩm trống!");
 
             // Lấy danh sách ID để query DB

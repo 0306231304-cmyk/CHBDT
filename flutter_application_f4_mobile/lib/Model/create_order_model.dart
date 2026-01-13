@@ -27,8 +27,8 @@ class CreateOrderRequest {
   // Map sang JSON để gửi server (dùng snake_case cho chuẩn API)
   Map<String, dynamic> toJson() {
     return {
-      'full_name': fullName,
-      'phone_number': phoneNumber,
+      'fullName': fullName,
+      'phone': phoneNumber,
       'address': address,
       'city': city,                 // Gửi lên server
       'coupon_code': couponCode,    // Gửi lên server

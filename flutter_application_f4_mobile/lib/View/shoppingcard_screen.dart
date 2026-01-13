@@ -254,7 +254,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
             else{
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Bạn chưa đăng nhập'),
+                  content: Text('Vui lòng đăng nhập trước khi đặt hàng'),
                   backgroundColor: Colors.redAccent,
                 )
               );

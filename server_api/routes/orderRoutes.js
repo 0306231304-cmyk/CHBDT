@@ -247,6 +247,44 @@ authOrderRoutes.get('/order-history',orderController.getOrders);
  */
 authOrderRoutes.get('/:orderID',orderController.getOrderDetail);
 
+/**
+ * @swagger
+ * /orders/cancel/{order_id}:
+ *   delete:
+ *     summary: Hủy đơn hàng
+ *     description: Hủy đơn hàng dựa trên ID, hoàn lại số lượng tồn kho (stock) và giảm số lượng đã bán (sold_count).
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: order_id
+ *         required: true
+ *         description: ID của đơn hàng cần hủy
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Hủy đơn hàng thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Hủy đơn hàng thành công"
+ *       400:
+ *         description: Thiếu thông tin đầu vào (ID đơn hàng)
+ *       500:
+ *         description: Lỗi máy chủ nội bộ hoặc lỗi Transaction
+ */
+
+authOrderRoutes.delete('/cancel/:order_id', orderController.cancelOrder);
+
 
 orderRoutes.use('/',authOrderRoutes);
 export default orderRoutes;

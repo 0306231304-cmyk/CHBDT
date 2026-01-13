@@ -9,19 +9,19 @@ export default class orderController{
 
 
             // 1. Nhận dữ liệu (Chỉ nhận mã coupon, KHÔNG nhận giá tiền từ client gửi lên)
-            const { fullName, phone, address, city, note, coupon_code, payment_method, total_money, order_details } = req.body;
+            const { fullName, phone, address, city, note, coupon_code, payment_method, total_money, order_details, is_buy_now } = req.body;
 
             console.log('DEBUG (createOrder): ' + fullName + ' ' + phone + ' ' + address + ' ' + city + ' ' + note + ' ' + coupon_code + ' ' + payment_method + ' ' + order_details + ' ' + total_money);
 
             // Validate dữ liệu
-            if (!fullName || !phone || !address || !city || !payment_method || !order_details) {
+            if (!fullName || !phone || !address || !city || !payment_method || !order_details || !is_buy_now) {
                 return res.status(400).json({ succeeded: false, message: "Thiếu thông tin giao hàng (tên, sđt, địa chỉ, thành phố, các sản phẩm)" });
             }
 
             const shippingData = { fullName, phone, address, city, note };
 
             // 2. Đẩy toàn bộ trách nhiệm tính tiền xuống Model (An toàn tuyệt đối)
-            const orderId = await orderModel.checkout(userId, shippingData, coupon_code, payment_method);
+            const orderId = await orderModel.checkout(userId, shippingData, coupon_code, payment_method, order_details, is_buy_now);
 
             return res.status(201).json({
                 succeeded: true,
@@ -110,4 +110,24 @@ export default class orderController{
         }
     }
     
+    static async cancelOrder(req,res){
+        try{
+            const {order_id} = req.params;
+
+            if(!order_id) return res.status(400).json({succeeded: false ,message: "Thiếu id đơn hàng"});
+
+            const result = await orderModel.cancelOrder(order_id);
+
+            return res.status(200).json({
+                succeeded: result,
+                message: "Hủy đơn hàng thành công"
+            });
+        }
+        catch(error){
+            return res.status(500).json({
+                succeeded: false,
+                message: "Hủy đơn hàng không thành công: " + error.message
+            });
+        }
+    }
 }

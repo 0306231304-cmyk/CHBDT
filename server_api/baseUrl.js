@@ -1,2 +1,2 @@
-const baseUrl = 'http://192.168.30.40:3001';
+const baseUrl = 'https://irretentive-alex-wanly.ngrok-free.dev';
 export default baseUrl;

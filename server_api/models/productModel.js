@@ -25,7 +25,7 @@ export default class productModel{
             const product = productRows[0];
 
             // Bước 2: Lấy các phiên bản (Màu sắc, bộ nhớ, giá)
-            const queryVariants = `SELECT *, CONCAT(?, "/uploads/", pv.image_url) as image FROM product_variants WHERE product_id = ?`;
+            const queryVariants = `SELECT pv.*, CONCAT(?, "/uploads/", pv.image_url) as image FROM product_variants pv WHERE product_id = ?`;
             const [variants] = await execute(queryVariants, [baseUrl, id]);
 
             // Gộp lại

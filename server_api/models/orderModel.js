@@ -154,7 +154,7 @@ export default class orderModel{
         }
     }*/
 
-        /**
+    /**
      * @param {number} userId 
      * @param {object} shippingData {fullName, phone, address, city, note}
      * @param {string} couponCode 
@@ -225,7 +225,7 @@ export default class orderModel{
             }
 
             // =================================================
-            // BƯỚC 3: Tính phí Ship & Coupon (GIỮ NGUYÊN)
+            // BƯỚC 3: Tính phí Ship & Coupon
             // =================================================
             
             // 3.1 Phí Ship
@@ -411,28 +411,54 @@ export default class orderModel{
     static async cancelOrder(order_id){
         const conn = await beginTransaction();
         try{
+            const [order] = await conn.query("SELECT * FROM orders WHERE id = ?",[order_id]);
+
+            if(order.length === 0) throw new Error("Không tìm thấy đơn hàng");
+            
+            console.log("DEBUG (order_status): " + order[0].status);
+            if(order[0].status == 'cancelled' || order[0].status == 'delivered'){
+                throw new Error('Đơn hàng đã bị hủy hoặc đã giao');
+            }
+            /**
+             * ========================================================
+             * Lấy danh sách sản phẩm trong order detail
+             * ========================================================
+             */
             const [order_items] = await conn.query('SELECT * FROM order_items WHERE order_items.order_id = ?',[order_id]);
 
+            /**
+             * ========================================================
+             * Trả lại số lượng tồn và trả lại số lượng đã bán
+             * ========================================================
+             */
+
             for(var item of order_items){
-                await conn.query('UPDATE product_variants SET stock_quantity = stock_quantity + ? WHERE product_variants = ?',[item.quantity, item.product_variant_id]);
+                await conn.query('UPDATE product_variants SET stock_quantity = stock_quantity + ? WHERE id = ?',[item.quantity, item.product_variant_id]);
                 await conn.query(`
-                                    UPDATE products
-                                    SET products.sold_count = products.sold_count - ?
-                                    WHERE id IN (
-                                        SELECT product_id
-                                        FROM product_variants
-                                        WHERE id = ?
-                                    )`,[item.quantity, item.product_variant_id]
-                                );
+                    UPDATE products
+                    SET products.sold_count = products.sold_count - ?
+                    WHERE id IN (
+                        SELECT product_id
+                        FROM product_variants
+                        WHERE id = ?
+                    )`,[item.quantity, item.product_variant_id]
+                );
             }
 
+            /**
+             * ========================================================
+             * Thay đổi trạng thái đơn hàng (cancelled)
+             * ========================================================
+             */
 
+            await conn.query("UPDATE orders SET status = 'cancelled' WHERE id = ?", [order_id]);
 
-
-            const [result] = await conn.query("UPDATE orders SET status = 'cancelled' WHERE id = 2");
+            await commitTransaction(conn);
+            return true;
         }
         catch(error){
-            
+            await rollbackTransaction(conn);
+            throw new Error('Lỗi hủy đơn hàng (' + error.message + ')');
         }
     }
 }

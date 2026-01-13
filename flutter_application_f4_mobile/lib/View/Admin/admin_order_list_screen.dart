@@ -4,9 +4,9 @@ import '../../resources/app_colors.dart';
 import '../../Controller/order_controller.dart';
 import '../../Controller/product_controller.dart';
 import '../../Model/Order.dart';
-import '../../Model/product_model.dart';
 import 'admin_order_detail_screen.dart';
 import '../login_screen.dart';
+import '../Widget/order_widgets.dart';
 
 class AdminOrderListScreen extends StatefulWidget {
   const AdminOrderListScreen({super.key});
@@ -17,76 +17,130 @@ class AdminOrderListScreen extends StatefulWidget {
 
 class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
   final OrderController _orderController = OrderController();
+  
+  // Future chứa danh sách đơn hàng
   late Future<List<Order>> _ordersFuture;
   
+  // Danh sách biến thể sản phẩm dùng để tra cứu tên và ảnh
+  List<dynamic> _allVariants = [];
+
+  // Các tab bộ lọc trạng thái
   final List<String> _tabs = ["All", "Chờ xử lý", "Chờ lấy hàng", "Lịch sử"];
   int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    // Tải danh sách đơn hàng và sản phẩm ngay khi vào màn hình
     _loadOrders();
+    _loadProducts();
   }
 
+  // Hàm tải lại danh sách đơn hàng
   void _loadOrders() {
     setState(() {
       _ordersFuture = _orderController.getAllOrdersAdmin();
     });
   }
 
-  String formatCurrency(int amount) {
-    return NumberFormat.currency(locale: 'vi_VN', symbol: 'đ').format(amount);
-  }
-
-  String formatDate(String dateString) {
+  // Hàm tải danh sách sản phẩm
+  void _loadProducts() async {
     try {
-      DateTime date = DateTime.parse(dateString);
-      return DateFormat('dd/MM/yyyy HH:mm').format(date);
+      final list = await ProductController.getAllProductVariants();
+      if (mounted) {
+        setState(() {
+          _allVariants = list;
+        });
+      }
     } catch (e) {
-      return dateString;
+      print("Lỗi tải danh sách sản phẩm: $e");
     }
   }
 
+  // --- 1. CÁC HÀM HỖ TRỢ ---
+
+  // Lấy màu sắc và chữ hiển thị cho badge trạng thái
+  Map<String, dynamic> _getStatusConfig(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending': 
+        return {'text': "Chờ xử lý", 'color': Colors.blue, 'bg': const Color(0xFFE3F2FD)};
+      case 'processing': 
+        return {'text': "Đang chuẩn bị", 'color': Colors.deepPurple, 'bg': const Color(0xFFEEE5FF)};
+      case 'shipping': 
+        return {'text': "Đang giao", 'color': Colors.orange, 'bg': const Color(0xFFFFF3E0)};
+      case 'delivered': 
+        return {'text': "Đã giao", 'color': Colors.green, 'bg': const Color(0xFFE8F5E9)};
+      case 'cancelled': 
+        return {'text': "Đã hủy", 'color': Colors.red, 'bg': const Color(0xFFFFEBEE)};
+      default: 
+        return {'text': status, 'color': Colors.black, 'bg': Colors.grey.shade200};
+    }
+  }
+
+  // Định dạng số tiền sang VNĐ
+  String _formatMoney(int amount) => NumberFormat.currency(locale: 'vi_VN', symbol: 'đ').format(amount);
+
+  // Định dạng ngày tháng
+  String _formatDate(String dateString) {
+    try {
+      return DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(dateString));
+    } catch (e) { return dateString; }
+  }
+
+  // Tạo chuỗi tóm tắt sản phẩm
+  String _generateProductSummary(List<OrderItem> items) {
+    List<String> productNames = [];
+    for (var item in items) {
+      String name = item.productName; // Tên mặc định
+      
+      // Tìm tên thật trong danh sách đã tải
+      if (_allVariants.isNotEmpty) {
+        for (var v in _allVariants) {
+          if ((v as dynamic).id.toString() == item.productId.toString()) {
+            name = v.name ?? name;
+            break;
+          }
+        }
+      }
+      productNames.add("- $name (x${item.quantity})");
+    }
+    
+    // Chỉ lấy 3 dòng đầu tiên, còn lại hiển thị "..."
+    String summary = productNames.take(3).join("\n");
+    if (productNames.length > 3) {
+      summary += "\n... và ${productNames.length - 3} sản phẩm khác";
+    }
+    return summary;
+  }
+
+  // --- 2. GIAO DIỆN ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text(
-          "Quản trị đơn hàng",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: const Text("Quản trị đơn hàng", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.primaryOrange,
         centerTitle: true,
-        elevation: 0,
-        automaticallyImplyLeading: false, 
+        automaticallyImplyLeading: false, // Ẩn nút back mặc định
         actions: [
           IconButton(
             icon: const Icon(Icons.power_settings_new, color: Colors.white),
-            onPressed: () {
-               Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-                (route) => false,
-              );
-            },
+            onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false),
           ),
         ],
       ),
 
       body: Column(
         children: [
-          // --- TAB BAR ---
+          // Thanh Tab Bar
           Container(
-            width: double.infinity,
             color: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(left: 16, right: 16), 
+              padding: const EdgeInsets.symmetric(horizontal: 16), 
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: List.generate(_tabs.length, (index) {
                   bool isSelected = _selectedIndex == index;
                   return GestureDetector(
@@ -113,37 +167,44 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
             ),
           ),
 
-          // --- DANH SÁCH ĐƠN HÀNG ---
+          // Danh sách đơn hàng
           Expanded(
             child: FutureBuilder<List<Order>>(
               future: _ordersFuture,
               builder: (context, snapshot) {
+                // Đang tải
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
+                // Không có dữ liệu
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(child: Text("Không có đơn hàng nào"));
                 }
 
+                // Lọc danh sách theo Tab đang chọn
                 List<Order> allOrders = snapshot.data!;
                 List<Order> filteredOrders = [];
 
-                if (_selectedIndex == 0) {
+                if (_selectedIndex == 0) { // All
                   filteredOrders = allOrders;
-                } else if (_selectedIndex == 1) {
+                } else if (_selectedIndex == 1) { // Chờ xử lý
                   filteredOrders = allOrders.where((o) => o.status == 'pending').toList();
-                } else if (_selectedIndex == 2) {
-                  filteredOrders = allOrders.where((o) => o.status == 'processing' || o.status == 'shipping').toList();
-                } else {
-                  filteredOrders = allOrders.where((o) => o.status == 'delivered' || o.status == 'cancelled').toList();
+                } else if (_selectedIndex == 2) { // Chờ lấy hàng
+                  filteredOrders = allOrders.where((o) => ['processing', 'shipping'].contains(o.status)).toList();
+                } else { // Lịch sử (Đã giao/Hủy)
+                  filteredOrders = allOrders.where((o) => ['delivered', 'cancelled'].contains(o.status)).toList();
                 }
 
                 if (filteredOrders.isEmpty) {
-                   return const Center(child: Text("Không có đơn hàng trong mục này"));
+                   return const Center(child: Text("Trống"));
                 }
 
+                // Hiển thị danh sách (có tính năng kéo để refresh)
                 return RefreshIndicator(
-                  onRefresh: () async => _loadOrders(),
+                  onRefresh: () async {
+                    _loadOrders();
+                    _loadProducts();
+                  },
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: filteredOrders.length,
@@ -160,171 +221,93 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
     );
   }
 
+  // --- 3. CÁC WIDGET CON ---
+
+  // Thẻ hiển thị tóm tắt 1 đơn hàng
   Widget _buildOrderCard(Order order) {
-    String displayStatus;
-    Color badgeColor;
-    Color badgeTextColor;
+    final statusConfig = _getStatusConfig(order.status);
 
-    // ... (Giữ nguyên phần switch case xử lý trạng thái như cũ) ...
-    switch (order.status) {
-      case 'pending':
-        displayStatus = "Chờ xử lý";
-        badgeColor = const Color(0xFFE3F2FD);
-        badgeTextColor = Colors.blue;
-        break;
-      case 'processing':
-        displayStatus = "Đang chuẩn bị";
-        badgeColor = const Color(0xFFEEE5FF);
-        badgeTextColor = Colors.deepPurple;
-        break;
-      case 'shipping':
-        displayStatus = "Đang giao";
-        badgeColor = const Color(0xFFFFF3E0);
-        badgeTextColor = Colors.orange;
-        break;
-      case 'delivered':
-      case 'completed':
-        displayStatus = "Thành công";
-        badgeColor = const Color(0xFFE8F5E9);
-        badgeTextColor = Colors.green;
-        break;
-      case 'cancelled':
-        displayStatus = "Đã hủy";
-        badgeColor = const Color(0xFFFFEBEE);
-        badgeTextColor = Colors.red;
-        break;
-      default:
-        displayStatus = order.status;
-        badgeColor = Colors.grey.shade200;
-        badgeTextColor = Colors.black;
-    }
-
-    // --- TÍNH TỔNG SỐ LƯỢNG SẢN PHẨM ---
-    int totalQuantity = 0;
-    if (order.items != null) {
-      for (var item in order.items!) {
-        totalQuantity += item.quantity;
-      }
-    }
-
-    return GestureDetector(
+    return OrderListCard(
       onTap: () async {
+        // Mở trang chi tiết
         final result = await Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => AdminOrderDetailScreen(order: order),
-          ),
+          MaterialPageRoute(builder: (context) => AdminOrderDetailScreen(order: order)),
         );
-        if (result == true) {
-          _loadOrders(); 
-        }
+        // Reload lại list nếu có thay đổi trong trang chi tiết
+        if (result == true) _loadOrders(); 
       },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: const Offset(0, 2))],
-        ),
-        child: Column(
-          children: [
-            // Row 1: ID & Trạng thái
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("#${order.id}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(color: badgeColor, borderRadius: BorderRadius.circular(12)),
-                  child: Text(displayStatus, style: TextStyle(color: badgeTextColor, fontWeight: FontWeight.bold, fontSize: 12)),
-                ),
-              ],
-            ),
-            const Divider(height: 12),
-            
-            // Row 2: Khách hàng
-            _buildInfoRow("Khách hàng", order.fullName ?? "Khách lẻ", isBold: true),
-            
-            // Row 3: Sản phẩm
-            if (order.items != null && order.items!.isNotEmpty) ...[
-              const Divider(height: 12),
-              FutureBuilder<Product?>(
-                future: ProductController.getProductById(order.items![0].productId),
+      child: Column(
+        children: [
+          // Dòng 1: ID đơn hàng và Badge trạng thái
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("#${order.id}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(color: statusConfig['bg'], borderRadius: BorderRadius.circular(12)),
+                child: Text(statusConfig['text'], style: TextStyle(color: statusConfig['color'], fontWeight: FontWeight.bold, fontSize: 12)),
+              ),
+            ],
+          ),
+          const Divider(height: 12),
+          
+          // Dòng 2: Tên khách hàng
+          OrderInfoRow(
+            label: "Khách hàng", 
+            value: order.fullName ?? "Khách lẻ", 
+            isBold: true
+          ),
+          
+          const Divider(height: 12),
+          
+          // Dòng 3: Danh sách sản phẩm
+          // Nếu đã có list sản phẩm -> Hiển thị luôn
+          // Nếu chưa -> Gọi API chi tiết ngay tại đây (Lazy Loading)
+          (order.items != null && order.items!.isNotEmpty)
+            ? OrderInfoRow(
+                label: "Sản phẩm", 
+                value: _generateProductSummary(order.items!), 
+                alignTop: true
+              )
+            : FutureBuilder<Order?>(
+                future: _orderController.getOrderDetail(order.id),
                 builder: (context, snapshot) {
-                  String productText = "Đang tải...";
-                  if (snapshot.hasData && snapshot.data != null) {
-                    productText = snapshot.data!.name;
-                    if (order.items!.length > 1) {
-                      productText += " (+${order.items!.length - 1} SP khác)";
-                    }
-                  } else if (snapshot.hasError) {
-                    productText = "Sản phẩm #${order.items![0].productId}";
+                  if (snapshot.hasData && snapshot.data!.items != null) {
+                    return OrderInfoRow(
+                      label: "Sản phẩm", 
+                      value: _generateProductSummary(snapshot.data!.items!), 
+                      alignTop: true
+                    );
                   }
-                  return _buildInfoRow("Sản phẩm", productText, isBold: false);
+                  return const OrderInfoRow(
+                    label: "Sản phẩm", 
+                    value: "Đang tải...", 
+                    alignTop: true
+                  );
                 },
               ),
-            ] else ...[
-               const Divider(height: 12),
-               FutureBuilder<Order?>(
-                 // Gọi API lấy chi tiết đơn hàng để có danh sách items
-                 future: _orderController.getOrderDetail(order.id), 
-                 builder: (context, snapshot) {
-                   String content = "Đang tải...";
-                   
-                   if (snapshot.connectionState == ConnectionState.done) {
-                     if (snapshot.hasData && snapshot.data != null) {
-                       // Có dữ liệu -> Tính tổng số lượng
-                       int realQty = 0;
-                       final items = snapshot.data!.items ?? [];
-                       for (var item in items) {
-                         realQty += item.quantity;
-                       }
-                       content = "$realQty sản phẩm";
-                     } else {
-                       content = "Xem chi tiết";
-                     }
-                   }
-                   
-                   return _buildInfoRow("Sản phẩm", content);
-                 },
-               ),
-            ],
 
-            const Divider(height: 12),
-            
-            // Row 4: Tổng tiền
-            _buildInfoRow("Tổng tiền", formatCurrency(order.totalPrice), color: Colors.orange, isBold: true),
-            
-            const Divider(height: 12),
-            
-            // Row 5: Ngày đặt
-            _buildInfoRow("Ngày đặt", formatDate(order.createdAt)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, {Color color = Colors.black87, bool isBold = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(color: Colors.grey)),
-        // Sử dụng Expanded và TextOverflow để tên sản phẩm dài không bị vỡ giao diện
-        Expanded(
-          child: Text(
-            value, 
-            textAlign: TextAlign.end,
-            style: TextStyle(
-              color: color, 
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          const Divider(height: 12),
+          
+          // Dòng 4: Tổng tiền
+          OrderInfoRow(
+            label: "Tổng tiền", 
+            value: _formatMoney(order.totalPrice), 
+            valueColor: Colors.orange, 
+            isBold: true
           ),
-        ),
-      ],
+          
+          const Divider(height: 12),
+          
+          // Dòng 5: Ngày đặt hàng
+          OrderInfoRow(
+            label: "Ngày đặt", 
+            value: _formatDate(order.createdAt)
+          ),
+        ],
+      ),
     );
   }
 }

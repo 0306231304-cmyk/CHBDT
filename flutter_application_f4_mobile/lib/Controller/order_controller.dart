@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/Order.dart';
+import '../Config/baseUrl.dart';
 
 class OrderController {
-  static const String baseUrl = "https://irretentive-alex-wanly.ngrok-free.dev"; 
 
   // Lấy danh sách lịch sử mua hàng
   Future<List<Order>> getOrderHistory() async {

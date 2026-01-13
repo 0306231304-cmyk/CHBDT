@@ -61,6 +61,7 @@ adminRoutes.post('/login', userController.adminLogin);
  *         description: Chưa xác thực
  */
 adminAuthRoutes.post('/logout', userController.logout);
+
 /**
  * @swagger
  * /admin/users:

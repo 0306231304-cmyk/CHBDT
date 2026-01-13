@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../Resources/app_colors.dart';
-import '../Model/cartModel.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../resources/app_colors.dart';
+import '../Model/cartModel.dart'; 
 import '../Controller/cart_Controller.dart';
 import '../Controller/update_cart_controller.dart';
 import '../Controller/delete_cart_controller.dart'; 
@@ -21,11 +23,22 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
 
   CartResponse? _cartData;
   bool _isLoadingInitial = true;
+  String? _userToken;
+  bool _isLoading = false;
+
+  String formatCurrency(double? amount) {
+    // locale: 'vi_VN' để dùng dấu chấm phân cách hàng nghìn
+    // symbol: '₫' hoặc 'đ' tùy bạn thích
+    // decimalDigits: 0 để bỏ số thập phân (vì VND thường không dùng hào/xu)
+    final format = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+    return format.format(amount);
+  }
 
   @override
   void initState() {
     super.initState();
     _firstLoad();
+    _loadToken();
   }
 
   Future<void> _firstLoad() async {
@@ -39,6 +52,27 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
       }
     } catch (e) {
       if (mounted) setState(() => _isLoadingInitial = false);
+    }
+  }
+
+  Future<void> _loadToken()async{
+
+    if(mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+
+    final token = prefs.getString('user_token') ?? '';
+
+    if(mounted) {
+      setState(() {
+        _userToken = token;
+        debugPrint("TOKEN: ${_userToken.toString()}");
+        _isLoading = false;
+      });
     }
   }
 
@@ -80,7 +114,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
       setState(() {
         _cartData!.data.removeAt(index);
       });
-      
+      if(!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Đã xóa sản phẩm"), duration: Duration(seconds: 1)),
       );
@@ -88,6 +122,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
       // Tính lại tổng tiền từ server
       _refreshCartSilent();
     } else {
+      if(!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Lỗi xóa sản phẩm!"), backgroundColor: Colors.red),
       );
@@ -128,12 +163,6 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
         );
       }
     }
-  }
-
-  // Hàm format tiền
-  String _formatPrice(num? price) {
-    if (price == null) return "0đ";
-    return "${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}đ";
   }
 
   @override
@@ -193,7 +222,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
         ),
         const SizedBox(height: 16),
         
-        _buildFooterTotal(_cartData!.totalMoney ?? 0), 
+        _buildFooterTotal(_cartData!.totalMoney), 
         
         const SizedBox(height: 16),
         
@@ -208,20 +237,30 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                 );
                 return;
              }
-
-             // 2. Chuyển trang + Gửi dữ liệu
+             if(_userToken != '' && _userToken != null){
+              print("User_Token: $_userToken");
+              // 2. Chuyển trang + Gửi dữ liệu
              Navigator.push(
                context, 
                MaterialPageRoute(
                  builder: (context) => CheckoutScreen(
                     cartItems: _cartData!.data,             // Gửi list hàng
-                    totalMoney: _cartData!.totalMoney ?? 0, // Gửi tổng tiền
+                    totalMoney: _cartData!.totalMoney,
+                    is_buy_now: false, // Gửi tổng tiền
                  )
                )
              );
+            }
+            else{
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Bạn chưa đăng nhập'),
+                  backgroundColor: Colors.redAccent,
+                )
+              );
+            }
           }
         ),
-        // -----------------------------------
       ],
     );
   }
@@ -234,7 +273,8 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
-            item.imageUrl ?? '', 
+            headers: const {"ngrok-skip-browser-warning": "true",},
+            item.imageUrl ?? '',
             width: 80, height: 80, fit: BoxFit.cover,
             errorBuilder: (c, e, s) => Container(width: 80, height: 80, color: Colors.grey[200]),
           ),
@@ -278,7 +318,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _formatPrice(item.price), 
+                  formatCurrency(item.price), 
                     style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent, fontSize: 16)
                   ),
                   
@@ -332,7 +372,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
       children: [
         const Text("Tổng thanh toán:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         Text(
-          _formatPrice(totalMoney), 
+          formatCurrency(totalMoney), 
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red)
         ),
       ],

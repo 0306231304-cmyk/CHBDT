@@ -18,27 +18,30 @@ export default class productController{
     }
     
     static async searchProduct(req,res){
-        try{
-            const {q} = req.query;
-            if (!q || q.trim() === '') {
-                return res.status(400).json({ 
-                    succeeded: false, 
-                    message: "Vui lòng nhập từ khóa tìm kiếm" 
-                });
-            }
-            const product = await productModel.findProductByName(q);
-            if(!product || product.length === 0) return res.status(404).json({succeeded: false, message: "Sản phẩm không tồn tại"});
-            return res.status(200).json({
-                succeeded: true,
-                count: product.length,
-                product: product
-            });
-        }catch(error){
-            return res.status(500).json({ 
+        try {
+        const { q } = req.query; // Lấy từ khóa từ URL ?q=...
+
+        if (!q || q.trim() === '') {
+            return res.status(400).json({ 
                 succeeded: false, 
-                message: error.message 
+                message: "Vui lòng nhập từ khóa tìm kiếm" 
             });
         }
+
+        // Gọi hàm Model vừa viết lại ở trên
+        const products = await productModel.findProductByName(q);
+
+        return res.status(200).json({
+            succeeded: true,
+            count: products.length,
+            products: products // Trả về danh sách kết quả
+        });
+    } catch (error) {
+        return res.status(500).json({ 
+            succeeded: false, 
+            message: error.message 
+        });
+    }
     }
 
     static async detailProduct(req,res){

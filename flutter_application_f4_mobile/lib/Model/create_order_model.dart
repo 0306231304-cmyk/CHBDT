@@ -8,6 +8,7 @@ class CreateOrderRequest {
   final String note;
   final double totalMoney;
   final String paymentMethod;
+  final bool is_buy_now;
   final List<OrderDetailItem> orderDetails;
 
   CreateOrderRequest({
@@ -19,6 +20,7 @@ class CreateOrderRequest {
     required this.note,
     required this.totalMoney,
     required this.paymentMethod,
+    required this.is_buy_now,
     required this.orderDetails,
   });
 
@@ -33,6 +35,7 @@ class CreateOrderRequest {
       'note': note,
       'total_money': totalMoney,
       'payment_method': paymentMethod,
+      'is_buy_now': is_buy_now,
       'order_details': orderDetails.map((e) => e.toJson()).toList(),
     };
   }

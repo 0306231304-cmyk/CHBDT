@@ -26,4 +26,29 @@ export default class couponModel{
             throw new Error('Lỗi inActive Coupon: '+error.message);
         }
     }
+
+    static async addUsedCount(code){
+        try{
+            const [result] = await execute(`
+                UPDATE coupons SET coupons.used_count = coupons.used_count + 1 WHERE coupons.code = ?
+            `,[code]);
+
+            if(!result.affectedRows > 0)
+                throw new Error('Lỗi thêm Used_Count(addUsedCount)');
+        }
+        catch(error){
+            throw new Error('Lỗi thêm Used_Count(addUsedCount): ' + error.message);
+        }
+    }
+
+    static async getAllCoupon(){
+        try{
+            const [coupons] = await execute('SELECT * FROM coupons WHERE is_active = 1');
+            if(coupons.length === 0) return[];
+            return coupons;
+        }
+        catch(error){
+            throw new Error('Lỗi lấy danh sách khuyến mãi: ' + error.message);
+        }
+    }
 }

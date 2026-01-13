@@ -4,9 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/create_order_model.dart';
 import '../Model/cartModel.dart';
+import '../Config/baseUrl.dart';
 
 class CreateOrderController {
-  final String baseUrl = 'https://irretentive-alex-wanly.ngrok-free.dev';
 
   Future<bool> createOrder({
     required String fullName,
@@ -16,6 +16,7 @@ class CreateOrderController {
     required String couponCode, // <--- Nhận tham số Coupon
     required String note,
     required double totalPrice,
+    required bool isBuyNow,
     required String paymentMethod,
     required List<CartItem> cartItems,
   }) async {
@@ -50,12 +51,13 @@ class CreateOrderController {
         note: note,
         totalMoney: totalPrice,
         paymentMethod: paymentMethod,
+        is_buy_now: isBuyNow,
         orderDetails: details,
       );
 
       // 3. Gọi API
       final response = await http.post(
-        Uri.parse('$baseUrl/orders/create'),
+        Uri.parse('$baseUrl/orders/order'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

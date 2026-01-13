@@ -3,10 +3,11 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/delete_cart_model.dart';
+import '../Config/baseUrl.dart';
 
 class DeleteCartController {
   // CẬP NHẬT URL MỚI TẠI ĐÂY
-  final String baseUrl = 'https://irretentive-alex-wanly.ngrok-free.dev';
+
 
   // --- HÀM CHÍNH ---
   Future<bool> deleteCartItem(int variantId) async {

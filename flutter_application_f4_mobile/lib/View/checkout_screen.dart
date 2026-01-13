@@ -8,11 +8,13 @@ import '../Controller/create_order_controller.dart';
 class CheckoutScreen extends StatefulWidget {
   final List<CartItem> cartItems;
   final double totalMoney;
+  final bool is_buy_now;
 
   const CheckoutScreen({
     super.key, 
     required this.cartItems, 
-    required this.totalMoney
+    required this.totalMoney,
+    required this.is_buy_now
   });
 
   @override
@@ -40,7 +42,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   // --- DANH SÁCH TỈNH THÀNH (Bạn có thể thêm đủ 63 tỉnh) ---
   final List<String> _provinces = [
-    "Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ",
+    "Hà Nội", "TP.HCM", "Đà Nẵng", "Hải Phòng", "Cần Thơ",
     "An Giang", "Bà Rịa - Vũng Tàu", "Bắc Giang", "Bắc Kạn", "Bạc Liêu",
     "Bắc Ninh", "Bến Tre", "Bình Định", "Bình Dương", "Bình Phước",
     "Bình Thuận", "Cà Mau", "Cao Bằng", "Đắk Lắk", "Đắk Nông",
@@ -71,7 +73,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (prefs.containsKey('saved_address')) address = prefs.getString('saved_address')!;
       
       // Load thành phố, nếu không có trong danh sách thì lấy mặc định
-      String savedCity = prefs.getString('saved_city') ?? "TP. Hồ Chí Minh";
+      String savedCity = prefs.getString('saved_city') ?? "TP.HCM";
       if (_provinces.contains(savedCity)) {
         city = savedCity;
       }
@@ -372,6 +374,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                            
                            setState(() => _isLoading = true);
                            
+                           if(city != 'TP.HCM' && city != 'Hà Nội' && city != 'Đà Nẵng'){
+                            city = 'Khác';
+                           }
+
                            bool success = await _orderController.createOrder(
                               fullName: receiverName, 
                               phone: phoneNumber, 
@@ -380,6 +386,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               couponCode: _couponCode,
                               note: note,
                               totalPrice: finalPrice, 
+                              isBuyNow: widget.is_buy_now,
                               paymentMethod: _isCOD ? "COD" : "E_WALLET", 
                               cartItems: widget.cartItems
                            );

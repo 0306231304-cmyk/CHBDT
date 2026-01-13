@@ -6,18 +6,22 @@ export default class orderController{
             const userId = req.userid; 
             if (!userId) return res.status(401).json({ succeeded: false, message: "Chưa đăng nhập" });
 
+
+
             // 1. Nhận dữ liệu (Chỉ nhận mã coupon, KHÔNG nhận giá tiền từ client gửi lên)
-            const { fullName, phone, address, city, note, coupon_code } = req.body;
+            const { fullName, phone, address, city, note, coupon_code, payment_method, total_money, order_details } = req.body;
+
+            console.log('DEBUG (createOrder): ' + fullName + ' ' + phone + ' ' + address + ' ' + city + ' ' + note + ' ' + coupon_code + ' ' + payment_method + ' ' + order_details + ' ' + total_money);
 
             // Validate dữ liệu
-            if (!fullName || !phone || !address || !city) {
-                return res.status(400).json({ succeeded: false, message: "Thiếu thông tin giao hàng (tên, sđt, địa chỉ, thành phố)" });
+            if (!fullName || !phone || !address || !city || !payment_method || !order_details) {
+                return res.status(400).json({ succeeded: false, message: "Thiếu thông tin giao hàng (tên, sđt, địa chỉ, thành phố, các sản phẩm)" });
             }
 
             const shippingData = { fullName, phone, address, city, note };
 
             // 2. Đẩy toàn bộ trách nhiệm tính tiền xuống Model (An toàn tuyệt đối)
-            const orderId = await orderModel.checkout(userId, shippingData, coupon_code);
+            const orderId = await orderModel.checkout(userId, shippingData, coupon_code, payment_method);
 
             return res.status(201).json({
                 succeeded: true,

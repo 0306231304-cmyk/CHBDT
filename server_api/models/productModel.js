@@ -80,7 +80,7 @@ export default class productModel{
     static async findProductVariantById(product_variant_id){
         try{
             const [product_variants] = await execute(`
-                    SELECT *, CONCAT(?, "/uploads/", pv.image_url) as image FROM product_variants pv WHERE p.id = ?
+                    SELECT *, CONCAT(?, "/uploads/", pv.image_url) as image FROM product_variants pv WHERE pv.id = ?
                 `,[baseUrl,product_variant_id]);
 
             if(product_variants.length === 0) {
@@ -96,7 +96,7 @@ export default class productModel{
 
     static async findProductVariantByProductID(product_id){
         try{
-            const [rows] = await execute('SELECT p.brand_id, p.name, p.description, p.screen_size, p.cpu, p.camera, p.battery, pv.product_id, pv.color, pv.ram, pv.storage, pv.price, pv.stock_quantity, CONCAT(?, "/uploads/", pv.image_url) as image FROM products p, product_variants pv WHERE p.id = pv.product_id AND p.id = ?',[baseUrl,product_id]);
+            const [rows] = await execute('SELECT pv.id ,p.brand_id, p.name, p.description, p.screen_size, p.cpu, p.camera, p.battery, pv.product_id, pv.color, pv.ram, pv.storage, pv.price, pv.stock_quantity, CONCAT(?, "/uploads/", pv.image_url) as image FROM products p, product_variants pv WHERE p.id = pv.product_id AND p.id = ?',[baseUrl,product_id]);
             if(rows.length === 0) throw new Error('Không tìm thấy product_id');
 
             return rows;

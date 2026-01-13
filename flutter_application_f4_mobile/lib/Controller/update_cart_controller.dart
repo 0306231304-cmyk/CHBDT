@@ -6,7 +6,6 @@ import '../Model/update_cart_model.dart';
 import '../Config/baseUrl.dart';
 
 class UpdateCartController {
-  // Copy y chang IP từ CartController của bạn
 
   // --- HÀM CHÍNH: QUYẾT ĐỊNH DÙNG SERVER HAY LOCAL ---
   Future<bool> updateCartQuantity(int variantId, int newQuantity) async {

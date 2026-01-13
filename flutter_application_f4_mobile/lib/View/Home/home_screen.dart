@@ -66,11 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,7 +194,6 @@ class _HomeScreenState extends State<HomeScreen> {
           hintText: "Search..",
           hintStyle: TextStyle(color: Colors.grey),
           prefixIcon: Icon(Icons.search, color: Colors.grey),
-          suffixIcon: Icon(Icons.mic_none, color: Colors.grey),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(vertical: 14),
         ),

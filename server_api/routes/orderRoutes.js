@@ -13,11 +13,11 @@ authOrderRoutes.use(auth);
 
 /**
  * @swagger
- * /orders/order:
+ * /order:
  *   post:
  *     summary: Tạo đơn hàng mới (Checkout)
- *     tags:
- *       - Orders
+ *     description: API xử lý đặt hàng. Hỗ trợ cả "Mua ngay" và "Thanh toán giỏ hàng". Tính toán giá tiền và kho hàng được thực hiện phía server để bảo mật.
+ *     tags: [Orders]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -31,6 +31,9 @@ authOrderRoutes.use(auth);
  *               - phone
  *               - address
  *               - city
+ *               - payment_method
+ *               - order_details
+ *               - is_buy_now
  *             properties:
  *               fullName:
  *                 type: string
@@ -40,27 +43,91 @@ authOrderRoutes.use(auth);
  *                 example: "0901234567"
  *               address:
  *                 type: string
- *                 description: Số nhà, tên đường
- *                 example: "123 Đường ABC"
+ *                 description: Địa chỉ cụ thể (số nhà, đường)
+ *                 example: "123 Lê Lợi"
  *               city:
  *                 type: string
- *                 description: Tên tỉnh/thành phố để tính phí ship
- *                 example: "TP.HCM || Hà Nội || Khác"
+ *                 example: "Hồ Chí Minh"
  *               note:
  *                 type: string
- *                 example: "Giao giờ hành chính"
+ *                 example: "Giao hàng giờ hành chính"
  *               coupon_code:
  *                 type: string
  *                 description: Mã giảm giá (nếu có)
- *                 example: "GIAM20"
+ *                 example: "SUMMER2024"
+ *               payment_method:
+ *                 type: string
+ *                 enum:
+ *                   - COD
+ *                   - VNPAY
+ *                   - MOMO
+ *                 example: "COD"
+ *               is_buy_now:
+ *                 type: boolean
+ *                 description: "true: Mua ngay (không xóa giỏ hàng cũ) | false: Thanh toán từ giỏ hàng (sẽ xóa giỏ hàng sau khi đặt)"
+ *                 example: false
+ *               order_details:
+ *                 type: array
+ *                 description: Danh sách sản phẩm muốn mua
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - product_variant_id
+ *                     - quantity
+ *                   properties:
+ *                     product_variant_id:
+ *                       type: integer
+ *                       example: 10
+ *                     quantity:
+ *                       type: integer
+ *                       example: 2
  *     responses:
  *       201:
  *         description: Đặt hàng thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Đặt hàng thành công"
+ *                 order_id:
+ *                   type: integer
+ *                   example: 152
  *       400:
- *         description: Thiếu thông tin hoặc mã giảm giá không hợp lệ/hết hạn
+ *         description: Thiếu thông tin hoặc dữ liệu không hợp lệ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Thiếu thông tin giao hàng"
+ *       401:
+ *         description: Chưa đăng nhập (Không có Token)
  *       500:
- *         description: Lỗi hết hàng hoặc lỗi server
+ *         description: Lỗi Server (Hết hàng, lỗi mã giảm giá...)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 succeeded:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Sản phẩm (ID: 10) không đủ hàng (chỉ còn 1)"
  */
+
 authOrderRoutes.post('/order', orderController.createOrder);
 
 /**
@@ -183,4 +250,3 @@ authOrderRoutes.get('/:orderID',orderController.getOrderDetail);
 
 orderRoutes.use('/',authOrderRoutes);
 export default orderRoutes;
-

@@ -185,6 +185,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
+            headers:{"ngrok-skip-browser-warning": "true"},
             item.imageUrl ?? '',
             width: 80, height: 80, fit: BoxFit.cover,
             errorBuilder: (c, e, s) => Container(

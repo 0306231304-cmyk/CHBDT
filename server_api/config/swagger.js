@@ -1,4 +1,5 @@
 import swaggerJSDoc from 'swagger-jsdoc';
+import baseUrl from '../baseUrl.js';
 
 const options = {
   definition: {
@@ -10,7 +11,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3001', // Đường dẫn server
+        url: baseUrl, // Đường dẫn server
         description: 'Server Local',
       },
     ],

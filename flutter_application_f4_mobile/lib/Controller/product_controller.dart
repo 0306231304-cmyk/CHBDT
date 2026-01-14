@@ -31,10 +31,24 @@ class ProductController {
     try {
       final response = await http.get(Uri.parse('$baseUrl/products/product-variants/get-all'), headers: _headers);
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes));
-        if (data['succeeded'] == true && data['product_variants'] != null) {
-          List<dynamic> variantList = data['product_variants'];
-          return variantList.map((item) => ProductVariant.fromJson(item)).toList();
+        // 1. Decode dữ liệu JSON thô
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+        // 2. Kiểm tra biến 'succeeded' từ server trả về
+        if (responseData['succeeded'] == true) {
+          
+          // 3. Lấy danh sách từ key 'product_variants'
+          List<dynamic> variantList = responseData['product_variants'];
+
+          // 4. Map từng phần tử sang Object Model
+          List<ProductVariant> result = variantList
+              .map((item) => ProductVariant.fromJson(item))
+              .toList();
+            print("DEBUG(imageURl): ${result[0].imageUrl}");
+          return result;
+        } else {
+          // Trường hợp server trả về succeeded: false
+          throw Exception(responseData['message'] ?? "Lỗi logic từ server");
         }
       }
     } catch (e) { print("Error getAllProductVariants: $e"); }
@@ -140,6 +154,34 @@ class ProductController {
     } catch (e) {
       print("Lỗi postReview: $e");
       return false;
+    }
+  }
+  
+  static Future<Product?> getProductById(int id) async {
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/products/$id"), 
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Giải mã UTF8 để không lỗi font tiếng Việt
+        final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+
+        // Dựa theo productController.js: trả về { succeeded: true, product: {...} }
+        if (data['succeeded'] == true) {
+          // Dữ liệu sản phẩm nằm trong key 'product'
+          return Product.fromJson(data['product']); 
+        }
+      }
+      return null;
+    } catch (e) {
+      print("Lỗi lấy chi tiết sản phẩm ID $id: $e");
+      return null;
     }
   }
 }

@@ -1,2 +1,2 @@
-const baseUrl = 'http://localhost:3001';
+const baseUrl = 'https://irretentive-alex-wanly.ngrok-free.dev';
 export default baseUrl;

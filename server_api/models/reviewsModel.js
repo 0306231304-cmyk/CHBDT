@@ -37,41 +37,44 @@ export default class reviewsModel {
         }
     }
 
-    static async addReview(review, product_id, order_id, user_id) {
+    static async addReview(review, product_id, user_id) {
         try {
+            // 1. Tìm đơn hàng gần nhất mà user đã mua sản phẩm này (và đã giao thành công)
             const queryCheck = `
-                SELECT COUNT(*) as can_review
+                SELECT o.id as found_order_id
                 FROM orders o
                 JOIN order_items oi ON o.id = oi.order_id
                 JOIN product_variants pv ON oi.product_variant_id = pv.id
                 WHERE 
-                    o.user_id = ?              -- Đúng người mua
-                    AND o.id = ?               -- Đúng đơn hàng
-                    AND pv.product_id = ?      -- Đúng sản phẩm
-                    AND o.status = 'delivered' -- Đơn hàng đã giao thành công
-                    AND NOT EXISTS (           -- Chưa từng đánh giá đơn này
+                    o.user_id = ?              -- Của user này
+                    AND pv.product_id = ?      -- Có chứa sản phẩm này (bất kỳ màu/dung lượng nào)
+                    AND o.status = 'delivered' -- Đã giao hàng
+                    AND NOT EXISTS (           -- Đảm bảo user chưa từng đánh giá sản phẩm này trước đây
                         SELECT 1 FROM reviews r 
                         WHERE r.user_id = o.user_id 
-                        AND r.product_id = pv.product_id 
-                        AND r.order_id = o.id
-                    );
+                        AND r.product_id = pv.product_id
+                    )
+                ORDER BY o.created_at DESC     -- Lấy đơn mới nhất nếu mua nhiều lần
+                LIMIT 1;
             `;
 
-            const [checkRows] = await execute(queryCheck, [user_id, order_id, product_id]);
+            const [checkRows] = await execute(queryCheck, [user_id, product_id]);
 
-            if (checkRows[0].can_review > 0) {
-                
+            // 2. Nếu tìm thấy đơn hàng hợp lệ
+            if (checkRows.length > 0) {
+                const orderId = checkRows[0].found_order_id; // Lấy ID đơn hàng tìm được
+
                 const [result] = await execute(
-                    'INSERT INTO `reviews` (`user_id`, `product_id`, `order_id`, `rating`, `comment`) VALUES (?, ?, ?, ?, ?)',
-                    [user_id, product_id, order_id, review.rating, review.comment]
+                    'INSERT INTO `reviews` (`user_id`, `product_id`, `order_id`, `rating`, `comment`, `created_at`) VALUES (?, ?, ?, ?, ?, NOW())',
+                    [user_id, product_id, orderId, review.rating, review.comment]
                 );
 
                 return result.affectedRows > 0 ? result.insertId : null;
             } else {
-                throw new Error('Bạn không thể đánh giá (Chưa mua, chưa nhận hàng, sai sản phẩm hoặc đã đánh giá rồi)');
+                throw new Error('Bạn không thể đánh giá (Chưa mua, chưa nhận hàng hoặc đã đánh giá sản phẩm này rồi)');
             }
         } catch (error) {
-            throw new Error('Lỗi thêm đánh giá (reviewsModel): ' + error.message);
+            throw new Error('Lỗi thêm đánh giá: ' + error.message);
         }
     }
 }

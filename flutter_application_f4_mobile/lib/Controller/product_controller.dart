@@ -98,17 +98,28 @@ class ProductController {
   }
 
   // --- PHẦN MỚI THÊM CHO REVIEW ---
-  static Future<List<Review>> getReviews(int productId) async {
+  static Future<ReviewData?> getReviews(int productId) async {
     try {
-      final response = await http.get(Uri.parse("$baseUrl/products/$productId/reviews"), headers: _headers);
+      final response = await http.get(
+        Uri.parse("$baseUrl/products/reviews/$productId"), 
+        headers: _headers
+      );
+
       if (response.statusCode == 200) {
-        final data = json.decode(utf8.decode(response.bodyBytes));
-        if (data['succeeded'] == true && data['reviews'] != null) {
-           return (data['reviews'] as List).map((e) => Review.fromJson(e)).toList();
+        final jsonMap = json.decode(utf8.decode(response.bodyBytes));
+        
+        // 1. Parse toàn bộ JSON qua ReviewResponse
+        final res = ReviewResponse.fromJson(jsonMap);
+
+        // 2. Kiểm tra thành công và trả về data (ReviewData)
+        if (res.succeeded && res.data != null) {
+          return res.data; 
         }
       }
-    } catch (e) { print("Error getReviews: $e"); }
-    return [];
+    } catch (e) {
+      print("Error getReviews: $e");
+    }
+    return null; // Trả về null nếu lỗi hoặc không có dữ liệu
   }
 
   static Future<bool> postReview(int productId, String content, double rating) async {
@@ -124,7 +135,7 @@ class ProductController {
       final body = {
         'product_id': productId,
         'rating': rating.toInt(), // Ép về số nguyên (5)
-        'content': content,       // <--- ĐỔI KEY TỪ 'comment' SANG 'content'
+        'comment': content,       // <--- ĐỔI KEY TỪ 'comment' SANG 'content'
       };
 
       print("--- GỬI REVIEW (JSON FIXED) ---");

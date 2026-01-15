@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/product_model.dart';
 import '../Config/baseUrl.dart';
-import '../Model/review_model.dart'; // Đảm bảo dòng này không bị lỗi đỏ
+import '../Model/review_model.dart';
 
 class ProductController {
   
@@ -31,23 +31,14 @@ class ProductController {
     try {
       final response = await http.get(Uri.parse('$baseUrl/products/product-variants/get-all'), headers: _headers);
       if (response.statusCode == 200) {
-        // 1. Decode dữ liệu JSON thô
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-
-        // 2. Kiểm tra biến 'succeeded' từ server trả về
         if (responseData['succeeded'] == true) {
-          
-          // 3. Lấy danh sách từ key 'product_variants'
           List<dynamic> variantList = responseData['product_variants'];
-
-          // 4. Map từng phần tử sang Object Model
           List<ProductVariant> result = variantList
               .map((item) => ProductVariant.fromJson(item))
               .toList();
-            print("DEBUG(imageURl): ${result[0].imageUrl}");
           return result;
         } else {
-          // Trường hợp server trả về succeeded: false
           throw Exception(responseData['message'] ?? "Lỗi logic từ server");
         }
       }
@@ -130,30 +121,24 @@ class ProductController {
       if (token == null || token.isEmpty) return false;
 
       final url = Uri.parse('$baseUrl/products/add-review');
-
-      // CHUẨN BỊ DỮ LIỆU JSON
       final body = {
         'product_id': productId,
-        'rating': rating.toInt(), // Ép về số nguyên (5)
-        'comment': content,       // <--- ĐỔI KEY TỪ 'comment' SANG 'content'
+        'rating': rating.toInt(), // Đảm bảo gửi số nguyên
+        'comment': content, // Backend nhận key 'comment'
       };
 
-      print("--- GỬI REVIEW (JSON FIXED) ---");
-      print("URL: $url");
+      print("--- Sending Review ---");
       print("Body: $body");
 
       final response = await http.post(
         url,
         headers: {
-          'Content-Type': 'application/json', // BẮT BUỘC PHẢI CÓ
+          'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode(body), // Gửi JSON
+        body: jsonEncode(body),
       );
-
-      print("Status Code: ${response.statusCode}");
-      print("Response: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
@@ -169,30 +154,6 @@ class ProductController {
   }
   
   static Future<Product?> getProductById(int id) async {
-    try {
-      final response = await http.get(
-        Uri.parse("$baseUrl/products/$id"), 
-        headers: {
-          "ngrok-skip-browser-warning": "true",
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
-      );
-
-      if (response.statusCode == 200) {
-        // Giải mã UTF8 để không lỗi font tiếng Việt
-        final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes));
-
-        // Dựa theo productController.js: trả về { succeeded: true, product: {...} }
-        if (data['succeeded'] == true) {
-          // Dữ liệu sản phẩm nằm trong key 'product'
-          return Product.fromJson(data['product']); 
-        }
-      }
-      return null;
-    } catch (e) {
-      print("Lỗi lấy chi tiết sản phẩm ID $id: $e");
-      return null;
-    }
+    return getProductDetail(id); // Tái sử dụng hàm getProductDetail ở trên cho gọn
   }
 }

@@ -1,8 +1,12 @@
+
+
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/cartModel.dart';
 import '../Config/baseUrl.dart';
+
 class CartController {
 
   // --- 1. LẤY GIỎ HÀNG ---
@@ -153,14 +157,15 @@ class CartController {
   }
 
   // --- 3. THÊM VÀO GIỎ HÀNG ---
-  static Future<void> addToCart(int? userId, int productVariantId) async {
+  // SỬA 1: Thêm tham số 'quantity' vào đây
+  static Future<void> addToCart(int productVariantId, int quantity) async {
     final prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('user_token');
 
     // 1. TRƯỜNG HỢP ĐÃ ĐĂNG NHẬP (GỌI API)
     if (token != null) {
       try {
-        print("DEBUG: Đang thêm vào giỏ hàng Server...");
+        print("DEBUG: Đang thêm vào giỏ hàng Server với số lượng: $quantity");
         final response = await http.post(
           Uri.parse('$baseUrl/cart/add'),
           headers: {
@@ -170,11 +175,12 @@ class CartController {
           },
           body: jsonEncode({
             'variant_id': productVariantId,
+            'quantity': quantity, // SỬA 2: Gửi số lượng người dùng chọn lên server
           }),
         );
         
         if (response.statusCode >= 200 && response.statusCode < 300) {
-          print("DEBUG: Thêm vào server thành công $productVariantId");
+          print("DEBUG: Thêm vào server thành công $productVariantId sl: $quantity");
         } else {
           print("DEBUG: Lỗi server ${response.body}");
         }
@@ -209,7 +215,9 @@ class CartController {
           if (item['product_variant_id'] == productVariantId) {
             // SỬA LỖI ĐƠ: Kiểm tra null trước khi cộng
             int currentQty = item['quantity'] ?? 0;
-            item['quantity'] = currentQty + 1;
+            
+            // SỬA 3: Cộng dồn số lượng người dùng chọn (thay vì +1)
+            item['quantity'] = currentQty + quantity; 
             
             // Cập nhật lại vào list
             currentList[i] = item;
@@ -223,11 +231,12 @@ class CartController {
         if (!exists) {
           currentList.add({
             'product_variant_id': productVariantId,
-            'quantity': 1,
+            // SỬA 4: Gán số lượng ban đầu bằng số lượng người dùng chọn (thay vì 1)
+            'quantity': quantity, 
             // Có thể thêm ngày tạo nếu cần để sort
             'added_at': DateTime.now().toIso8601String(), 
           });
-          print("DEBUG: Đã thêm mới sản phẩm vào local");
+          print("DEBUG: Đã thêm mới sản phẩm vào local với sl: $quantity");
         }
 
         // Lưu ngược lại vào SharedPreferences

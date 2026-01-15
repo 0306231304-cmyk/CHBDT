@@ -533,6 +533,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   Widget _buildProductItem(OrderItem item) {
     String name = item.productName; // Tên mặc định
     String? imgUrl;
+    String? color;
+    String? storage;
 
     // Tìm tên và ảnh trong cache
     if (_allVariants.isNotEmpty) {
@@ -541,6 +543,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         if (v.id.toString() == item.productId.toString()) {
           name = v.name ?? name;
           imgUrl = v.imageUrl;
+          color = v.color;
+          storage = v.storage;
           break; // Tìm thấy thì dừng vòng lặp
         }
       }
@@ -574,14 +578,72 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+                Row(
+                  children: [
+                    Text(
+                        name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+                      ),
+                    Text("  x${item.quantity}",maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.grey)),
+                  ],
                 ),
                 const SizedBox(height: 4),
-                Text("x${item.quantity}", style: const TextStyle(color: Colors.grey)),
+                Row(
+                  children: [
+                    // 1. Chip hiển thị MÀU SẮC (Tông Cam/Đỏ)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50, // Nền cam siêu nhạt
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange.shade200), // Viền cam nhạt
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.palette_outlined, size: 14, color: Colors.deepOrange),
+                          const SizedBox(width: 4),
+                          Text(
+                            color ?? "Ngẫu nhiên",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: Colors.deepOrange, // Chữ cam đậm
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(width: 8), // Khoảng cách giữa 2 thẻ
+
+                    // 2. Chip hiển thị DUNG LƯỢNG (Tông Xanh)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50, // Nền xanh siêu nhạt
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.memory, size: 14, color: Colors.blue.shade700),
+                          const SizedBox(width: 4),
+                          Text(
+                            storage ?? "Tiêu chuẩn",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: Colors.blue.shade700, // Chữ xanh đậm
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
               ],
             ),
           ),

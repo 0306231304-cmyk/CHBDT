@@ -251,16 +251,9 @@ class _HoverProductCardState extends State<_HoverProductCard> {
                     ),
                   ],
                 ),
-<<<<<<< HEAD
-              ],
-            ),             
-             const SizedBox(), 
-          ],
-=======
               ),
             ],
           ),
->>>>>>> 1a7b2f631a580610b97c8d022ed19d1787cc9131
         ),
       ),
     );

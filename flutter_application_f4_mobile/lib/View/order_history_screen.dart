@@ -424,44 +424,54 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       color: AppColors.primaryOrange,
                       textColor: Colors.white,
                       isOutlined: false,
-                      onPressed: () {
-                        // 1. Kiểm tra danh sách sản phẩm
-                        if (order.items == null || order.items!.isEmpty) {
+                      onPressed: () async {
+                      // 1. Hiển thị Loading để người dùng biết đang xử lý
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => const Center(child: CircularProgressIndicator()),
+                      );
+
+                      try {
+                        // 2. Gọi API lấy chi tiết đơn hàng để có danh sách items đầy đủ
+                        Order? fullOrder = await _orderController.getOrderDetail(order.id);
+                        
+                        // Tắt Loading
+                        Navigator.of(context).pop();
+
+                        // 3. Kiểm tra dữ liệu
+                        if (fullOrder == null || fullOrder.items == null || fullOrder.items!.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Không tìm thấy thông tin sản phẩm")),
+                            const SnackBar(content: Text("Không lấy được thông tin sản phẩm của đơn hàng này")),
                           );
                           return;
                         }
 
                         List<CartItem> buyAgainList = [];
 
-                        for (var orderItem in order.items!) {
+                        // 4. Xử lý logic ghép dữ liệu (Dùng fullOrder.items thay vì order.items)
+                        for (var orderItem in fullOrder.items!) {
                           ProductVariant? variant;
                           
-                          // 2. Tìm biến thể an toàn hơn (tránh lỗi nếu _allVariants có phần tử null)
+                          // Tìm variant trong danh sách đã load (nếu có)
                           try {
                             if (_allVariants.isNotEmpty) {
-                              // Lọc bỏ các phần tử null trước khi tìm
                               final safeList = _allVariants.whereType<ProductVariant>().toList();
-                              
                               variant = safeList.firstWhere(
-                                (v) => v.id == orderItem.productId,
-                                // Nếu không tìm thấy thì trả về null (thay vì crash app)
-                                orElse: () => ProductVariant(id: 0, price: 0) // Dummy object để check null sau
+                                (v) => v.id == orderItem.productId, 
+                                orElse: () => ProductVariant(id: 0, price: 0)
                               );
-                              
-                              // Nếu là dummy object (id=0) thì gán lại null
                               if (variant.id == 0) variant = null;
                             }
-                          } catch (e) {
+                          } catch (_) {
                             variant = null;
                           }
 
+                          // Tạo CartItem
                           buyAgainList.add(CartItem(
                             productVariantId: orderItem.productId,
                             productName: variant?.name ?? orderItem.productName,
                             quantity: orderItem.quantity,
-                            // Giá: Nếu variant null hoặc giá null -> lấy giá cũ. Ép kiểu an toàn.
                             price: (variant?.price ?? orderItem.price).toDouble(),
                             imageUrl: variant?.imageUrl ?? "",
                             color: variant?.color ?? "",
@@ -470,25 +480,31 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                           ));
                         }
 
-                        // 3. [SỬA LỖI CHÍNH Ở ĐÂY]
-                        // Thay vì dùng "item.price!" (gây lỗi nếu null), hãy dùng "item.price ?? 0"
-                        double totalMoney = buyAgainList.fold(0, (sum, item) {
-                          double price = item.price ?? 0;
-                          int qty = item.quantity ?? 0;
-                          return sum + (price * qty);
-                        });
+                        // 5. Tính tổng tiền và chuyển trang
+                        double totalMoney = buyAgainList.fold(0, (sum, item) => sum + ((item.price ?? 0) * (item.quantity ?? 0)));
 
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CheckoutScreen(
-                              cartItems: buyAgainList,
-                              totalMoney: totalMoney,
-                              is_buy_now: true,
+                        if (buyAgainList.isNotEmpty) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CheckoutScreen(
+                                cartItems: buyAgainList,
+                                totalMoney: totalMoney,
+                                is_buy_now: true,
+                              ),
                             ),
-                          ),
+                          );
+                        }
+
+                      } catch (e) {
+                        // Tắt Loading nếu có lỗi và báo lỗi
+                        Navigator.of(context).pop();
+                        print("Lỗi Mua lại: $e");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Có lỗi xảy ra: $e")),
                         );
-                      },
+                      }
+                    },
                     ),
                   ],
                 ),

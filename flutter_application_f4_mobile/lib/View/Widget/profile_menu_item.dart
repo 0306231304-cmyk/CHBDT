@@ -13,7 +13,7 @@ class ProfileMenuItem extends StatelessWidget {
     required this.icon,
     required this.text,
     required this.onTap,
-    this.textColor = Colors.black87,
+    this.textColor = Colors.black,
     this.isLast = false,
   });
 

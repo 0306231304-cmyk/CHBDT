@@ -257,7 +257,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 child: Text(
                   filter,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black87,
+                    color: isSelected ? Colors.white : Colors.black,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     fontSize: 13,
                   ),
@@ -372,51 +372,69 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         child: OrderSmallButton(
                         text: "Hủy",
                         color: Colors.white,
-                        textColor: Colors.black54,
+                        textColor: Colors.black,
                         isOutlined: true,
                         onPressed: isLoadingButtonCancel
                             ? null
-                            : () async {
-                                setState(() {
-                                  isLoadingButtonCancel = true;
-                                });
+                            : () {
+                                // Hiển thị Dialog xác nhận
+                                showDialog(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text("Xác nhận hủy đơn"),
+                                    content: const Text("Bạn có chắc chắn muốn hủy đơn hàng này không?\nHành động này không thể hoàn tác."),
+                                    actions: [
+                                      // Nút Đóng Dialog
+                                      TextButton(
+                                        onPressed: () => Navigator.of(ctx).pop(),
+                                        child: const Text("Không", style: TextStyle(color: Colors.black)),
+                                      ),
+                                      // Nút Đồng ý Hủy
+                                      TextButton(
+                                        onPressed: () async {
+                                          Navigator.of(ctx).pop();
+                                          setState(() {
+                                            isLoadingButtonCancel = true;
+                                          });
 
-                                bool succeeded = await OrderController().cancelOrder(order.id);
+                                          bool succeeded = await OrderController().cancelOrder(order.id);
 
-                                if (!mounted) return;
+                                          if (!mounted) return;
 
-                                if (succeeded) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Hủy đơn hàng thành công"),
-                                      backgroundColor: Colors.greenAccent,
-                                    ),
-                                  );
+                                          if (succeeded) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text("Hủy đơn hàng thành công"),
+                                                backgroundColor: Colors.greenAccent,
+                                              ),
+                                            );
 
-                                  // --- THÊM DÒNG NÀY ĐỂ LOAD LẠI DỮ LIỆU ---
-                                  setState(() {
-                                    // 1. Tắt loading của nút
-                                    isLoadingButtonCancel = false;
-                                    
-                                    // 2. Gọi lại API để FutureBuilder tự động build lại danh sách mới
-                                    _ordersFuture = _orderController.getOrderHistory(); 
-                                  });
-                                  // ------------------------------------------
-                                  
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Hủy đơn thất bại"),
-                                      backgroundColor: Colors.redAccent,
-                                    ),
-                                  );
-                                  setState(() {
-                                    isLoadingButtonCancel = false;
-                                  });
-                                }
+                                            // Load lại dữ liệu
+                                            setState(() {
+                                              isLoadingButtonCancel = false;
+                                              _ordersFuture = _orderController.getOrderHistory();
+                                            });
+                                            _loadProductList(); 
+                                          } else {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text("Hủy đơn thất bại"),
+                                                backgroundColor: Colors.redAccent,
+                                              ),
+                                            );
+                                            setState(() {
+                                              isLoadingButtonCancel = false;
+                                            });
+                                          }
+                                        },
+                                        child: const Text("Đồng ý hủy", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                      ),
+                                    ],
+                                  ),
+                                );
                               },
                       ),
-                      ),
+                    ),
                     
                     // Nút Mua lại (Luôn hiện)
                     OrderSmallButton(

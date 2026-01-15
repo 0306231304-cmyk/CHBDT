@@ -5,6 +5,7 @@ import '../../Model/Order.dart';
 import '../../Controller/order_controller.dart';
 import '../../Controller/product_controller.dart';
 import '../Widget/order_widgets.dart';
+// 1. IMPORT COUPON
 import 'package:flutter_application_f4_mobile/Controller/couponController.dart';
 import 'package:flutter_application_f4_mobile/Model/couponModel.dart';
 
@@ -196,6 +197,32 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
                 ),
                 
                 const SizedBox(height: 16),
+
+                // 2. THÊM PHẦN HIỂN THỊ COUPON Ở ĐÂY
+                FutureBuilder<CouponModel?>(
+                  future: CouponController.getCoupon(order.couponId), 
+                  builder: (context, snapshot){
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return const SizedBox.shrink(); // Không có coupon thì ẩn
+                    }
+
+                    final CouponModel coupon = snapshot.data!;
+                    if(coupon.id != 0){
+                      return Column(
+                        children: [
+                          _buildCouponTicket(coupon),
+                          const SizedBox(height: 16),
+                        ],
+                      );
+                    }
+                    else{
+                      return const SizedBox.shrink();
+                    }
+                  }
+                ),
                 
                 // Thẻ 3: Thông tin thanh toán và trạng thái đơn
                 OrderCardSection(
@@ -203,6 +230,11 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
                     OrderInfoRow(
                       label: "Tạm tính", 
                       value: formatCurrency(total)
+                    ),
+                    // 3. THÊM DÒNG KHUYẾN MÃI
+                    OrderInfoRow(
+                      label: "Khuyến mãi", 
+                      value: formatCurrency(order.discount.toInt())
                     ),
                     OrderInfoRow(
                       label: "Phí ship", 
@@ -259,7 +291,7 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
         children: [
           // Ảnh sản phẩm
           Container(
-            width: 60, height: 60,
+            width: 70, height: 70,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey.shade300),
@@ -292,11 +324,11 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         info['variant']!,
-                        style: TextStyle(color: Colors.blue.shade800, fontSize: 12, fontWeight: FontWeight.w500),
+                        style: TextStyle(color: Colors.blue, fontSize: 12, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
@@ -314,6 +346,110 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
             formatCurrency(item.price),
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)
           ),
+        ],
+      ),
+    );
+  }
+
+  // Widget vẽ thẻ coupon
+  Widget _buildCouponTicket(CouponModel coupon) {
+    double percentUsed = 0;
+    if (coupon.usageLimit > 0) {
+      percentUsed = (coupon.usedCount / coupon.usageLimit) * 100;
+    }
+    return Container(
+      height: 80,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.shade200),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2))
+        ],
+      ),
+      child: Row(
+        children: [
+          // 1. Phần trái (Icon)
+          Container(
+            width: 80,
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12)),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.card_giftcard, color: Colors.orange[700], size: 30),
+                const SizedBox(height: 4),
+                Text("Voucher",
+                    style: TextStyle(
+                        color: Colors.orange[700],
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+
+          // 2. Đường kẻ đứt dọc ở giữa
+          CustomPaint(
+            size: const Size(1, 100),
+            painter: DashedLineVerticalPainter(),
+          ),
+
+          // 3. Phần phải (Thông tin & Nút)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Mã: ${coupon.code}",
+                          style: TextStyle(
+                              color: Colors.orange[800],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12)),
+                      if (coupon.endDate != null)
+                        Text(
+                            "Hết hạn: ${DateFormat('dd/MM/yy').format(coupon.endDate!)}",
+                            style: const TextStyle(
+                                fontSize: 10, color: Colors.grey)),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+
+                  // Giá trị giảm
+                  Text(
+                    coupon.discountType == 'percent'
+                        ? "Giảm ${coupon.discountValue.toStringAsFixed(0)}%"
+                        : "Giảm ${formatCurrency(coupon.discountValue.toInt())}", 
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+
+                  const Spacer(),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                          "Đơn tối thiểu ${formatCurrency(coupon.minOrderValue.toInt())} | Đã dùng ${percentUsed.toInt()}%",
+                          style: const TextStyle(
+                              fontSize: 11, color: Colors.grey)),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          )
         ],
       ),
     );
@@ -349,7 +485,7 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
       padding: const EdgeInsets.all(16), 
       decoration: const BoxDecoration(
         color: Colors.white, 
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)]
+        boxShadow: [BoxShadow(color: Colors.black, blurRadius: 10)]
       ),
       child: Row(
         children: [
@@ -390,4 +526,22 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
       ),
     );
   }
+}
+
+// Vẽ nét đứt cho Coupon
+class DashedLineVerticalPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    double dashHeight = 5, dashSpace = 3, startY = 0;
+    final paint = Paint()
+      ..color = Colors.grey.shade300
+      ..strokeWidth = 1;
+    while (startY < size.height) {
+      canvas.drawLine(Offset(0, startY), Offset(0, startY + dashHeight), paint);
+      startY += dashHeight + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

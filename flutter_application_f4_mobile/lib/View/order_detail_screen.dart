@@ -252,7 +252,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         children: [
           // Ảnh sản phẩm
           Container(
-            width: 60, height: 60,
+            width: 70, height: 70,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey.shade300), 
@@ -300,10 +300,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             )
           ),
           
-          // Giá tiền sản phẩm
+          // Giá tiền
           Text(
             formatCurrency(item.price), 
-            style: const TextStyle(fontWeight: FontWeight.bold)
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)
           ),
         ]
       ),
@@ -331,6 +331,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       ],
     );
   }
+
+  // Widget vẽ thẻ coupon
   Widget _buildCouponTicket(CouponModel coupon) {
     double percentUsed = 0;
     if (coupon.usageLimit > 0) {
@@ -405,7 +407,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
                   const SizedBox(height: 4),
 
-                  // --- SỬA DÒNG NÀY: Dùng formatCurrency và .toInt() ---
+                  // Giá trị giảm
                   Text(
                     coupon.discountType == 'percent'
                         ? "Giảm ${coupon.discountValue.toStringAsFixed(0)}%"
@@ -419,7 +421,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // --- SỬA DÒNG NÀY: Dùng formatCurrency và .toInt() ---
                       Text(
                           "Đơn tối thiểu ${formatCurrency(coupon.minOrderValue.toInt())} | Đã dùng ${percentUsed.toInt()}%",
                           style: const TextStyle(
@@ -436,6 +437,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 }
 
+// Vẽ nét đứt cho Coupon
 class DashedLineVerticalPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

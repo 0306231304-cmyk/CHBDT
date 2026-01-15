@@ -24,8 +24,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   late Future<List<Order>> _ordersFuture;
   
   // Danh sách biến thể sản phẩm dùng để tra cứu tên và ảnh
-  List<ProductVariant?> _allVariants = [];
-  List<CartItem> orderDetail = [];
+  List<dynamic> _allVariants = [];
 
   // Các tab bộ lọc trạng thái
   final List<String> _filters = ["Tất cả", "Chờ xác nhận", "Đang giao", "Đã giao thành công", "Đã hủy"];
@@ -91,6 +90,37 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       default:
         return {'text': status, 'color': Colors.grey};
     }
+  }
+
+  // Tìm tên và ảnh thật của sản phẩm dựa vào ID
+  Map<String, String?> _getProductInfo(int id, String defaultName) {
+    String name = defaultName;
+    String? img;
+    String? variantsInfo;
+
+    if (_allVariants.isNotEmpty) {
+      for (var v in _allVariants) {
+        final variant = v as dynamic; 
+        
+        if (variant.id.toString() == id.toString()) {
+          name = variant.name ?? name;
+          img = variant.imageUrl;
+          List<String> details = [];
+          if (variant.color != null && variant.color!.isNotEmpty) {
+            details.add(variant.color!);
+          }
+          if (variant.storage != null && variant.storage!.isNotEmpty) {
+            details.add(variant.storage!);
+          }
+          
+          if (details.isNotEmpty) {
+            variantsInfo = details.join(" - ");
+          }
+          break;
+        }
+      }
+    }
+    return {'name': name, 'img': img, 'variant': variantsInfo};
   }
 
   // --- 2. GIAO DIỆN ---
@@ -372,62 +402,62 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         onPressed: isLoadingButtonCancel
                             ? null
                             : () {
-                                // Hiển thị Dialog xác nhận
-                                showDialog(
-                                  context: context,
-                                  builder: (ctx) => AlertDialog(
-                                    title: const Text("Xác nhận hủy đơn"),
-                                    content: const Text("Bạn có chắc chắn muốn hủy đơn hàng này không?\nHành động này không thể hoàn tác."),
-                                    actions: [
-                                      // Nút Đóng Dialog
-                                      TextButton(
-                                        onPressed: () => Navigator.of(ctx).pop(),
-                                        child: const Text("Không", style: TextStyle(color: Colors.black)),
-                                      ),
-                                      // Nút Đồng ý Hủy
-                                      TextButton(
-                                        onPressed: () async {
-                                          Navigator.of(ctx).pop();
-                                          setState(() {
-                                            isLoadingButtonCancel = true;
-                                          });
-
-                                          bool succeeded = await OrderController().cancelOrder(order.id);
-
-                                          if (!mounted) return;
-
-                                          if (succeeded) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(
-                                                content: Text("Hủy đơn hàng thành công"),
-                                                backgroundColor: Colors.greenAccent,
-                                              ),
-                                            );
-
-                                            // Load lại dữ liệu
-                                            setState(() {
-                                              isLoadingButtonCancel = false;
-                                              _ordersFuture = _orderController.getOrderHistory();
-                                            });
-                                            _loadProductList(); 
-                                          } else {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(
-                                                content: Text("Hủy đơn thất bại"),
-                                                backgroundColor: Colors.redAccent,
-                                              ),
-                                            );
-                                            setState(() {
-                                              isLoadingButtonCancel = false;
-                                            });
-                                          }
-                                        },
-                                        child: const Text("Đồng ý hủy", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                                      ),
-                                    ],
+                            // Hiển thị Dialog xác nhận
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text("Xác nhận hủy đơn"),
+                                content: const Text("Bạn có chắc chắn muốn hủy đơn hàng này không?\nHành động này không thể hoàn tác."),
+                                actions: [
+                                  // Nút Đóng Dialog
+                                  TextButton(
+                                    onPressed: () => Navigator.of(ctx).pop(),
+                                    child: const Text("Không", style: TextStyle(color: Colors.black)),
                                   ),
-                                );
-                              },
+                                  // Nút Đồng ý Hủy
+                                  TextButton(
+                                    onPressed: () async {
+                                      Navigator.of(ctx).pop();
+                                      setState(() {
+                                        isLoadingButtonCancel = true;
+                                      });
+
+                                      bool succeeded = await OrderController().cancelOrder(order.id);
+
+                                      if (!mounted) return;
+
+                                      if (succeeded) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text("Hủy đơn hàng thành công"),
+                                            backgroundColor: Colors.greenAccent,
+                                          ),
+                                        );
+
+                                        // Load lại dữ liệu
+                                        setState(() {
+                                          isLoadingButtonCancel = false;
+                                          _ordersFuture = _orderController.getOrderHistory();
+                                        });
+                                        _loadProductList(); 
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text("Hủy đơn thất bại"),
+                                            backgroundColor: Colors.redAccent,
+                                          ),
+                                        );
+                                        setState(() {
+                                          isLoadingButtonCancel = false;
+                                        });
+                                      }
+                                    },
+                                    child: const Text("Đồng ý hủy", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                       ),
                     ),
                     
@@ -462,7 +492,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
                         List<CartItem> buyAgainList = [];
 
-                        // 4. Xử lý logic ghép dữ liệu (Dùng fullOrder.items thay vì order.items)
+                        // 4. Xử lý logic ghép dữ liệu
                         for (var orderItem in fullOrder.items!) {
                           ProductVariant? variant;
                           
@@ -531,24 +561,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   // Widget hiển thị thông tin 1 sản phẩm
   Widget _buildProductItem(OrderItem item) {
-    String name = item.productName; // Tên mặc định
-    String? imgUrl;
-    String? color;
-    String? storage;
-
-    // Tìm tên và ảnh trong cache
-    if (_allVariants.isNotEmpty) {
-      for (var variant in _allVariants) {
-        final v = variant as dynamic;
-        if (v.id.toString() == item.productId.toString()) {
-          name = v.name ?? name;
-          imgUrl = v.imageUrl;
-          color = v.color;
-          storage = v.storage;
-          break; // Tìm thấy thì dừng vòng lặp
-        }
-      }
-    }
+    final info = _getProductInfo(item.productId, item.productName);
 
     return Padding(
       padding: const EdgeInsets.all(12),
@@ -563,9 +576,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               border: Border.all(color: Colors.grey.shade200),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: (imgUrl != null && imgUrl.isNotEmpty)
+            clipBehavior: Clip.hardEdge,
+            child: (info['img'] != null && info['img']!.isNotEmpty)
                 ? Image.network(
-                    imgUrl,
+                    info['img']!,
                     fit: BoxFit.cover,
                     errorBuilder: (ctx, err, stack) => const Icon(Icons.broken_image, color: Colors.grey),
                   )
@@ -573,80 +587,43 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           ),
           const SizedBox(width: 12),
           
-          // Tên và số lượng
+          // Tên sản phẩm
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                        name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
-                      ),
-                    Text("  x${item.quantity}",maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.grey)),
-                  ],
+                Text(
+                  info['name']!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    // 1. Chip hiển thị MÀU SẮC (Tông Cam/Đỏ)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade50, // Nền cam siêu nhạt
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.orange.shade200), // Viền cam nhạt
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.palette_outlined, size: 14, color: Colors.deepOrange),
-                          const SizedBox(width: 4),
-                          Text(
-                            color ?? "Ngẫu nhiên",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: Colors.deepOrange, // Chữ cam đậm
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(width: 8), // Khoảng cách giữa 2 thẻ
 
-                    // 2. Chip hiển thị DUNG LƯỢNG (Tông Xanh)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                // Màu sắc & Dung lượng
+                if (info['variant'] != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade50, // Nền xanh siêu nhạt
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue.shade200),
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.memory, size: 14, color: Colors.blue.shade700),
-                          const SizedBox(width: 4),
-                          Text(
-                            storage ?? "Tiêu chuẩn",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: Colors.blue.shade700, // Chữ xanh đậm
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        info['variant']!,
+                        style: TextStyle(color: Colors.blue.shade800, fontSize: 12, fontWeight: FontWeight.w500),
+                        maxLines: 1, 
+                        overflow: TextOverflow.ellipsis
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-              ],
+                  ),
+
+                  // Số lượng
+                  const SizedBox(height: 4),
+                  Text("  x${item.quantity}",maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.grey)),
+                ],
+              ),
             ),
-          ),
           
           // Giá tiền
           Text(

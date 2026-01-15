@@ -62,6 +62,16 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
 
   // --- 1. CÁC HÀM HỖ TRỢ ---
 
+  // Định dạng số tiền sang VNĐ
+  String _formatMoney(int amount) => NumberFormat.currency(locale: 'vi_VN', symbol: 'đ').format(amount);
+
+  // Định dạng ngày tháng
+  String _formatDate(String dateString) {
+    try {
+      return DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(dateString));
+    } catch (e) { return dateString; }
+  }
+
   // Lấy màu sắc và chữ hiển thị cho badge trạng thái
   Map<String, dynamic> _getStatusConfig(String status) {
     switch (status.toLowerCase()) {
@@ -78,16 +88,6 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
       default: 
         return {'text': status, 'color': Colors.black, 'bg': Colors.grey.shade200};
     }
-  }
-
-  // Định dạng số tiền sang VNĐ
-  String _formatMoney(int amount) => NumberFormat.currency(locale: 'vi_VN', symbol: 'đ').format(amount);
-
-  // Định dạng ngày tháng
-  String _formatDate(String dateString) {
-    try {
-      return DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(dateString));
-    } catch (e) { return dateString; }
   }
 
   // Tạo chuỗi tóm tắt sản phẩm

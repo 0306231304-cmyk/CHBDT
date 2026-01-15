@@ -9,6 +9,8 @@ import '../../Controller/cart_Controller.dart';
 import '../../Model/product_model.dart';
 import '../../Model/review_model.dart';
 import '../../Config/baseUrl.dart';
+import '../../Model/cartModel.dart'; 
+import '../../View/checkout_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final int productId;
@@ -74,6 +76,44 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void dispose() {
     _commentController.dispose();
     super.dispose();
+  }
+
+  void _onBuyNowPressed() {
+    // Kiểm tra hàng tồn kho
+    final displayVariant = _selectedVariant;
+    if (displayVariant == null || (displayVariant.stockQuantity ?? 0) < 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Sản phẩm này đang tạm hết hàng")),
+      );
+      return;
+    }
+
+    // 1. Tạo CartItem giả lập (Giống logic nút Mua lại)
+    CartItem tempItem = CartItem(
+      productVariantId: displayVariant.id,
+      productName: displayVariant.name ?? "Sản phẩm",
+      imageUrl: displayVariant.imageUrl, // Lấy ảnh biến thể
+      color: displayVariant.color,
+      ram: displayVariant.ram,
+      storage: displayVariant.storage,
+      price: displayVariant.price,
+      quantity: qty,
+    );
+
+    // 2. Tính tổng tiền
+    double totalMoney = (tempItem.price ?? 0) * qty;
+
+    // 3. Chuyển sang CheckoutScreen với cờ is_buy_now = true
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CheckoutScreen(
+          cartItems: [tempItem], // Truyền list chứa 1 món
+          totalMoney: totalMoney,
+          is_buy_now: true, // Quan trọng: Để Checkout biết đây là mua ngay
+        ),
+      ),
+    );
   }
 
   void _submitReview() async {
@@ -496,8 +536,53 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               icon: const Icon(Icons.shopping_cart_outlined, size: 18),
                               label: const Text("Thêm", style: TextStyle(fontWeight: FontWeight.bold)),
                             ),
+                            const SizedBox(width: 10,),
+                            // 3. Nút Mua ngay
+                            Container(
+                              decoration: BoxDecoration(
+                                // Tạo màu nền chuyển sắc (Gradient) Cam -> Đỏ
+                                gradient: displayStock > 0 
+                                    ? const LinearGradient(
+                                        colors: [Color(0xFFFF9068), Color(0xFFFF4B1F)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      )
+                                    : null, // Nếu hết hàng thì không hiện màu gradient
+                                color: displayStock > 0 ? null : Colors.grey, // Màu xám nếu hết hàng
+                                borderRadius: BorderRadius.circular(25), // Bo tròn mềm mại
+                                boxShadow: displayStock > 0 
+                                    ? [
+                                        BoxShadow(
+                                          color: const Color(0xFFFF4B1F).withOpacity(0.4),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 4), // Đổ bóng nhẹ xuống dưới
+                                        ),
+                                      ] 
+                                    : [],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: displayStock > 0 ? _onBuyNowPressed : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent, // Để trong suốt để lộ màu Gradient
+                                  shadowColor: Colors.transparent, // Tắt bóng mặc định của nút
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                                  minimumSize: const Size(0, 40), // Chiều cao đồng bộ với các nút khác
+                                ),
+                                child: const Text(
+                                  "Mua ngay", 
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold, 
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                    letterSpacing: 0.5, // Giãn chữ nhẹ cho thoáng
+                                  )
+                                ),
+                              ),
+                            ),
                           ],
                         )
+                        
                       ],
                     ),
                   ),

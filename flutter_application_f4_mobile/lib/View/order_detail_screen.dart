@@ -80,8 +80,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         return {'text': status, 'color': Colors.grey};
     }
   }
-
-  String _formatPrice(num price) => "${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}đ";
   // Tìm tên và ảnh thật của sản phẩm dựa vào ID
   Map<String, String?> _getProductInfo(int id, String defaultName) {
   String name = defaultName;
@@ -337,14 +335,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     double percentUsed = 0;
     if (coupon.usageLimit > 0) {
       percentUsed = (coupon.usedCount / coupon.usageLimit) * 100;
-    } 
+    }
     return Container(
-      height: 80, // Chiều cao cố định cho vé
+      height: 80,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.orange.shade200),
-        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2))
+        ],
       ),
       child: Row(
         children: [
@@ -353,14 +356,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             width: 80,
             decoration: BoxDecoration(
               color: Colors.orange.shade50,
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
+              borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12)),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.card_giftcard, color: Colors.orange[700], size: 30),
                 const SizedBox(height: 4),
-                Text("Voucher", style: TextStyle(color: Colors.orange[700], fontSize: 10, fontWeight: FontWeight.bold)),
+                Text("Voucher",
+                    style: TextStyle(
+                        color: Colors.orange[700],
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -379,31 +388,42 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Mã: ${coupon.code}", style: TextStyle(color: Colors.orange[800], fontWeight: FontWeight.bold, fontSize: 12)),
+                      Text("Mã: ${coupon.code}",
+                          style: TextStyle(
+                              color: Colors.orange[800],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12)),
                       if (coupon.endDate != null)
-                        Text("Hết hạn: ${DateFormat('dd/MM/yy').format(coupon.endDate!)}", style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                        Text(
+                            "Hết hạn: ${DateFormat('dd/MM/yy').format(coupon.endDate!)}",
+                            style: const TextStyle(
+                                fontSize: 10, color: Colors.grey)),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  
-                  // Giá trị giảm (VD: Giảm 15% hoặc Giảm 50.000đ)
+
+                  // --- SỬA DÒNG NÀY: Dùng formatCurrency và .toInt() ---
                   Text(
-                    coupon.discountType == 'percent' 
-                        ? "Giảm ${coupon.discountValue.toStringAsFixed(0)}%" 
-                        : "Giảm ${_formatPrice(coupon.discountValue)}",
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    coupon.discountType == 'percent'
+                        ? "Giảm ${coupon.discountValue.toStringAsFixed(0)}%"
+                        : "Giảm ${formatCurrency(coupon.discountValue.toInt())}", 
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
                   ),
 
                   const Spacer(),
 
-                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Đơn tối thiểu ${_formatPrice(coupon.minOrderValue)} | Đã dùng ${percentUsed.toInt()}%", style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                      // --- SỬA DÒNG NÀY: Dùng formatCurrency và .toInt() ---
+                      Text(
+                          "Đơn tối thiểu ${formatCurrency(coupon.minOrderValue.toInt())} | Đã dùng ${percentUsed.toInt()}%",
+                          style: const TextStyle(
+                              fontSize: 11, color: Colors.grey)),
                     ],
                   )
                 ],

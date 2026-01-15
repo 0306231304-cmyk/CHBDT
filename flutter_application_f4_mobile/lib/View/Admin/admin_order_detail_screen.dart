@@ -5,6 +5,8 @@ import '../../Model/Order.dart';
 import '../../Controller/order_controller.dart';
 import '../../Controller/product_controller.dart';
 import '../Widget/order_widgets.dart';
+import 'package:flutter_application_f4_mobile/Controller/couponController.dart';
+import 'package:flutter_application_f4_mobile/Model/couponModel.dart';
 
 class AdminOrderDetailScreen extends StatefulWidget {
   final Order order;

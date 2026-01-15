@@ -223,7 +223,7 @@ class _HoverProductCardState extends State<_HoverProductCard> {
                         // Nút giỏ hàng: Hover -> Đen
                         InkWell(
                           onTap: () async {    
-                             await CartController.addToCart(null, widget.variant.id);
+                             await CartController.addToCart(widget.variant.id,1);
                              if (context.mounted) {
                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                  content: Text("Đã thêm ${widget.variant.name} vào giỏ"), 

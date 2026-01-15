@@ -81,22 +81,36 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  // Tìm tên và ảnh thật của sản phẩm dựa vào ID
+  // Tìm tên, ảnh và thuộc tính chi tiết của sản phẩm dựa vào ID
   Map<String, String?> _getProductInfo(int id, String defaultName) {
-    String name = defaultName;
-    String? img;
-    
-    if (_allVariants.isNotEmpty) {
-      for (var v in _allVariants) {
-        if ((v as dynamic).id.toString() == id.toString()) {
-          name = v.name ?? name;
-          img = v.imageUrl;
-          break;
+  String name = defaultName;
+  String? img;
+  String? variantsInfo;
+
+  if (_allVariants.isNotEmpty) {
+    for (var v in _allVariants) {
+      final variant = v as dynamic; 
+      
+      if (variant.id.toString() == id.toString()) {
+        name = variant.name ?? name;
+        img = variant.imageUrl;
+        List<String> details = [];
+        if (variant.color != null && variant.color!.isNotEmpty) {
+          details.add(variant.color!);
         }
+        if (variant.storage != null && variant.storage!.isNotEmpty) {
+          details.add(variant.storage!);
+        }
+        
+        if (details.isNotEmpty) {
+          variantsInfo = details.join(" - ");
+        }
+        break;
       }
     }
-    return {'name': name, 'img': img};
   }
+  return {'name': name, 'img': img, 'variant': variantsInfo};
+}
 
   // --- 2. GIAO DIỆN ---
   @override
@@ -126,6 +140,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           final order = snapshot.data!;
           final items = order.items ?? [];
 
+          // Tính tổng tiền hàng
           int productTotal = items.fold(0, (sum, item) => sum + (item.price * item.quantity));
           if (productTotal == 0) productTotal = order.totalPrice - order.shippingFee;
 
@@ -218,18 +233,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         children: [
           // Ảnh sản phẩm
           Container(
-            width: 50, height: 50,
+            width: 60, height: 60,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade200), 
-              borderRadius: BorderRadius.circular(8)
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300), 
             ),
+            clipBehavior: Clip.hardEdge,
             child: info['img'] != null 
                 ? Image.network(info['img']!, fit: BoxFit.cover) 
                 : const Icon(Icons.shopping_bag_outlined, color: Colors.grey),
           ),
           const SizedBox(width: 12),
           
-          // Tên sản phẩm và số lượng
+          // Tên sản phẩm
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start, 
@@ -240,7 +256,27 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   maxLines: 2, 
                   overflow: TextOverflow.ellipsis
                 ),
-                Text("x${item.quantity}", style: const TextStyle(color: Colors.grey)),
+
+                // Màu sắc & Dung lượng
+                if (info['variant'] != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        info['variant']!,
+                        style: TextStyle(color: Colors.blue.shade800, fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ),
+
+                // Số lượng
+                const SizedBox(height: 4),
+                Text("Số lượng: ${item.quantity}", style: const TextStyle(color: Colors.grey)),
               ]
             )
           ),

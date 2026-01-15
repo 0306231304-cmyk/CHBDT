@@ -81,23 +81,35 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
     }
   }
 
-  // Tìm tên và ảnh thật của sản phẩm dựa vào ID
+  // Tìm tên, ảnh và thuộc tính chi tiết của sản phẩm dựa vào ID
   Map<String, String?> _getProductInfo(int id, String defaultName) {
     String name = defaultName;
     String? img;
+    String? variantsInfo;
 
-    // Duyệt qua danh sách đã tải để tìm thông tin khớp ID
     if (_allVariants.isNotEmpty) {
       for (var v in _allVariants) {
-        // So sánh id sản phẩm để lấy thông tin chi tiết
-        if ((v as dynamic).id.toString() == id.toString()) {
-          name = v.name ?? name;
-          img = v.imageUrl;
+        final variant = v as dynamic; 
+        
+        if (variant.id.toString() == id.toString()) {
+          name = variant.name ?? name;
+          img = variant.imageUrl;
+          List<String> details = [];
+          if (variant.color != null && variant.color!.isNotEmpty) {
+            details.add(variant.color!);
+          }
+          if (variant.storage != null && variant.storage!.isNotEmpty) {
+            details.add(variant.storage!);
+          }
+          
+          if (details.isNotEmpty) {
+            variantsInfo = details.join(" - ");
+          }
           break;
         }
       }
     }
-    return {'name': name, 'img': img};
+    return {'name': name, 'img': img, 'variant': variantsInfo};
   }
 
   // Xử lý khi bấm nút cập nhật trạng thái (duyệt đơn/hủy đơn)
@@ -131,7 +143,6 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
           );
         }
         
-        // Lấy dữ liệu đơn hàng (ưu tiên dữ liệu mới từ API)
         final order = snapshot.data ?? widget.order;
         final items = order.items ?? [];
         
@@ -237,7 +248,6 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
 
   // Widget hiển thị từng sản phẩm trong danh sách
   Widget _buildProductItem(OrderItem item) {
-    // Gọi hàm helper để lấy thông tin tên/ảnh thật
     final info = _getProductInfo(item.productId, item.productName);
     
     return Padding(
@@ -247,44 +257,60 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
         children: [
           // Ảnh sản phẩm
           Container(
-            width: 50, height: 50,
+            width: 60, height: 60,
             decoration: BoxDecoration(
-              color: Colors.grey.shade100, 
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: Colors.grey.shade300),
             ),
-            clipBehavior: Clip.hardEdge, 
+            clipBehavior: Clip.hardEdge,
             child: (info['img'] != null && info['img']!.isNotEmpty)
-                ? Image.network(
-                    info['img']!, 
-                    fit: BoxFit.cover,
-                    errorBuilder: (ctx, err, stack) => const Icon(Icons.broken_image, color: Colors.grey),
-                  )
+                ? Image.network(info['img']!, fit: BoxFit.cover)
                 : const Icon(Icons.shopping_bag_outlined, color: Colors.grey),
           ),
           const SizedBox(width: 12),
           
-          // Tên sản phẩm và số lượng
+          // Thông tin chi tiết
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Tên sản phẩm
                 Text(
-                  info['name']!, 
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15), 
-                  maxLines: 2, 
+                  info['name']!,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis
                 ),
+                
+                // Màu sắc & Dung lượng
+                if (info['variant'] != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        info['variant']!,
+                        style: TextStyle(color: Colors.blue.shade800, fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ),
+
                 const SizedBox(height: 4),
-                Text("x${item.quantity}", style: const TextStyle(color: Colors.grey)),
+
+                // Số lượng
+                Text("Số lượng: ${item.quantity}", style: const TextStyle(color: Colors.grey, fontSize: 13)),
               ],
             ),
           ),
           
-          // Giá tiền sản phẩm
+          // Giá tiền
           Text(
-            formatCurrency(item.price), 
-            style: const TextStyle(fontWeight: FontWeight.bold)
+            formatCurrency(item.price),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)
           ),
         ],
       ),

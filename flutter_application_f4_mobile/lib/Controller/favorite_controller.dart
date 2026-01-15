@@ -122,16 +122,11 @@ import '../Model/favorite_model.dart';
 import '../Config/baseUrl.dart';
 
 class FavoriteController {
-  
-  // Header này giúp vượt qua trang cảnh báo của Ngrok
-  static Map<String, String> getHeaders(String token) {
-    return {
-      'Authorization': 'Bearer $token',
-      'ngrok-skip-browser-warning': 'true', 
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-  }
+  static Map<String, String> getHeaders(String token) => {
+    'Authorization': 'Bearer $token',
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
+  };
 
   static Future<List<FavoriteModel>> fecthFavorite() async {
     try {
@@ -139,24 +134,20 @@ class FavoriteController {
       final token = prefs.getString('user_token') ?? '';
       
       final response = await http.get(
-        Uri.parse('$baseUrl/favorites/get-all'),
-        headers: getHeaders(token), // Dùng hàm header đã sửa
+        Uri.parse('$baseUrl/products/favorites/get-all'),
+        headers: getHeaders(token),
       );
 
       if (response.statusCode == 200) {
-        if (response.body.trim().startsWith("<")) {
-           // Bỏ qua lỗi nếu API trả về HTML
-           return [];
-        }
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        if (data['succeeded'] == true) {
+        final data = jsonDecode(response.body);
+        if (data['succeeded'] == true && data['favorites'] != null) {
           final List<dynamic> favoriteList = data['favorites'];
           return favoriteList.map((e) => FavoriteModel.fromJson(e)).toList();
         }
       }
       return [];
     } catch (e) {
-      print('Lỗi Favorite: $e');
+      print("Lỗi fetchFavorite: $e");
       return [];
     }
   }
@@ -165,18 +156,11 @@ class FavoriteController {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('user_token') ?? '';
-
       final response = await http.post(
-        Uri.parse('$baseUrl/favorites/add'),
+        Uri.parse('$baseUrl/products/favorites/add/$productId'),
         headers: getHeaders(token),
-        body: jsonEncode({'product_id': productId}),
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['succeeded'] ?? false;
-      }
-      return false;
+      return (response.statusCode == 200 || response.statusCode == 201);
     } catch (e) {
       return false;
     }
@@ -186,17 +170,13 @@ class FavoriteController {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('user_token') ?? '';
-
+      
+      // Sửa lại URL cho khớp với lệnh ADD (thêm /products)
       final response = await http.delete(
-        Uri.parse('$baseUrl/favorites/remove/$productId'),
+        Uri.parse('$baseUrl/products/favorites/remove/$productId'),
         headers: getHeaders(token),
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['succeeded'] ?? false;
-      }
-      return false;
+      return response.statusCode == 200;
     } catch (e) {
       return false;
     }
@@ -205,7 +185,8 @@ class FavoriteController {
   static Future<bool> checkIsFavorite(int productId) async {
     try {
       List<FavoriteModel> list = await fecthFavorite();
-      return list.any((element) => element.product_id == productId);
+      // Kiểm tra dựa trên productId bên trong model
+      return list.any((element) => element.productId == productId);
     } catch (e) {
       return false;
     }

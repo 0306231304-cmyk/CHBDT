@@ -8,6 +8,7 @@ import 'change_password_screen.dart';
 import 'order_history_screen.dart';
 import 'Widget/profile_menu_item.dart';
 import 'Home/home_screen.dart';
+import'favorite_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -144,10 +145,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
 
                         // Menu: Danh sách yêu thích
+                       // Tìm đến ProfileMenuItem của Danh sách yêu thích và sửa thành:
                         ProfileMenuItem(
                           icon: Icons.favorite_outline, 
                           text: "Danh sách yêu thích", 
-                          onTap: () {} // TODO: Làm sau
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const FavoriteScreen()),
+                            );
+                          }
                         ),
                         
                         // Menu: Lịch sử đơn hàng

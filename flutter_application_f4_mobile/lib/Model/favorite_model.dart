@@ -1,38 +1,21 @@
-/*class favoriteModel{
+import 'product_model.dart'; 
+
+class FavoriteModel {
   final int id;
-  final int product_id;
-
-  favoriteModel({
-    required this.id,
-    required this.product_id,
-  });
-
-  factory favoriteModel.fromJson(Map<String, dynamic> json){
-    return favoriteModel(
-      id: json['id'],
-      product_id: json['product_id'],
-    );
-  }
-}*/
-
-
-class FavoriteModel { // Đổi tên favoriteModel -> FavoriteModel (Chuẩn Dart)
-  final int id;
-  final int product_id;
-  // Nếu API có trả về thông tin chi tiết sản phẩm (như tên, ảnh) lồng bên trong,
-  // bạn cần khai báo thêm ở đây (ví dụ: final Product? product;). 
-  // Hiện tại mình giữ nguyên theo code của bạn.
+  final int productId; // Dùng productId (không có gạch dưới)
+  final Product? product; 
 
   FavoriteModel({
     required this.id,
-    required this.product_id,
+    required this.productId,
+    this.product,
   });
 
   factory FavoriteModel.fromJson(Map<String, dynamic> json) {
     return FavoriteModel(
-      // Dùng ?? 0 để nếu server trả về null thì app không bị crash
-      id: json['id'] ?? 0, 
-      product_id: json['product_id'] ?? 0,
+      id: json['id'] ?? 0,
+      productId: json['product_id'] ?? 0, // Phải là product_id như JSON server trả về
+      product: json['product'] != null ? Product.fromJson(json['product']) : null,
     );
   }
 }

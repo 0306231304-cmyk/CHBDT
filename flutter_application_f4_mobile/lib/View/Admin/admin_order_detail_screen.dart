@@ -234,7 +234,8 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
                     // 3. THÊM DÒNG KHUYẾN MÃI
                     OrderInfoRow(
                       label: "Khuyến mãi", 
-                      value: formatCurrency(order.discount.toInt())
+                      value: formatCurrency(order.discount.toInt()),
+                      valueColor: Colors.green,
                     ),
                     OrderInfoRow(
                       label: "Phí ship", 

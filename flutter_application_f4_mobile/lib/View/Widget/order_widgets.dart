@@ -188,10 +188,10 @@ class OrderCustomerInfoRow extends StatelessWidget {
 // Nút bấm nhỏ (Dùng cho danh sách đơn hàng: Hủy, Mua lại, Xác nhận)
 class OrderSmallButton extends StatelessWidget {
   final String text;
-  final Color color; // Màu chủ đạo (nền hoặc viền khi enable)
-  final Color textColor; // Màu chữ (khi enable)
-  final bool isOutlined; // True: Viền màu, False: Nền màu
-  final VoidCallback? onPressed; // [Update] Cho phép null để disable
+  final Color color;
+  final Color textColor;
+  final bool isOutlined;
+  final VoidCallback? onPressed;
 
   const OrderSmallButton({
     super.key,
@@ -199,7 +199,7 @@ class OrderSmallButton extends StatelessWidget {
     required this.color,
     required this.textColor,
     required this.isOutlined,
-    required this.onPressed, // Truyền null vào đây để disable nút
+    required this.onPressed,
   });
 
   @override

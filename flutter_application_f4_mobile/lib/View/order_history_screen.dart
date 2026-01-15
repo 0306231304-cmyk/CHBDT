@@ -33,10 +33,6 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   String _sortType = 'newest';
   bool isLoadingButtonCancel = false;
-  bool isLoadingOrderAgain = false;
-  
-  // Future để quản lý trạng thái tải dữ liệu đơn hàng
-  late Future<Order?> _orderDetailFuture;
 
 
   @override
@@ -63,12 +59,20 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
-
-
   // --- 1. CÁC HÀM HỖ TRỢ ---
-    // Định dạng tiền tệ
+
+    // Định dạng số tiền sang VNĐ
   String formatCurrency(int amount) {
     return NumberFormat.currency(locale: 'vi_VN', symbol: 'đ').format(amount);
+  }
+
+  // Định dạng ngày tháng
+  String formatDate(String dateString) {
+    try {
+      return DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(dateString));
+    } catch (e) {
+      return dateString;
+    }
   }
 
   // Cấu hình màu sắc và chữ hiển thị cho trạng thái đơn hàng
@@ -89,14 +93,6 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
-  String formatDate(String dateString) {
-    try {
-      return DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(dateString));
-    } catch (e) {
-      return dateString;
-    }
-  }
-
   // --- 2. GIAO DIỆN ---
   @override
   Widget build(BuildContext context) {
@@ -113,7 +109,6 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        elevation: 0,
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.sort, color: Colors.white),
@@ -187,7 +182,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   DateTime? dateA = DateTime.tryParse(a.createdAt);
                   DateTime? dateB = DateTime.tryParse(b.createdAt);
 
-                  // Xử lý trường hợp ngày lỗi (cho về năm 1970)
+                  // Xử lý trường hợp ngày lỗi
                   dateA ??= DateTime(1970);
                   dateB ??= DateTime(1970);
 

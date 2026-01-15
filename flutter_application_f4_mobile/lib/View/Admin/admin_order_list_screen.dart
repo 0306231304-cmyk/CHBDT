@@ -28,6 +28,9 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
   final List<String> _tabs = ["All", "Chờ xử lý", "Chờ lấy hàng", "Lịch sử"];
   int _selectedIndex = 0;
 
+  String _sortType = 'newest';
+  bool isLoadingButtonCancel = false;
+
   @override
   void initState() {
     super.initState();
@@ -124,6 +127,37 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
         centerTitle: true,
         automaticallyImplyLeading: false, // Ẩn nút back mặc định
         actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.sort, color: Colors.white),
+            tooltip: "Sắp xếp đơn hàng",
+            onSelected: (value) {
+              setState(() {
+                _sortType = value; // Cập nhật trạng thái sắp xếp
+              });
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'newest',
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_downward, color: Colors.orange, size: 20),
+                    SizedBox(width: 8),
+                    Text("Mới nhất trước"),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'oldest',
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_upward, color: Colors.grey, size: 20),
+                    SizedBox(width: 8),
+                    Text("Cũ nhất trước"),
+                  ],
+                ),
+              ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.power_settings_new, color: Colors.white),
             onPressed: () => Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false),
@@ -133,39 +167,7 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
 
       body: Column(
         children: [
-          // Thanh Tab Bar
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16), 
-              child: Row(
-                children: List.generate(_tabs.length, (index) {
-                  bool isSelected = _selectedIndex == index;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedIndex = index),
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 12),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.deepOrange : Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        _tabs[index],
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-          ),
+        _buildFilterBar(),
 
           // Danh sách đơn hàng
           Expanded(
@@ -199,6 +201,22 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
                    return const Center(child: Text("Trống"));
                 }
 
+                filteredOrders.sort((a, b) {
+                  // Parse chuỗi ngày tháng sang DateTime để so sánh
+                  DateTime? dateA = DateTime.tryParse(a.createdAt);
+                  DateTime? dateB = DateTime.tryParse(b.createdAt);
+
+                  // Xử lý trường hợp ngày lỗi
+                  dateA ??= DateTime(1970);
+                  dateB ??= DateTime(1970);
+
+                  if (_sortType == 'newest') {
+                    return dateB.compareTo(dateA); // Giảm dần (Mới nhất lên đầu)
+                  } else {
+                    return dateA.compareTo(dateB); // Tăng dần (Cũ nhất lên đầu)
+                  }
+                });
+
                 // Hiển thị danh sách (có tính năng kéo để refresh)
                 return RefreshIndicator(
                   onRefresh: () async {
@@ -222,6 +240,43 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
   }
 
   // --- 3. CÁC WIDGET CON ---
+
+  // Widget thanh lọc trạng thái ngang
+  Widget _buildFilterBar() {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16), 
+        child: Row(
+          children: List.generate(_tabs.length, (index) {
+            bool isSelected = _selectedIndex == index;
+            return GestureDetector(
+              onTap: () => setState(() => _selectedIndex = index),
+              child: Container(
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primaryOrange : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _tabs[index],
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black87,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
+    );
+  }
 
   // Thẻ hiển thị tóm tắt 1 đơn hàng
   Widget _buildOrderCard(Order order) {

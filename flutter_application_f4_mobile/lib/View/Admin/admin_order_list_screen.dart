@@ -155,7 +155,7 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
                       child: Text(
                         _tabs[index],
                         style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
+                          color: isSelected ? Colors.white : Colors.black,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           fontSize: 14,
                         ),
@@ -243,7 +243,7 @@ class _AdminOrderListScreenState extends State<AdminOrderListScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("#${order.id}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text("Đơn #${order.id}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(color: statusConfig['bg'], borderRadius: BorderRadius.circular(12)),

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Model/Order.dart';
 import '../Config/baseUrl.dart';
 
-class OrderController {
+class OrderController { 
 
   // Lấy danh sách lịch sử mua hàng
   Future<List<Order>> getOrderHistory() async {

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_f4_mobile/View/order_detail_screen.dart';
 import '../../resources/app_colors.dart';
 import 'Widget/custom_button.dart';
 
 class ThanhToanOkScreen extends StatelessWidget {
-  const ThanhToanOkScreen({super.key});
+  final int orderID;
+
+  const ThanhToanOkScreen({super.key, required this.orderID});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +17,7 @@ class ThanhToanOkScreen extends StatelessWidget {
         child: Column(
           children: [
             // Nút Back ở góc trái
-            Padding(
+            /*Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Align(
                 alignment: Alignment.centerLeft,
@@ -23,7 +26,7 @@ class ThanhToanOkScreen extends StatelessWidget {
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-            ),
+            ),*/
 
             // Nội dung bo góc trắng
             Expanded(
@@ -94,7 +97,9 @@ class ThanhToanOkScreen extends StatelessWidget {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          // Logic xem lại đơn hàng
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => OrderDetailScreen(orderId: orderID))
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF262626),

@@ -20,14 +20,14 @@ class CartResponse {
 }
 
 class CartItem {
-  final int? productVariantId;
-  final String? productName;
-  final String? color;
-  final String? ram;
-  final String? storage;
-  final double? price;
-  final int? quantity;
-  final String? imageUrl;
+  int? productVariantId;
+  String? productName;
+  String? color;
+  String? ram;
+  String? storage;
+  double? price;
+  int? quantity;
+  String? imageUrl;
 
   CartItem({
     this.productVariantId,

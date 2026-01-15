@@ -188,10 +188,10 @@ class OrderCustomerInfoRow extends StatelessWidget {
 // Nút bấm nhỏ (Dùng cho danh sách đơn hàng: Hủy, Mua lại, Xác nhận)
 class OrderSmallButton extends StatelessWidget {
   final String text;
-  final Color color; // Màu nền
-  final Color textColor;
+  final Color color; // Màu chủ đạo (nền hoặc viền khi enable)
+  final Color textColor; // Màu chữ (khi enable)
   final bool isOutlined; // True: Viền màu, False: Nền màu
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed; // [Update] Cho phép null để disable
 
   const OrderSmallButton({
     super.key,
@@ -199,24 +199,57 @@ class OrderSmallButton extends StatelessWidget {
     required this.color,
     required this.textColor,
     required this.isOutlined,
-    required this.onPressed,
+    required this.onPressed, // Truyền null vào đây để disable nút
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 32,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: isOutlined ? Colors.white : color,
-          side: isOutlined ? BorderSide(color: Colors.grey.shade300) : BorderSide.none,
+    // Kiểm tra trạng thái
+    final bool isEnabled = onPressed != null;
+
+    // Logic màu sắc
+    Color bgColor;
+    Color txtColor;
+    Border border;
+
+    if (isEnabled) {
+      // TRẠNG THÁI: ENABLE
+      bgColor = isOutlined ? Colors.white : color;
+      txtColor = textColor;
+      border = isOutlined 
+          ? Border.all(color: Colors.grey.shade300) 
+          : Border.all(color: Colors.transparent);
+    } else {
+      // TRẠNG THÁI: DISABLE (Màu xám)
+      bgColor = isOutlined ? Colors.white : Colors.grey.shade300;
+      txtColor = Colors.grey;
+      border = isOutlined 
+          ? Border.all(color: Colors.grey.shade200) 
+          : Border.all(color: Colors.transparent);
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed, // InkWell tự động chặn click nếu null
+        borderRadius: BorderRadius.circular(16), // Bo tròn giống StadiumBorder
+        child: Container(
+          height: 32,
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          shape: const StadiumBorder(), // Bo tròn 2 đầu
-        ),
-        child: Text(
-          text,
-          style: TextStyle(color: textColor, fontSize: 13),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(16),
+            border: border,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            text,
+            style: TextStyle(
+              color: txtColor, 
+              fontSize: 13,
+              fontWeight: FontWeight.w500
+            ),
+          ),
         ),
       ),
     );

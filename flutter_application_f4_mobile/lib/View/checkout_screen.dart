@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_f4_mobile/Controller/shippingController.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Widget/custom_button.dart';
 import 'thanhtoanok_screen.dart';
 import '../Model/cartModel.dart';
 import '../Controller/create_order_controller.dart';
+import 'package:intl/intl.dart'; // Để format ngày tháng
+import '../Model/couponModel.dart'; 
+import '../Controller/couponController.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final List<CartItem> cartItems;
@@ -23,12 +27,13 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final CreateOrderController _orderController = CreateOrderController();
+  final CouponController _couponController = CouponController();
 
   // Dữ liệu người dùng
   String receiverName = "Người dùng"; 
   String phoneNumber = "";
   String address = "Chưa nhập địa chỉ";
-  String city = "TP. Hồ Chí Minh"; // Mặc định
+  String city = ""; // Mặc định
   String note = "";
 
   // Trạng thái thanh toán
@@ -39,6 +44,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   // Logic Mã giảm giá
   String _couponCode = "";
   double _discountAmount = 0;
+
+  double shippingFee = 0;
 
   // --- DANH SÁCH TỈNH THÀNH (Bạn có thể thêm đủ 63 tỉnh) ---
   final List<String> _provinces = [
@@ -63,6 +70,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     // Sort tên tỉnh theo bảng chữ cái cho dễ tìm
     _provinces.sort((a, b) => a.compareTo(b));
     _loadSavedInfo();
+    _getShippingFee(city);
   }
 
   Future<void> _loadSavedInfo() async {
@@ -79,44 +87,109 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
     });
   }
-
+  Future<void> _getShippingFee(String city)async{
+    final prefs = await SharedPreferences.getInstance();
+    final cityLocal = prefs.getString('saved_city');
+    final String? shipping_fee;
+    if(cityLocal != null){
+      if(cityLocal != "TP.HCM" && cityLocal != "Hà Nội" && cityLocal != "Đà Nẵng"){
+        shipping_fee = await Shippingcontroller.getShippingFee("Khác");
+      }
+      else{
+        shipping_fee = await Shippingcontroller.getShippingFee(cityLocal);
+      }
+      final double fee = double.tryParse(shipping_fee ?? "0.0") ?? 0;
+      if(fee != 0){
+        setState(() {
+          shippingFee = fee;
+        });
+      }
+      else{
+        _showNotify('$shipping_fee');
+      }
+    }
+    else if(city.isNotEmpty){
+      if(city != "TP.HCM" && city != "Hà Nội" && city != "Đà Nẵng"){
+        shipping_fee = await Shippingcontroller.getShippingFee("Khác");
+      }
+      else{
+        shipping_fee = await Shippingcontroller.getShippingFee(city);
+      }
+      final double fee = double.tryParse(shipping_fee ?? "0.0") ?? 0;
+      if(fee != 0){
+        setState(() {
+          shippingFee = fee;
+        });
+      }
+      else{
+        _showNotify('$shipping_fee');
+      }
+    }
+  }
   Future<void> _saveInfo(String key, String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(key, value);
   }
   // Popup Mã giảm giá
   void _onApplyCoupon() {
-    TextEditingController couponController = TextEditingController();
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Nhập mã giảm giá"),
-        content: TextField(
-          controller: couponController,
-          decoration: const InputDecoration(hintText: "VD: SALE50", border: OutlineInputBorder()),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7, // Chiếm 70% màn hình
+        decoration: const BoxDecoration(
+          color: Color(0xFFF5F5F5), // Màu nền xám nhạt
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Hủy")),
-          ElevatedButton(
-            onPressed: () {
-              String code = couponController.text.trim().toUpperCase();
-              if (code == "SALE50") {
-                setState(() { _couponCode = "SALE50"; _discountAmount = 50000; });
-                _showNotify("Áp dụng SALE50 thành công");
-              } else if (code == "FREESHIP") {
-                 setState(() { _couponCode = "FREESHIP"; _discountAmount = 30000; });
-                _showNotify("Áp dụng FREESHIP thành công");
-              } else {
-                _showNotify("Mã không hợp lệ!");
-                return;
-              }
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-            child: const Text("Áp dụng", style: TextStyle(color: Colors.white)),
-          )
-        ],
-      )
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: const Center(child: Text("Mã giảm giá", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+            ),
+            
+            // Danh sách Coupon từ API
+            Expanded(
+              child: FutureBuilder<List<CouponModel>>(
+                future: CouponController.getCoupons(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(color: Colors.orange));
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text("Lỗi tải dữ liệu: ${snapshot.error}"));
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text("Hiện không có mã giảm giá nào."));
+                  }
+
+                  List<CouponModel> coupons = snapshot.data!;
+                  
+                  return ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: coupons.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      CouponModel coupon = coupons[index];
+                      // Tính xem mã này giảm được bao nhiêu cho đơn hiện tại
+                      double tempDiscount = _couponController.calculateDiscount(coupon, widget.totalMoney);
+                      bool canApply = tempDiscount > 0; 
+
+                      return _buildCouponTicket(coupon, canApply, tempDiscount);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -157,7 +230,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double finalPrice = widget.totalMoney - _discountAmount;
+    double finalPrice = widget.totalMoney - _discountAmount + shippingFee;
     if (finalPrice < 0) finalPrice = 0;
 
     return Scaffold(
@@ -258,7 +331,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                                 child: Text(value),
                                               );
                                             }).toList(),
-                                            onChanged: (newValue) {
+                                            onChanged: (newValue) async {
+                                              //_getShippingFee(city);
                                               setStatePopup(() { // Update giao diện trong popup
                                                 tempSelectedCity = newValue!;
                                               });
@@ -288,6 +362,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                                   _saveInfo('saved_address', a.text);
                                                   _saveInfo('saved_city', tempSelectedCity);
                                                 }
+                                                _getShippingFee(tempSelectedCity);
                                                 Navigator.pop(context); 
                                               }, 
                                               child: const Text("Lưu thay đổi", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -356,18 +431,38 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       const SizedBox(height: 30),
 
                       // 6. Tổng tiền
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Column(
                         children: [
-                          const Text("Tổng thanh toán", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text(_formatPrice(finalPrice), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red)),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text("Khuyến mãi", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              _buildDiscountMoney(_couponCode, _discountAmount),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text("Phí vận chuyển", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              Text(_formatPrice(shippingFee), style: TextStyle(color: Colors.deepOrangeAccent),)
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text("Tổng thanh toán", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              Text(_formatPrice(finalPrice), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.red)),
+                            ],
+                          ),
                         ],
                       ),
+                      
                       const SizedBox(height: 20),
                       
                       CustomButton(
                         text: _isLoading ? "ĐANG XỬ LÝ..." : "ĐẶT HÀNG", 
                         onPressed: _isLoading ? () {} : () async {
+                           if(phoneNumber.isEmpty){_showNotify("Vui lòng nhập số điện thoại!"); return; }
                            if (address == "Chưa nhập địa chỉ" || address.isEmpty) { _showNotify("Vui lòng nhập địa chỉ!"); return; }
                            if (!_isCOD && !_isEWallet) { _showNotify("Vui lòng chọn phương thức thanh toán!"); return; }
                            
@@ -377,7 +472,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             city = 'Khác';
                            }
 
-                           bool success = await _orderController.createOrder(
+                          int success = await _orderController.createOrder(
                               fullName: receiverName, 
                               phone: phoneNumber, 
                               address: address, 
@@ -392,8 +487,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                            
                            setState(() => _isLoading = false);
 
-                           if (success) {
-                             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ThanhToanOkScreen()));
+                          if(!mounted) return;
+
+                           if (success != 0) {
+                             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ThanhToanOkScreen(orderID: success,)));
                            } else {
                              _showNotify("Lỗi đặt hàng. Vui lòng thử lại!");
                            }
@@ -409,7 +506,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
     );
   }
-
+  Widget _buildDiscountMoney(String couponCode, double discount){
+    if(couponCode.isNotEmpty){
+      return Text(
+        "- ${_formatPrice(discount)}",
+        style: TextStyle(color: Colors.deepOrangeAccent),
+      );
+    }
+    else{
+      return Text(
+        "- ${_formatPrice(0)}",
+        style: TextStyle(color: Colors.deepOrangeAccent),
+      );
+    }
+  }
   Widget _buildSectionHeader(String title) => Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold));
 
   Widget _buildClickableRow({required IconData icon, required String title, required String subTitle, required VoidCallback onTap, bool isHighLight = false}) {
@@ -451,9 +561,133 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Row(children: [
         ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network(item.imageUrl ?? "", width: 60, height: 60, fit: BoxFit.cover, errorBuilder: (_,__,___) => Container(width: 60, height: 60, color: Colors.grey[200]))),
         const SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(item.productName ?? "", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)), Text("${item.quantity} x ${_formatPrice(item.price ?? 0)}", style: const TextStyle(color: Colors.grey, fontSize: 13))])),
+        Expanded(child: 
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(item.productName ?? "", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)), 
+          Text(item.color ?? '', maxLines: 1, style: const TextStyle(color: Colors.amberAccent),),
+          Text("${item.quantity} x ${_formatPrice(item.price ?? 0)}", style: const TextStyle(color: Colors.grey, fontSize: 13))])
+        ),
         Text(_formatPrice((item.price ?? 0) * (item.quantity ?? 1)), style: const TextStyle(fontWeight: FontWeight.bold)),
       ]),
     );
   }
+
+  Widget _buildCouponTicket(CouponModel coupon, bool canApply, double calculatedAmount) {
+    double percentUsed = 0;
+    if (coupon.usageLimit > 0) {
+      percentUsed = (coupon.usedCount / coupon.usageLimit) * 100;
+    } 
+    return Container(
+      height: 100, // Chiều cao cố định cho vé
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.shade200),
+        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+      ),
+      child: Row(
+        children: [
+          // 1. Phần trái (Icon)
+          Container(
+            width: 80,
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.card_giftcard, color: Colors.orange[700], size: 30),
+                const SizedBox(height: 4),
+                Text("Voucher", style: TextStyle(color: Colors.orange[700], fontSize: 10, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+
+          // 2. Đường kẻ đứt dọc ở giữa
+          CustomPaint(
+            size: const Size(1, double.infinity),
+            painter: DashedLineVerticalPainter(),
+          ),
+
+          // 3. Phần phải (Thông tin & Nút)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Mã: ${coupon.code}", style: TextStyle(color: Colors.orange[800], fontWeight: FontWeight.bold, fontSize: 12)),
+                      if (coupon.endDate != null)
+                        Text("Hết hạn: ${DateFormat('dd/MM/yy').format(coupon.endDate!)}", style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  
+                  // Giá trị giảm (VD: Giảm 15% hoặc Giảm 50.000đ)
+                  Text(
+                    coupon.discountType == 'percent' 
+                        ? "Giảm ${coupon.discountValue.toStringAsFixed(0)}%" 
+                        : "Giảm ${_formatPrice(coupon.discountValue)}",
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+
+                  const Spacer(),
+
+                  
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Đơn tối thiểu ${_formatPrice(coupon.minOrderValue)} | Đã dùng ${percentUsed.toInt()}%", style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                      
+                      SizedBox(
+                        height: 30,
+                        child: ElevatedButton(
+                          onPressed: canApply ? () {
+                            setState(() {
+                              _couponCode = coupon.code;
+                              _discountAmount = calculatedAmount;
+                            });
+                            Navigator.pop(context); // Đóng popup
+                            _showNotify("Đã áp dụng mã ${coupon.code}");
+                          } : null, // Disable nút nếu không đủ điều kiện
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            disabledBackgroundColor: Colors.grey[300],
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
+                          ),
+                          child: Text(canApply ? "Áp dụng" : "Chưa đủ ĐK", style: TextStyle(color: canApply ? Colors.white : Colors.grey[600], fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class DashedLineVerticalPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    double dashHeight = 5, dashSpace = 3, startY = 0;
+    final paint = Paint()
+      ..color = Colors.grey.shade300
+      ..strokeWidth = 1;
+    while (startY < size.height) {
+      canvas.drawLine(Offset(0, startY), Offset(0, startY + dashHeight), paint);
+      startY += dashHeight + dashSpace;
+    }
+  }
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

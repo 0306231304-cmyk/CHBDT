@@ -70,7 +70,6 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
     if(mounted) {
       setState(() {
         _userToken = token;
-        debugPrint("TOKEN: ${_userToken.toString()}");
         _isLoading = false;
       });
     }
@@ -238,7 +237,6 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                 return;
              }
              if(_userToken != '' && _userToken != null){
-              print("User_Token: $_userToken");
               // 2. Chuyển trang + Gửi dữ liệu
              Navigator.push(
                context, 
@@ -246,7 +244,7 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
                  builder: (context) => CheckoutScreen(
                     cartItems: _cartData!.data,             // Gửi list hàng
                     totalMoney: _cartData!.totalMoney,
-                    is_buy_now: false, // Gửi tổng tiền
+                    is_buy_now: false,
                  )
                )
              );

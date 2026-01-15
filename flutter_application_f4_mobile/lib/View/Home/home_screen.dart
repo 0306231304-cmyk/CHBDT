@@ -38,7 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint("TOKEN: ${_userToken.toString()}");
     _loadToken();
     _futureCombinedData = Future.wait([
       ProductController.fetchProducts(),            // Index 0: Lấy tất cả Product
@@ -60,7 +59,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if(mounted) {
       setState(() {
         _userToken = token;
-        debugPrint("TOKEN: ${_userToken.toString()}");
         _isLoading = false;
       });
     }

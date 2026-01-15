@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_f4_mobile/Model/cartModel.dart';
+import 'package:flutter_application_f4_mobile/Model/product_model.dart';
+import 'package:flutter_application_f4_mobile/View/checkout_screen.dart';
 import 'package:intl/intl.dart';
 import '../../resources/app_colors.dart';
 import '../../Controller/order_controller.dart';
@@ -21,11 +24,20 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   late Future<List<Order>> _ordersFuture;
   
   // Danh sách biến thể sản phẩm dùng để tra cứu tên và ảnh
-  List<dynamic> _allVariants = [];
+  List<ProductVariant?> _allVariants = [];
+  List<CartItem> orderDetail = [];
 
   // Các tab bộ lọc trạng thái
   final List<String> _filters = ["Tất cả", "Chờ xác nhận", "Đang giao", "Đã giao thành công", "Đã hủy"];
   String _selectedFilter = "Tất cả";
+
+  String _sortType = 'newest';
+  bool isLoadingButtonCancel = false;
+  bool isLoadingOrderAgain = false;
+  
+  // Future để quản lý trạng thái tải dữ liệu đơn hàng
+  late Future<Order?> _orderDetailFuture;
+
 
   @override
   void initState() {
@@ -51,8 +63,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
-  // --- 1. CÁC HÀM HỖ TRỢ ---
 
+
+  // --- 1. CÁC HÀM HỖ TRỢ ---
     // Định dạng tiền tệ
   String formatCurrency(int amount) {
     return NumberFormat.currency(locale: 'vi_VN', symbol: 'đ').format(amount);
@@ -76,6 +89,13 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
+  String formatDate(String dateString) {
+    try {
+      return DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(dateString));
+    } catch (e) {
+      return dateString;
+    }
+  }
 
   // --- 2. GIAO DIỆN ---
   @override
@@ -94,6 +114,39 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         elevation: 0,
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.sort, color: Colors.white),
+            tooltip: "Sắp xếp đơn hàng",
+            onSelected: (value) {
+              setState(() {
+                _sortType = value;
+              });
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'newest',
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_downward, color: Colors.orange, size: 20),
+                    SizedBox(width: 8),
+                    Text("Mới nhất trước"),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'oldest',
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_upward, color: Colors.grey, size: 20),
+                    SizedBox(width: 8),
+                    Text("Cũ nhất trước"),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       
       body: Column(
@@ -128,6 +181,22 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     return config['text'] == _selectedFilter;
                   }).toList();
                 }
+
+                displayedOrders.sort((a, b) {
+                  // Parse chuỗi ngày tháng sang DateTime để so sánh
+                  DateTime? dateA = DateTime.tryParse(a.createdAt);
+                  DateTime? dateB = DateTime.tryParse(b.createdAt);
+
+                  // Xử lý trường hợp ngày lỗi (cho về năm 1970)
+                  dateA ??= DateTime(1970);
+                  dateB ??= DateTime(1970);
+
+                  if (_sortType == 'newest') {
+                    return dateB.compareTo(dateA); // Giảm dần (Mới nhất lên đầu)
+                  } else {
+                    return dateA.compareTo(dateB); // Tăng dần (Cũ nhất lên đầu)
+                  }
+                });
 
                 // Nếu tab hiện tại không có đơn nào
                 if (displayedOrders.isEmpty) {
@@ -214,22 +283,36 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       },
       child: Column(
         children: [
-          // Header: Trạng thái
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  statusConfig['text'],
-                  style: TextStyle(
-                    color: statusConfig['color'],
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text("Ngày tạo đơn: ${formatDate(order.createdAt)}"),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              // Header: Trạng thái
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      statusConfig['text'],
+                      style: TextStyle(
+                        color: statusConfig['color'],
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const Divider(height: 1, thickness: 0.5),
 
@@ -287,14 +370,52 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: OrderSmallButton(
-                          text: "Hủy",
-                          color: Colors.white,
-                          textColor: Colors.black54,
-                          isOutlined: true,
-                          onPressed: () {
-                            // TODO: Thêm logic hủy đơn ở đây
-                          },
-                        ),
+                        text: "Hủy",
+                        color: Colors.white,
+                        textColor: Colors.black54,
+                        isOutlined: true,
+                        onPressed: isLoadingButtonCancel
+                            ? null
+                            : () async {
+                                setState(() {
+                                  isLoadingButtonCancel = true;
+                                });
+
+                                bool succeeded = await OrderController().cancelOrder(order.id);
+
+                                if (!mounted) return;
+
+                                if (succeeded) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Hủy đơn hàng thành công"),
+                                      backgroundColor: Colors.greenAccent,
+                                    ),
+                                  );
+
+                                  // --- THÊM DÒNG NÀY ĐỂ LOAD LẠI DỮ LIỆU ---
+                                  setState(() {
+                                    // 1. Tắt loading của nút
+                                    isLoadingButtonCancel = false;
+                                    
+                                    // 2. Gọi lại API để FutureBuilder tự động build lại danh sách mới
+                                    _ordersFuture = _orderController.getOrderHistory(); 
+                                  });
+                                  // ------------------------------------------
+                                  
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Hủy đơn thất bại"),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                  setState(() {
+                                    isLoadingButtonCancel = false;
+                                  });
+                                }
+                              },
+                      ),
                       ),
                     
                     // Nút Mua lại (Luôn hiện)
@@ -304,7 +425,69 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       textColor: Colors.white,
                       isOutlined: false,
                       onPressed: () {
-                        // TODO: Thêm logic mua lại
+                        // 1. Kiểm tra danh sách sản phẩm
+                        if (order.items == null || order.items!.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Không tìm thấy thông tin sản phẩm")),
+                          );
+                          return;
+                        }
+
+                        List<CartItem> buyAgainList = [];
+
+                        for (var orderItem in order.items!) {
+                          ProductVariant? variant;
+                          
+                          // 2. Tìm biến thể an toàn hơn (tránh lỗi nếu _allVariants có phần tử null)
+                          try {
+                            if (_allVariants.isNotEmpty) {
+                              // Lọc bỏ các phần tử null trước khi tìm
+                              final safeList = _allVariants.whereType<ProductVariant>().toList();
+                              
+                              variant = safeList.firstWhere(
+                                (v) => v.id == orderItem.productId,
+                                // Nếu không tìm thấy thì trả về null (thay vì crash app)
+                                orElse: () => ProductVariant(id: 0, price: 0) // Dummy object để check null sau
+                              );
+                              
+                              // Nếu là dummy object (id=0) thì gán lại null
+                              if (variant.id == 0) variant = null;
+                            }
+                          } catch (e) {
+                            variant = null;
+                          }
+
+                          buyAgainList.add(CartItem(
+                            productVariantId: orderItem.productId,
+                            productName: variant?.name ?? orderItem.productName,
+                            quantity: orderItem.quantity,
+                            // Giá: Nếu variant null hoặc giá null -> lấy giá cũ. Ép kiểu an toàn.
+                            price: (variant?.price ?? orderItem.price).toDouble(),
+                            imageUrl: variant?.imageUrl ?? "",
+                            color: variant?.color ?? "",
+                            ram: variant?.ram ?? "",
+                            storage: variant?.storage ?? "",
+                          ));
+                        }
+
+                        // 3. [SỬA LỖI CHÍNH Ở ĐÂY]
+                        // Thay vì dùng "item.price!" (gây lỗi nếu null), hãy dùng "item.price ?? 0"
+                        double totalMoney = buyAgainList.fold(0, (sum, item) {
+                          double price = item.price ?? 0;
+                          int qty = item.quantity ?? 0;
+                          return sum + (price * qty);
+                        });
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CheckoutScreen(
+                              cartItems: buyAgainList,
+                              totalMoney: totalMoney,
+                              is_buy_now: true,
+                            ),
+                          ),
+                        );
                       },
                     ),
                   ],

@@ -259,8 +259,8 @@ export default class orderModel{
             
             // 4.1 Tạo Order
             const [orderResult] = await conn.query(
-                `INSERT INTO orders (user_id, full_name, phone_number, shipping_address, city, note, total_money, shipping_fee, coupon_id, status, created_at, PTTT) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW(), ?)`,
+                `INSERT INTO orders (user_id, full_name, phone_number, shipping_address, city, note, total_money, shipping_fee, coupon_id, status, created_at, PTTT, discount) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW(), ?, ?)`,
                 [
                     userId, 
                     shippingData.fullName, 
@@ -271,7 +271,8 @@ export default class orderModel{
                     finalTotal,
                     shippingFee,
                     couponId,
-                    payment_method
+                    payment_method,
+                    discountAmount
                 ]
             );
             const newOrderId = orderResult.insertId;

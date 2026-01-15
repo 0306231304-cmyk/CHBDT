@@ -330,6 +330,8 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
                       child: Text(
                         info['variant']!,
                         style: TextStyle(color: Colors.blue, fontSize: 12, fontWeight: FontWeight.w500),
+                        maxLines: 1, 
+                        overflow: TextOverflow.ellipsis
                       ),
                     ),
                   ),

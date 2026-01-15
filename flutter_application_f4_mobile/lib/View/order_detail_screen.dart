@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_f4_mobile/Controller/couponController.dart';
+import 'package:flutter_application_f4_mobile/Model/couponModel.dart';
 import 'package:intl/intl.dart';
 import '../../resources/app_colors.dart';
 import '../../Controller/order_controller.dart';
@@ -19,6 +21,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   
   // Future để quản lý trạng thái tải dữ liệu đơn hàng
   late Future<Order?> _orderDetailFuture;
+  //late Future<CouponModel?> _couponFuture;
   
   // Danh sách biến thể sản phẩm dùng để tra cứu tên và ảnh
   List<dynamic> _allVariants = []; 
@@ -28,11 +31,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     super.initState();
     // Gọi API lấy chi tiết đơn hàng ngay khi màn hình mở
     _orderDetailFuture = _orderController.getOrderDetail(widget.orderId);
-    
     // Tải danh sách sản phẩm chạy ngầm
     _loadProductList();
   }
-
   // Hàm tải danh sách sản phẩm từ server
   void _loadProductList() async {
     try {
@@ -47,7 +48,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  // --- 1. CÁC HÀM HỖ TRỢ ---
 
   // Định dạng số tiền sang VNĐ  
   String formatCurrency(int amount) {
@@ -81,7 +81,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
   }
 
-  // Tìm tên, ảnh và thuộc tính chi tiết của sản phẩm dựa vào ID
+  String _formatPrice(num price) => "${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}đ";
+  // Tìm tên và ảnh thật của sản phẩm dựa vào ID
   Map<String, String?> _getProductInfo(int id, String defaultName) {
   String name = defaultName;
   String? img;
@@ -140,7 +141,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           final order = snapshot.data!;
           final items = order.items ?? [];
 
-          // Tính tổng tiền hàng
+          // Tính tổng tiền
+          print("DEBUG(coupon_id/orderDetail): ${order.couponId}");
           int productTotal = items.fold(0, (sum, item) => sum + (item.price * item.quantity));
           if (productTotal == 0) productTotal = order.totalPrice - order.shippingFee;
 
@@ -153,6 +155,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 _buildAddressCard(order),
                 const SizedBox(height: 16),
                 _buildProductListCard(items),
+                const SizedBox(height: 16),
+                FutureBuilder<CouponModel?>(
+                  future: CouponController.getCoupon(order.couponId), 
+                  builder: (context, snapshot){
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return const Center(child: Text("Không khuyến mãi"));
+                    }
+
+                    final CouponModel coupon = snapshot.data!;
+                    if(coupon.id != 0){
+                      return _buildCouponTicket(coupon);
+                    }
+                    else{
+                      return Row();
+                    }
+                  }),
                 const SizedBox(height: 16),
                 _buildPaymentCard(order, productTotal),
                 const SizedBox(height: 40),
@@ -217,7 +238,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         if (items.isEmpty) 
            const Center(child: Text("Đang tải hoặc không có sản phẩm", style: TextStyle(color: Colors.grey))),
 
-        ...items.map((item) => _buildProductItem(item)).toList(),
+        ...items.map((item) => _buildProductItem(item)),
       ],
     );
   }
@@ -296,6 +317,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return OrderCardSection(
       children: [
         OrderInfoRow(label: "Tổng tiền", value: formatCurrency(productTotal)),
+        OrderInfoRow(label: "Khuyến mãi", value: formatCurrency(order.discount.toInt())),
         OrderInfoRow(label: "Phí vận chuyển", value: formatCurrency(order.shippingFee)),
         const Divider(height: 24),
         Row(
@@ -311,4 +333,101 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       ],
     );
   }
+  Widget _buildCouponTicket(CouponModel coupon) {
+    double percentUsed = 0;
+    if (coupon.usageLimit > 0) {
+      percentUsed = (coupon.usedCount / coupon.usageLimit) * 100;
+    } 
+    return Container(
+      height: 80, // Chiều cao cố định cho vé
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.shade200),
+        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+      ),
+      child: Row(
+        children: [
+          // 1. Phần trái (Icon)
+          Container(
+            width: 80,
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.card_giftcard, color: Colors.orange[700], size: 30),
+                const SizedBox(height: 4),
+                Text("Voucher", style: TextStyle(color: Colors.orange[700], fontSize: 10, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+
+          // 2. Đường kẻ đứt dọc ở giữa
+          CustomPaint(
+            size: const Size(1, 100),
+            painter: DashedLineVerticalPainter(),
+          ),
+
+          // 3. Phần phải (Thông tin & Nút)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Mã: ${coupon.code}", style: TextStyle(color: Colors.orange[800], fontWeight: FontWeight.bold, fontSize: 12)),
+                      if (coupon.endDate != null)
+                        Text("Hết hạn: ${DateFormat('dd/MM/yy').format(coupon.endDate!)}", style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  
+                  // Giá trị giảm (VD: Giảm 15% hoặc Giảm 50.000đ)
+                  Text(
+                    coupon.discountType == 'percent' 
+                        ? "Giảm ${coupon.discountValue.toStringAsFixed(0)}%" 
+                        : "Giảm ${_formatPrice(coupon.discountValue)}",
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+
+                  const Spacer(),
+
+                  
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Đơn tối thiểu ${_formatPrice(coupon.minOrderValue)} | Đã dùng ${percentUsed.toInt()}%", style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class DashedLineVerticalPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    double dashHeight = 5, dashSpace = 3, startY = 0;
+    final paint = Paint()
+      ..color = Colors.grey.shade300
+      ..strokeWidth = 1;
+    while (startY < size.height) {
+      canvas.drawLine(Offset(0, startY), Offset(0, startY + dashHeight), paint);
+      startY += dashHeight + dashSpace;
+    }
+  }
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

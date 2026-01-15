@@ -43,8 +43,6 @@ class UpdateCartController {
         // Nếu server trả về JSON kết quả
         final responseData = jsonDecode(response.body);
         return UpdateCartResponse.fromJson(responseData).succeeded;
-        
-        // Hoặc nếu lười check model thì cứ return true;
       }
     } catch (e) {
       debugPrint("Lỗi Update Server: $e");

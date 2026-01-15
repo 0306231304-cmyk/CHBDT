@@ -65,6 +65,7 @@ export default class orderController{
         try{
             const id = req.userid;
             const {orderID} = req.params;
+            console.log("DEBUG(getOrderDetail-sever): " + orderID);
             if(!id) return res.status(400).json({succeeded: false, message:"Bạn chưa đăng nhập"});
             if(!orderID)return res.status(400).json({succeeded: false, message: 'Thiếu ID đơn hàng'});
 
@@ -82,6 +83,7 @@ export default class orderController{
             });
         }
     }
+    
     static async getOrders(req,res){
         try{
             const user_id = req.userid;

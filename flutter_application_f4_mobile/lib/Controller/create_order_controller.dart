@@ -10,7 +10,7 @@ import '../Config/baseUrl.dart';
 
 class CreateOrderController {
 
-  Future<bool> createOrder({
+  Future<int> createOrder({
     required String fullName,
     required String phone,
     required String address,
@@ -28,7 +28,7 @@ class CreateOrderController {
 
       if (token == null) {
         debugPrint("Lỗi: Chưa có Token");
-        return false;
+        return 0;
       }
 
       // 1. Convert CartItem -> OrderDetailItem
@@ -85,13 +85,14 @@ class CreateOrderController {
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final jsonResponse = jsonDecode(response.body);
-        return CreateOrderResponse.fromJson(jsonResponse).succeeded;
+        return CreateOrderResponse.fromJson(jsonResponse).order_id;
       } else {
         debugPrint("Lỗi Server: ${response.statusCode} - ${response.body}");
+        throw Exception("${jsonDecode(response.body)['message']}");
       }
     } catch (e) {
       debugPrint("Lỗi Exception: $e");
     }
-    return false;
+    return 0;
   }
 }

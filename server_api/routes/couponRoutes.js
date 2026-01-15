@@ -68,4 +68,6 @@ const couponRoute = Router();
  */
 couponRoute.get('/', couponController.getAllCoupon);
 
+couponRoute.get('/:coupon_id',couponController.getCouponByID);
+
 export default couponRoute;

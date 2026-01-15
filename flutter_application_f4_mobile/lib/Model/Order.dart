@@ -31,6 +31,8 @@ class Order {
   final String? phoneNumber;
   final String? address;
   final int shippingFee;
+  final double discount;
+  final int? couponId;
   List<OrderItem>? items;
 
   Order({
@@ -39,6 +41,8 @@ class Order {
     required this.totalPrice,
     required this.status,
     required this.createdAt,
+    required this.discount,
+    this.couponId,
     this.fullName,
     this.phoneNumber,
     this.address,
@@ -78,6 +82,8 @@ class Order {
       createdAt: json['created_at'] ?? "",
       fullName: json['full_name'],
       phoneNumber: json['phone_number'],
+      couponId: json['coupon_id'],
+      discount: double.tryParse(json['discount']) ?? 0.0,
       address: fullAddress,
       items: itemsList,
     );

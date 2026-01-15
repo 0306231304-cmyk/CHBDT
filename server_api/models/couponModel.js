@@ -51,4 +51,18 @@ export default class couponModel{
             throw new Error('Lỗi lấy danh sách khuyến mãi: ' + error.message);
         }
     }
+
+    static async getCouponByID(coupon_id){
+        try{
+            console.log("DEBUG(getCouponByID): " + coupon_id);
+            const [coupon] = await execute("SELECT * FROM coupons WHERE id = ?",[coupon_id]);
+
+            if(coupon.length === 0) return {};
+
+            return coupon[0];
+        }
+        catch(error){
+            throw new Error("Lỗi tìm (getCouponByID): " + error.message);
+        }
+    }
 }

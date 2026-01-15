@@ -67,13 +67,15 @@ class OrderDetailItem {
 class CreateOrderResponse {
   final bool succeeded;
   final String message;
+  final int order_id;
 
-  CreateOrderResponse({required this.succeeded, required this.message});
+  CreateOrderResponse({required this.succeeded, required this.message, required this.order_id});
 
   factory CreateOrderResponse.fromJson(Map<String, dynamic> json) {
     return CreateOrderResponse(
       succeeded: json['succeeded'] ?? false,
       message: json['message'] ?? '',
+      order_id: json['order_id'] ?? 0
     );
   }
 }

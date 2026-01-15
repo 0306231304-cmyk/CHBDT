@@ -84,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if(mounted) {
       setState(() {
         _userToken = token;
+        _isLoading = false;
       });
     }
   }

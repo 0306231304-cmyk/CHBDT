@@ -100,13 +100,15 @@ class OrderController {
             // Map các trường tiền tệ
             totalPrice: parseNumber(firstRow['total_money'] ?? firstRow['total_price']), 
             shippingFee: parseNumber(firstRow['shipping_fee']),
+            discount: double.tryParse(firstRow['discount'])?? 0.0,
+            couponId: parseNumber(firstRow['coupon_id']),
             
             // Map thông tin người nhận
             fullName: firstRow['full_name'],
             phoneNumber: firstRow['phone_number'],
             address: fullAddress,
           );
-
+          print("DEBUG(getOrderDetail-orderController-frontend): ${finalOrder.couponId}");
           // --- 2. Map danh sách sản phẩm (Items) ---
           // Duyệt qua tất cả các dòng trong listRaw để lấy từng sản phẩm
           finalOrder.items = listRaw.map((row) {
@@ -200,5 +202,32 @@ class OrderController {
       print("Lỗi Exception: $e");
       return false;
     }
+  }
+
+  Future<bool> cancelOrder(int order_id) async {
+    try{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('user_token');
+      final respone = await http.delete(
+        Uri.parse('$baseUrl/orders/cancel/$order_id'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'ngrok-skip-browser-warning': 'true',
+        }
+      );
+
+      if(respone.statusCode == 200){
+        final Map<String, dynamic> data = jsonDecode(respone.body);
+
+        return data['succeeded'];
+      }
+      else{
+        return false;
+      }
+    }
+    catch(e){
+      print("Lỗi hủy đơn hàng: $e");
+    }
+    return false;
   }
 }

@@ -82,34 +82,34 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
   // Tìm tên và ảnh thật của sản phẩm dựa vào ID
   Map<String, String?> _getProductInfo(int id, String defaultName) {
-  String name = defaultName;
-  String? img;
-  String? variantsInfo;
+    String name = defaultName;
+    String? img;
+    String? variantsInfo;
 
-  if (_allVariants.isNotEmpty) {
-    for (var v in _allVariants) {
-      final variant = v as dynamic; 
-      
-      if (variant.id.toString() == id.toString()) {
-        name = variant.name ?? name;
-        img = variant.imageUrl;
-        List<String> details = [];
-        if (variant.color != null && variant.color!.isNotEmpty) {
-          details.add(variant.color!);
-        }
-        if (variant.storage != null && variant.storage!.isNotEmpty) {
-          details.add(variant.storage!);
-        }
+    if (_allVariants.isNotEmpty) {
+      for (var v in _allVariants) {
+        final variant = v as dynamic; 
         
-        if (details.isNotEmpty) {
-          variantsInfo = details.join(" - ");
+        if (variant.id.toString() == id.toString()) {
+          name = variant.name ?? name;
+          img = variant.imageUrl;
+          List<String> details = [];
+          if (variant.color != null && variant.color!.isNotEmpty) {
+            details.add(variant.color!);
+          }
+          if (variant.storage != null && variant.storage!.isNotEmpty) {
+            details.add(variant.storage!);
+          }
+          
+          if (details.isNotEmpty) {
+            variantsInfo = details.join(" - ");
+          }
+          break;
         }
-        break;
       }
     }
+    return {'name': name, 'img': img, 'variant': variantsInfo};
   }
-  return {'name': name, 'img': img, 'variant': variantsInfo};
-}
 
   // --- 2. GIAO DIỆN ---
   @override
@@ -289,6 +289,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       child: Text(
                         info['variant']!,
                         style: TextStyle(color: Colors.blue.shade800, fontSize: 12, fontWeight: FontWeight.w500),
+                        maxLines: 1, 
+                        overflow: TextOverflow.ellipsis
                       ),
                     ),
                   ),
@@ -371,7 +373,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     style: TextStyle(
                         color: Colors.orange[700],
                         fontSize: 10,
-                        fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.bold
+                        )
+                      ),
               ],
             ),
           ),

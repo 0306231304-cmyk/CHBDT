@@ -773,7 +773,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (token == null || token.isEmpty) return; // Chưa đăng nhập thì mặc định là false
 
     // 2. Gọi API lấy danh sách yêu thích để kiểm tra sản phẩm này có trong đó không
-    bool status = await FavoriteController.checkIsFavorite(widget.productId);
+    bool status = await FavoriteController.checkIsFavorite(widget.productVariantId ?? 0);
     
     if (mounted) {
       setState(() {
@@ -801,11 +801,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     bool success;
     if (oldStatus == false) {
-      success = await FavoriteController.addFavorite(widget.productId);
+      success = await FavoriteController.addFavorite(widget.productVariantId ?? 0);
     } else {
-      success = await FavoriteController.removeFavorite(widget.productId);
+      success = await FavoriteController.removeFavorite(widget.productVariantId ?? 0);
     }
-
+    print("DEBUG(favorite in detail screen): $success");
     if (!success) {
       // Nếu API thất bại (ví dụ lỗi mạng), trả lại trạng thái cũ
       setState(() { isFav = oldStatus; });
@@ -821,6 +821,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           SnackBar(
             content: Text(oldStatus ? "Đã xóa khỏi yêu thích" : "Đã thêm vào yêu thích"),
             duration: const Duration(seconds: 1),
+            backgroundColor: Colors.green,
           ),
         );
       }

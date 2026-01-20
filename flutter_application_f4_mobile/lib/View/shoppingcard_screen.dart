@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_f4_mobile/View/Product/product_detail_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../resources/app_colors.dart';
@@ -264,103 +265,116 @@ class _ShoppingCardScreenState extends State<ShoppingCardScreen> {
   }
 
   Widget _buildCartItem(CartItem item, int index) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Ảnh sản phẩm
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Image.network(
-            headers:{"ngrok-skip-browser-warning": "true"},
-            item.imageUrl ?? '',
-            width: 80, height: 80, fit: BoxFit.cover,
-            errorBuilder: (c, e, s) => Container(width: 80, height: 80, color: Colors.grey[200]),
-          ),
-        ),
-        const SizedBox(width: 16),
-        
-        Expanded(
-          child: Column(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => ProductDetailScreen(productId: item.product_id ?? 0, productVariantId: item.productVariantId,))
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Hàng 1: Tên + Thùng rác
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      item.productName ?? 'Sản phẩm', 
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      maxLines: 2, overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () => _handleDeleteItem(index, item.productVariantId ?? 0),
-                    child: const Padding(
-                      padding: EdgeInsets.only(left: 8.0, bottom: 4.0),
-                      child: Icon(Icons.delete_outline, color: Colors.grey, size: 22),
-                    ),
-                  )
-                ],
+              // Ảnh sản phẩm
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  headers:{"ngrok-skip-browser-warning": "true"},
+                  item.imageUrl ?? '',
+                  width: 80, height: 80, fit: BoxFit.cover,
+                  errorBuilder: (c, e, s) => Container(width: 80, height: 80, color: Colors.grey[200]),
+                ),
               ),
+              const SizedBox(width: 16),
               
-              Text(
-                "${item.color ?? ''} | ${item.ram ?? ''} | ${item.storage ?? ''}", 
-                style: const TextStyle(color: Colors.grey, fontSize: 14)
-              ),
-              const SizedBox(height: 8),
-              
-              // Hàng 2: Giá + Tăng giảm
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                  formatCurrency(item.price), 
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent, fontSize: 16)
-                  ),
-                  
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(20)
-                    ),
-                    child: Row(
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Hàng 1: Tên + Thùng rác
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        InkWell(
-                          onTap: () => _handleUpdateQuantity(index, item.productVariantId ?? 0, item.quantity ?? 1, false),
-                          borderRadius: BorderRadius.circular(20),
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Icon(Icons.remove, size: 18, color: Colors.black54),
-                          ),
-                        ),
-                        
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        Expanded(
                           child: Text(
-                            "${item.quantity ?? 1}", 
-                            style: const TextStyle(fontWeight: FontWeight.bold)
+                            item.productName ?? 'Sản phẩm', 
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            maxLines: 2, overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        
                         InkWell(
-                          onTap: () => _handleUpdateQuantity(index, item.productVariantId ?? 0, item.quantity ?? 1, true),
-                          borderRadius: BorderRadius.circular(20),
+                          onTap: () => _handleDeleteItem(index, item.productVariantId ?? 0),
                           child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Icon(Icons.add, size: 18, color: AppColors.primaryOrange),
+                            padding: EdgeInsets.only(left: 8.0, bottom: 4.0),
+                            child: Icon(Icons.delete_outline, color: Colors.grey, size: 22),
                           ),
-                        ),
+                        )
                       ],
                     ),
-                  )
-                ],
+                    
+                    Text(
+                      "${item.color ?? ''} | ${item.ram ?? ''} | ${item.storage ?? ''}", 
+                      style: const TextStyle(color: Colors.grey, fontSize: 14)
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    // Hàng 2: Giá + Tăng giảm
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                        formatCurrency(item.price), 
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent, fontSize: 16)
+                        ),
+                        
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(20)
+                          ),
+                          child: Row(
+                            children: [
+                              InkWell(
+                                onTap: () => _handleUpdateQuantity(index, item.productVariantId ?? 0, item.quantity ?? 1, false),
+                                borderRadius: BorderRadius.circular(20),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Icon(Icons.remove, size: 18, color: Colors.black54),
+                                ),
+                              ),
+                              
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: Text(
+                                  "${item.quantity ?? 1}", 
+                                  style: const TextStyle(fontWeight: FontWeight.bold)
+                                ),
+                              ),
+                              
+                              InkWell(
+                                onTap: () => _handleUpdateQuantity(index, item.productVariantId ?? 0, item.quantity ?? 1, true),
+                                borderRadius: BorderRadius.circular(20),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Icon(Icons.add, size: 18, color: AppColors.primaryOrange),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-        ),
-      ],
+        )
+      ),
     );
   }
 

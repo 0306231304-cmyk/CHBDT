@@ -64,6 +64,7 @@ export default class cartModel{
         console.log("baseUrl from getCart: " + baseUrl);
         const [items] = await execute(`
             SELECT 
+                products.id as product_id,
                 product_variants.id as product_variant_id, 
                 product_variants.price, 
                 product_variants.image_url,

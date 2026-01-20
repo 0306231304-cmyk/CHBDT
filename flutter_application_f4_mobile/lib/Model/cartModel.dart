@@ -23,6 +23,7 @@ class CartItem {
   int? productVariantId;
   String? productName;
   String? color;
+  int? product_id;
   String? ram;
   String? storage;
   double? price;
@@ -33,6 +34,7 @@ class CartItem {
     this.productVariantId,
     this.productName,
     this.color,
+    this.product_id,
     this.ram,
     this.storage,
     this.price,
@@ -44,6 +46,7 @@ class CartItem {
   CartItem copyWith({
     int? productVariantId,
     String? productName,
+    int? product_id,
     String? imageUrl,
     String? color,
     String? ram,
@@ -55,6 +58,7 @@ class CartItem {
       productVariantId: productVariantId ?? this.productVariantId,
       productName: productName ?? this.productName,
       imageUrl: imageUrl ?? this.imageUrl,
+      product_id: product_id ?? this.product_id,
       color: color ?? this.color,
       ram: ram ?? this.ram,
       storage: storage ?? this.storage,
@@ -69,6 +73,7 @@ class CartItem {
       productName: json['name'] ?? '', 
       color: json['color'] ?? '',
       ram: json['ram'] ?? '',
+      product_id: json['product_id'] ?? 0,
       storage: json['storage'] ?? '',
       price: double.tryParse(json['price'].toString()) ?? 0.0,
       quantity: json['quantity'] ?? 1,

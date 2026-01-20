@@ -101,6 +101,7 @@ class CartController {
                 color: variantInfo['color'],      // Map thêm màu
                 ram: variantInfo['ram'],          // Map thêm ram
                 storage: variantInfo['storage'],  // Map thêm bộ nhớ
+                product_id: variantInfo['product_id'] ?? 0,
                 imageUrl: variantInfo['image'], // Model dùng imageUrl
                 price: price,
                 quantity: localQty,
